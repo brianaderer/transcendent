@@ -72,9 +72,12 @@ This module contains no application code.
   and function, what is wrong, and a concrete fix. Its report opens with a one-sentence
   verdict and ends with what was done well. It changes nothing and never commits.
 - **`.claude/hooks/changed-files.sh [sha]`** (default `HEAD`). Prints the paths the
-  commit changed, one per line. Exits 2 with a message when the commit does not exist,
-  so no caller can mistake an error for an answer. The other three check scripts get
-  their file list from it.
+  commit changed, one per line. A merge commit is compared with its first parent, the
+  branch it was merged into, so the list is everything the merge brought in; before
+  commit `666dc6a` a merge listed nothing, so merges were never reviewed or
+  documented. Exits 2 with a message when the commit does not exist, so no caller can
+  mistake an error for an answer. The other three check scripts get their file list
+  from it, so they treat a merge the same way.
 - **`.claude/hooks/has-source-changes.sh [sha]`** (default `HEAD`). Exit 0 means the
   commit changes source code or tests, so it is worth a code review; exit 1 means it
   only touches markdown, config, data, or lockfiles; exit 2 means the commit does not
@@ -117,8 +120,9 @@ hook only asks; Claude runs the skills.
 **Outside Claude Code.** The git hook `.githooks/post-commit` runs after a terminal
 commit, once enabled with `git config core.hooksPath .githooks`. It exits quietly when
 `CLAUDECODE` is set (the commit came from Claude Code, so the other hook handles it),
-when `SKIP_DOC_SYNC` is set, when `DOC_SYNC_RUNNING` is set (a sync is already running),
-or when the `claude` command is not installed. Otherwise it asks `post-commit-steps.sh`
+when `SKIP_POST_COMMIT_STEPS` is set (this skips both the review and the documentation
+sync; the older name `SKIP_DOC_SYNC` still works), when `DOC_SYNC_RUNNING` is set (a
+sync is already running), or when the `claude` command is not installed. Otherwise it asks `post-commit-steps.sh`
 which skills to run and runs each one headlessly, in the same order as the Claude Code
 hook:
 
@@ -137,8 +141,13 @@ it by hand, and still runs the next step.
 `.test-tmp/` in the repo (ignored by git, deleted when the tests finish) and checks
 each decision: which commits count as having source changes (including a 2,000-file
 commit), which are skippable (including one with the `Docs-Sync` trailer), which
-skills `post-commit-steps.sh` lists and in what order, and that an unknown commit is
-an error rather than a "no". It needs no network. It does not test
+skills `post-commit-steps.sh` lists and in what order (including a merge commit that
+brings in a source file, which must be reviewed and then documented), and that an
+unknown commit is an error rather than a "no". Each group of checks builds one
+throwaway repo and adds commits to it, and each check looks only at the newest
+commit. A check of printed output passes only when the output matches and the script
+also exited successfully, so a script that prints the right text and then fails is
+still caught. It needs no network. It does not test
 `claude-post-commit.sh` or `.githooks/post-commit` themselves, only the scripts they
 ask.
 
@@ -203,7 +212,9 @@ commit passes it afterwards. `/uncle-bob` runs the same guard before reviewing.
 - `.claude/settings.json`: registers the `PostToolUse` hook, run as
   `"$CLAUDE_PROJECT_DIR"/.claude/hooks/claude-post-commit.sh`.
 - `core.hooksPath` (git config, set once per clone): enables `.githooks/post-commit`.
-- `SKIP_DOC_SYNC`: set for one commit to skip the git hook.
+- `SKIP_POST_COMMIT_STEPS`: set for one commit (`SKIP_POST_COMMIT_STEPS=1 git commit …`)
+  to make the git hook skip both the review and the documentation sync. The older
+  name, `SKIP_DOC_SYNC`, still works.
 - `DOC_SYNC_RUNNING`: set by the git hook while a headless sync runs.
 - `CLAUDECODE`: set by Claude Code; the git hook stands aside when it is present.
 - `Docs-Sync: <range>` commit trailer: marks a documentation-sync commit. It must be
