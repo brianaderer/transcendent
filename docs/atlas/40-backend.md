@@ -31,28 +31,28 @@ arrows are who calls whom.
 
 ```mermaid
 flowchart LR
-    WEB["web<br/>FastAPI routes"]
-    ING["ingestion<br/>daily: fetch · filter · embed · cluster · tag<br/>see 21"]
-    STORE[("storage<br/>posts with embeddings, tags, runs, retrieval events")]
-    RET["retrieval<br/>nearest posts + count each hit"]
-    GEN["generation<br/>writes the document · retrieval on or off"]
-    CMP["comparison<br/>runs both versions · measures · saves the run"]
-    MAP["projection<br/>embeddings squashed to 2D"]
+    WEB["web<br/>FastAPI routes + live event streams, see 41"]
+    ING["ingestion<br/>catch-up by day: fetch · filter · upvotes ·<br/>embed · cluster · tag, see 21"]
+    STORE[("storage<br/>posts, embeddings, tags, engagement,<br/>retrieval events")]
+    RET["retrieval<br/>search + lookup tools, count each hit"]
+    REP["report<br/>report agent, retrieval on or off, see 60"]
+    CMP["comparison<br/>runs both versions · scores against the answer key, see 70"]
+    MAP["projection<br/>squash the selected range to 2D"]
 
     WEB --> CMP
     WEB --> MAP
     WEB --> STORE
-    CMP --> GEN
-    GEN -.->|"only when retrieval is on"| RET
+    CMP --> REP
+    REP -.->|"only when retrieval is on"| RET
     RET --> STORE
     ING --> STORE
     MAP --> STORE
     classDef open stroke-dasharray: 5 5
-    class WEB,ING,STORE,RET,GEN,CMP,MAP open
+    class WEB,ING,STORE,RET,REP,CMP,MAP open
 ```
 
-- **generation** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it
-  never receives a retriever, so it cannot reach the store.
+- **report** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it
+  never receives the retrieval tools, so it cannot reach the store.
 - **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs in the Celery worker, not inside the web server; first start and the daily
   pull are the same catch-up over a range of days (see *Background jobs*, OPEN-13).
 - **projection** (specified, OPEN-20): a post is embedded once, at intake. The squashing

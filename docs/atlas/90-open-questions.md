@@ -5,7 +5,6 @@
 | ID | Question | Raised on |
 |---|---|---|
 | OPEN-13 | For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) If prewarm proves slow or fragile, the fallback is committing the computed database. | [04](04-environment.md) |
-| OPEN-26 | The brief asks for a document on the past week and the week to come, while the Explore page can generate a report for any date range. Is a report always a week, or any range? The recommendation: allow any range, defaulting the slider to the last seven days so the out-of-the-box report is exactly the brief's weekly document; the prediction covers a period the same length as the range. | [31](30-frontend/31-screens.md), [50](50-prediction.md) |
 
 ## Resolved
 
@@ -36,3 +35,4 @@
 | OPEN-24 | Runs are not referred back to: no run history, no LangGraph checkpoints, no stored event log, no Runs screen. Results are shown when a run finishes. | 2026-10-18 |
 | OPEN-27 | Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers. | 2026-10-18 |
 | OPEN-25 | The report agent returns one answer in two parts: the prose report, and a fixed list of its topics with rank and direction plus its predicted topics. The page shows the prose with the list as a small table beside it; the app scores the list. | 2026-10-18 |
+| OPEN-26 | Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range. | 2026-10-18 |

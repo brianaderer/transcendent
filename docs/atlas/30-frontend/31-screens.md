@@ -58,7 +58,8 @@ Everything on this page is governed by one control.
 
 - **Date-range slider** across the full width at the top, spanning the 8 weeks of
   history, with two handles and a small histogram of daily post volume behind it (so
-  busy days are visible). Presets: "Last 7 days", "Last 14 days", "All 8 weeks". The
+  busy days are visible). It opens on the **last 7 days** (OPEN-26). Presets: "Last 7 days", "Last 14 days",
+  "All 8 weeks". The
   chosen range is shown in words: "5 Oct – 11 Oct 2026 · 2,614 posts".
 - **The dot plot** fills the center: a large 2D scatter of every post in the range,
   each dot one post, colored by topic. The map is recomputed for each range (OPEN-20):
