@@ -345,12 +345,14 @@ core feature, not an afterthought:
   retrieved for version B, and both outputs. A run can be re-opened and re-read
   later.
 - **The app shows the comparison side by side**, with measurements, not just two
-  blocks of text. Measurements worth showing:
-  - how many specific claims each version makes that can be traced back to a real post
-    from the week, and how many cannot (the second number is invented content);
-  - which real topics from the week each version covered, and which it missed;
-  - how specific each version is: named people, events, dates, and threads, versus
-    generic statements that would fit any week;
+  blocks of text. The document's conclusions are aggregate (which topics, how big,
+  which way they're moving), so both versions are scored against one answer key
+  computed from the topic and engagement data, not sentence by sentence against
+  individual posts (atlas OPEN-21, plate 70):
+  - which of the period's real main topics each version found, and which it invented;
+  - whether it ranked them in the right order of importance;
+  - whether it called each topic's direction (rising, steady, fading) correctly;
+  - whether its predictions came true;
   - time taken and tokens used.
 - **Measurements are computed by code where possible**, and, where a model is used to
   judge, the judging prompt is saved with the result and is the same for both
