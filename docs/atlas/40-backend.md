@@ -20,6 +20,7 @@ Everything else on this plate is *proposed*.
 | Writing and decision model | **Claude Sonnet 5.5, through OpenRouter** — specified (OPEN-5). One OpenRouter key, sent to reviewers in the submission email |
 | Embedding model | **A small open model that takes long inputs (for example nomic-embed-text), run inside the container** — specified (OPEN-5); no key needed |
 | Background jobs | **Celery** workers, with **Celery Beat** scheduling the archive pulls — specified. Broker: Redis, its own container *(proposed)* |
+| Live updates | **Server-sent events**, detailed, from every agent and job — specified. See [41](40-backend/41-live-events.md) |
 | Agents | **LangGraph / LangChain** — specified. Two agents, see [60](60-agents.md) |
 | Running it | Its own service in Docker Compose *(proposed)* |
 
@@ -102,7 +103,7 @@ flowchart LR
 - **`ingested_days` is the record of what's done** — one row per day with its status,
   item counts and timings. "Catch up" just means "every complete day not marked done".
   A day that fails stays not-done, the chain stops there, and the next catch-up retries
-  it. The same table drives the progress shown during first start, and gives the
+  it. Progress is streamed live ([41](40-backend/41-live-events.md)); this table gives the
   measured prewarm time (OPEN-13).
 - **Catch-up is safe to trigger twice.** A lock means a second request while a chain is
   running does nothing, so Beat, a restart and a click can't start parallel chains.
@@ -112,7 +113,8 @@ flowchart LR
 - **Why daily is enough.** Trends are counted by the day; pulling more often adds load
   on a volunteer-run archive without changing any result.
 - **Report runs are Celery jobs too.** A report makes many LLM calls; the web request
-  queues it and returns at once, and the frontend checks its status until it's done.
+  queues it and returns at once, and the frontend watches it through live events
+  ([41](40-backend/41-live-events.md)).
 - **Beat runs as exactly one copy.**
 
 ## Open in this draft

@@ -74,7 +74,9 @@ Everything on this page is governed by one control.
   plot and dims the rest; clicking opens Topic detail.
 - **Generate report** — the primary button, bottom-right of the plot, labeled with the
   range: "Generate report for 5–11 Oct". It starts a comparison run (both versions,
-  with and without retrieval) and opens a progress panel in place: live steps such as
+  with and without retrieval) and opens a progress panel in place, fed by live
+  server-sent events: two lanes, A and B, each showing steps, tool calls with their
+  results, and version B's text appearing as it's written; for example
   "Version A writing… done (9s)", "Version B: search('winterizing') → 15 posts",
   "Measuring…", with a progress bar. When done it offers "Read the report" and "See the
   comparison". If a report already exists for exactly this range, the button reads

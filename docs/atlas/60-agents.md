@@ -78,6 +78,10 @@ Specified by Brian; the details are *proposed*.
 
 ## Around the agents *(proposed)*
 
+- **Everything the agents do is streamed live** to the frontend — steps, tool calls and
+  results, decisions, the report as it's written, token use — as server-sent events
+  (specified by Brian; see [41](40-backend/41-live-events.md)).
+
 - **A cap on tool calls per run** (for example 30), so an agent that keeps searching
   ends with what it has instead of running up cost. The cap is saved with the run.
 

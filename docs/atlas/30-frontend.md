@@ -12,7 +12,7 @@ proposed. The screens below are still a proposal.
 |---|---|
 | UI library | **React** — specified |
 | Routing | **TanStack Router** — specified |
-| Server state | **TanStack Query** — specified. Everything fetched from the backend lives here |
+| Server state | **TanStack Query** — specified. Everything fetched from the backend lives here, including live events folded in from the SSE streams ([41](40-backend/41-live-events.md)) |
 | Client state | **Zustand** — specified, used only for state that lives purely in the browser (for example which comparison panel is expanded). Anything a reviewer should be able to link to — the selected week, the selected run — lives in the address, through TanStack Router's search parameters |
 | Language and build | TypeScript, built with Vite |
 | Tables | TanStack Table, for the retrieval-statistics list and the comparison measurements |
