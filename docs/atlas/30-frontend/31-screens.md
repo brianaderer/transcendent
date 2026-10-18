@@ -88,7 +88,8 @@ The Community Voices Document for the range it was generated for, as a readable 
 page (max width ~760px, centered).
 
 - **Masthead:** "Community Voices — r/sailing", the range, and a subtitle line:
-  "Written with retrieval · Claude · Export as Markdown · See comparison".
+  "Written with retrieval · Claude · See comparison", and a Download button *(maybe —
+  reports are ephemeral; downloading is the only way to keep one)*.
 - **The period in brief:** one paragraph summary.
 - **What the community talked about:** 5–7 topic sections. Each has:
   - the topic name and a one-line description;

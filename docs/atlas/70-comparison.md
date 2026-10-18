@@ -64,8 +64,9 @@ that same answer key *(proposed details below)*.
 
 ## No run history
 
-Runs are not referred back to (Brian, OPEN-24): the two reports and their scores are
-shown when the run finishes, and nothing else keeps them.
+Reports are ephemeral (Brian, OPEN-24): the two reports and their scores are shown when
+the run finishes, and nothing keeps them. They may be made downloadable — that's the
+only way a report outlives the page *(maybe, Brian)*.
 
 ## Open in this draft
 
