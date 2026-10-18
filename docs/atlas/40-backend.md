@@ -50,13 +50,13 @@ flowchart LR
 
 - **generation** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it
   never receives a retriever, so it cannot reach the store.
-- **ingestion** fetches posts **daily** (specified). It runs as a command (`docker compose run …`), not inside the web server,
+- **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs as a command (`docker compose run …`), not inside the web server,
   and is never needed for the demo: a committed one-week snapshot is loaded instead.
 - **projection** squashes embeddings to two dimensions for the embedding map, for
   example with UMAP, and caches the result per week.
 
 ## Open in this draft
 
-- `?` Where the posts come from — OPEN-8: Reddit won't issue an API key without approval.
+- `?` Replacing authors' usernames with stable pseudonyms in the committed snapshot, since the repo will be public *(proposed)*.
 - `?` The models — OPEN-5, deferred until the agentic loop is designed.
 - `?` Everything marked *proposed* above.
