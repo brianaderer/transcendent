@@ -108,8 +108,38 @@ committed by accident.
 
 ### 4. Start the app
 
-> The app isn't built yet. When it is, this step will be a single command, run from
-> the folder you cloned this repo into.
+From the folder you cloned this repo into:
+
+```bash
+docker compose up --build
+```
+
+The first run downloads and builds everything, which takes a few minutes. It's ready
+when the log stops scrolling and shows lines from `api`, `worker` and `frontend`.
+
+Open **http://localhost:5173** in your browser. You should see **Community Voices**
+and **Backend running**. If it says **Not answering:** followed by a name, that part
+of the app hasn't started yet; wait a few seconds and it updates by itself.
+
+To stop the app, press `Ctrl+C` in that terminal. Everything it has stored is kept
+for next time. To erase all stored data and start fresh, run
+`docker compose down --volumes`.
+
+Only port 5173 is used. If something else on your machine already uses it, `docker
+compose up` stops with an error naming the port; stop that other program and run the
+command again.
+
+### 5. Run the tests (optional)
+
+With the app stopped or running, from the same folder:
+
+```bash
+docker compose run --rm --no-deps api pytest
+docker compose run --rm --no-deps frontend npm test
+```
+
+Each should end with every test passed. The tests never call a real AI model or a
+real website, so they run offline in seconds.
 
 **Atlas presentation page:** [https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ](https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ) (private; the clickable view of the plan).
 

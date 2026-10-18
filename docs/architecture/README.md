@@ -11,3 +11,9 @@ configuration and data.
 | Module | Source | What it does |
 |---|---|---|
 | [tooling](tooling.md) | `.claude/`, `.githooks/` | Commit hooks, loop guard, and the `/commit-chain` skill that runs after every commit in its own worktree; the `/document-commit` skill and agent that keep documentation in step with every commit; the `/uncle-bob` skill and agent that review each code commit and its documentation commit against *Clean Code*; the `/test-boot` skill and agent that follow the README from a fresh clone the way a reviewer will; offline tests for the hook scripts |
+| [environment](environment.md) | `compose.yaml`, `.env.example`, Dockerfiles, `voices/config.py` | Runs every service with one command; settings |
+| [logging](logging.md) | `backend/src/voices/log.py` | One JSON line per event, with a trace id, to standard output and the logs volume |
+| [api](api.md) | `backend/src/voices/api/`, `voices/health.py` | The web API under `/api`; health check |
+| [worker](worker.md) | `backend/src/voices/worker/` | Celery worker and Beat |
+| [database](database.md) | `backend/src/voices/db/` | Tables and first-start setup |
+| [frontend](frontend.md) | `frontend/` | The web app; backend status for now |

@@ -1,0 +1,84 @@
+# Every service for Community Voices (atlas plate 04). Start with: docker compose up --build
+# Everything that stores information keeps it on a named volume.
+
+x-backend: &backend
+  build: ./backend
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql://voices:voices@postgres:5432/voices
+    REDIS_URL: redis://redis:6379/0
+    LOG_DIR: /var/log/voices
+  volumes:
+    - logs:/var/log/voices
+    - model-cache:/root/.cache
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.0-pg17
+    environment:
+      POSTGRES_USER: voices
+      POSTGRES_PASSWORD: voices
+      POSTGRES_DB: voices
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "voices"]
+      interval: 2s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  setup:
+    <<: *backend
+    command: ["python", "-m", "voices.db.setup"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    command: ["uvicorn", "voices.api.main:create_production_app", "--factory",
+              "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  worker:
+    <<: *backend
+    command: ["celery", "-A", "voices.worker.app", "worker", "--loglevel", "info"]
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  beat:
+    <<: *backend
+    command: ["celery", "-A", "voices.worker.app", "beat", "--loglevel", "info",
+              "--schedule", "/tmp/celerybeat-schedule"]
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  postgres-data:
+  redis-data:
+  model-cache:
+  logs:
