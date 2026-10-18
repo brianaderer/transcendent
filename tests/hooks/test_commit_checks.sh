@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Offline tests for the commit-hook decision scripts in .claude/hooks/.
+# Offline tests for the commit-hook scripts in .claude/hooks/: the decision checks
+# and the /commit-chain worktree landing.
 # Each test group builds one throwaway git repo and adds commits to it; each check
 # looks only at the newest commit.
 # Run: tests/hooks/test_commit_checks.sh

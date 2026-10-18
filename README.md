@@ -183,20 +183,26 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
 - [`.claude/skills/`](.claude/skills/) holds the Claude Code skills for this project:
   - `/isolate-and-pin` investigates a bug by testing every likely explanation in parallel.
   - `/tdd` takes a single defect from a failing test to a proven fix.
-  - `/document-commit` documents each commit and follows every reference outward,
-    updating anything the change made stale. It runs automatically after every
-    commit that changes more than documentation. Inside Claude Code it needs `jq`
+  - `/commit-chain` runs automatically after every commit that changes more than
+    documentation. It works on that one commit in a separate checkout, so nothing
+    else you are doing in the repo folder gets mixed in. First it documents the
+    commit (`/document-commit`), then adds that documentation commit to your branch
+    without touching anything else you have staged or edited, then reviews both
+    commits for clean code (`/uncle-bob`). Inside Claude Code it needs `jq`
     installed. To enable it for commits made outside Claude Code, run
     `git config core.hooksPath .githooks` once after cloning; that hook also needs the
-    `claude` command. How it all fits together is in
+    `claude` command, and it runs the chain in the background, writing its output to
+    `.chain-worktrees/logs/<commit>.log`. How it all fits together is in
     [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
-  - `/uncle-bob` reviews every commit that changes code against Robert C. Martin's
-    *Clean Code*: clear names, small single-purpose functions, few arguments, honest
-    comments, proper error handling, and tests. It lists what to fix and how. It runs
-    automatically through the same hooks as `/document-commit`, and before it, so the
-    `git config core.hooksPath .githooks` step above turns it on for terminal commits
-    too. The guidelines are summarized in [`CLAUDE.md`](CLAUDE.md), section 8.
-    The checks these hooks rely on have their own offline tests: run
+  - `/document-commit` documents a commit or a range of commits and follows every
+    reference outward, updating anything the change made stale. The chain runs it
+    for you; run it by hand to document a range.
+  - `/uncle-bob` reviews code against Robert C. Martin's *Clean Code*: clear names,
+    small single-purpose functions, few arguments, honest comments, proper error
+    handling, and tests. It lists what to fix and how. The chain runs it for you;
+    run it by hand to review any commit or range. The guidelines are summarized in
+    [`CLAUDE.md`](CLAUDE.md), section 8.
+    The scripts these hooks rely on have their own offline tests: run
     `tests/hooks/test_commit_checks.sh` from the repo folder, and it should end with
     `all tests passed`.
   - `/test-boot` checks this README's install and run steps the way you'll use them.
