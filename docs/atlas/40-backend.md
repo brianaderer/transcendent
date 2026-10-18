@@ -54,8 +54,8 @@ flowchart LR
   never receives a retriever, so it cannot reach the store.
 - **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs as a command (`docker compose run …`), not inside the web server,
   and is never needed for the demo: a committed one-week snapshot is loaded instead.
-- **projection** squashes embeddings to two dimensions for the embedding map, for
-  example with UMAP, and caches the result per week.
+- **projection** squashes embeddings to two dimensions for the dot plot, with UMAP, and
+  stores each post's position once (OPEN-20).
 
 ## Background jobs *(proposed details)*
 
@@ -105,5 +105,6 @@ flowchart LR
 
 ## Open in this draft
 
-- `?` The models — OPEN-5, deferred until the agentic loop is designed.
+- `?` The models — OPEN-5.
+- `?` Keeping each post's position on the dot plot fixed — OPEN-20.
 - `?` Everything marked *proposed* above.

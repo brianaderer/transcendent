@@ -76,4 +76,4 @@ prediction half of the comparison.
 
 ## Open in this draft
 
-- `?` The agentic loop — which LLM steps run, in what order — not yet designed.
+- `?` The models — OPEN-5. The agents that run this are on [60](60-agents.md).
