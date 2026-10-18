@@ -11,7 +11,9 @@ flowchart LR
     REQ["Request: a date range<br/>from Explore's Generate report"]
     A["Report agent, version A<br/>no tools"]
     B["Report agent, version B<br/>search · lookup · trends · events"]
-    MEAS["Measurements<br/>code first, one fixed judging prompt"]
+    MEAS["Score both against the same answer key<br/>topics, order, direction, prediction"]
+    KEY[("Answer key<br/>tags + daily engagement for the range")]
+    KEY --> MEAS
     BT["Backtest<br/>see 50"]
     RUN[("comparison_runs")]
     SCR["Comparison screen<br/>see 31"]
@@ -34,18 +36,33 @@ flowchart LR
 
 ## The measurements
 
-| Measurement | What it shows | How it's computed |
-|---|---|---|
-| **Grounded claims** | How much of each document can be traced to a real post | The document is produced as structured output: a list of claims, each with the post ids it cites. Code checks every cited id exists in the week. Version A cites nothing it can check, so its claims are then matched against the week's posts by meaning (pgvector); a claim with no post above the closeness threshold is **unsupported** |
-| **Unsupported claims** | Invented content | The claims left over from the row above |
-| **Topic coverage** | Which of the week's real topics each version covered and missed | The week's tags ranked by engagement ([21](20-data-model/21-topics.md)); a topic counts as covered if a claim lands closest to that tag's centroid |
-| **Specificity** | Concrete versus generic writing | Counts of named people (usernames), boats, places, dates and thread titles that appear in the week's posts; a generic sentence ("sailors discussed safety") scores nothing |
-| **Prediction score** | Which version predicted better | The backtest ([50](50-prediction.md)): both versions predict a held-back week; scored by which tags they expected to rise or appear, against what happened |
-| **Cost and time** | What retrieval costs | Tokens in and out, tool calls, seconds — from LangGraph's run record |
+**Specified by Brian:** the document's conclusions are **aggregate** — which topics
+the community talked about, how much, and which way each was moving — drawn from the
+topic and engagement data, not from individual posts. So the two versions are scored
+on whether their aggregate conclusions match what the data shows, **not** on whether
+each sentence traces to a post. Per-sentence checking is dropped (OPEN-21).
 
-- **One judging prompt, only where code can't decide:** deciding whether a sentence is
-  a *claim* at all. That prompt is fixed, saved with every run, and applied to both
-  versions identically.
+The answer key is computed by code from the topic tags and the daily engagement table
+([21](20-data-model/21-topics.md)) for the date range: which topics were biggest, in
+what order, which rose, which fell, which were new. Both versions are scored against
+that same answer key *(proposed details below)*.
+
+| Measurement | What it shows | How it's computed *(proposed)* |
+|---|---|---|
+| **Topics found** | Did the report name the range's real main topics? | Each topic the report names is matched to the nearest tag; count how many of the range's top topics (by engagement) it found |
+| **Topics invented** | Topics the report names that the community didn't discuss in the range | Named topics that match no tag with real activity in the range |
+| **Order of importance** | Did it rank the topics the way the data does? | How closely the report's ranking agrees with the ranking by engagement |
+| **Direction** | For each topic it names, did it say rising, steady or fading correctly? | Compared with the measured trend for that tag |
+| **Prediction** | Did its "next period" topics actually rise or appear? | Scored against the period that followed (OPEN-22) |
+| **Cost and time** | What retrieval costs | Tokens, tool calls, seconds |
+
+- **The report states its conclusions in a fixed form** alongside its prose: a list of
+  topics, each with its rank and direction, plus the predicted ones (OPEN-25). That
+  form is what gets scored, so scoring is code, not judgment.
+- **Matching a named topic to a tag** is the one step that needs judgment ("winter
+  prep" versus the tag "Winterizing and haul-out"). It's done by meaning, with one
+  fixed judging prompt for borderline matches, saved with the run and the same for
+  both versions.
 
 ## comparison_runs
 
@@ -57,5 +74,5 @@ it ships depends on OPEN-13.
 
 ## Open in this draft
 
-- `?` The closeness threshold below which a claim counts as unsupported — tuned against
-  the real data.
+- `?` How many of the range's top topics count as "main topics" for scoring — proposed
+  the top ten by engagement.

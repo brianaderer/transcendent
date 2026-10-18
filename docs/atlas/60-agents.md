@@ -90,9 +90,10 @@ Specified by Brian; the details are *proposed*.
 - **LangChain is wrapped behind our own small interfaces** (`CLAUDE.md` §8), so the rest
   of the code doesn't depend on it and tests can swap in LangChain's fake chat models
   and run offline.
-- **The comparison's measurements are not a third agent.** Counting claims traceable to
-  real posts is code; where a judging LLM call is needed it's a single fixed prompt,
-  saved with the result and identical for both versions.
+- **The comparison's measurements are not a third agent.** Both reports are scored by
+  code against the same answer key computed from the topic data ([70](70-comparison.md));
+  the one judging prompt (matching a named topic to a tag) is fixed and identical for
+  both versions.
 
 ## Open in this draft
 

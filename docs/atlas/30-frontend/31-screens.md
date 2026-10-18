@@ -45,8 +45,8 @@ clearly at 1440×900 and still work at phone width.
 **Style.** Calm, editorial, data-dense but uncluttered — a cross between a good
 newsletter and an analytics dashboard. A restrained nautical palette: deep navy ink,
 off-white paper, one teal accent for "with retrieval" (version B), one warm sand/amber
-for "without retrieval" (version A), and a coral used only for warnings (unsupported
-claims). Serif for the report's headings and body text; a clean sans-serif for UI,
+for "without retrieval" (version A), and a coral used only for warnings (invented
+topics). Serif for the report's headings and body text; a clean sans-serif for UI,
 numbers and labels. Light and dark themes. No stock photos, no sailing clip-art.
 
 **Global layout.** A slim top bar with the app name, navigation (Explore, Runs,
@@ -119,17 +119,17 @@ Version A (without retrieval) and version B (with retrieval) of the same documen
 side by side.
 
 - **Scoreboard strip** across the top, A vs B, each metric as two numbers with a small
-  bar: Grounded claims (A 4 / B 37), Unsupported claims (A 19 / B 2), Topics covered
-  (A 2 of 7 / B 6 of 7), Specific references (A 3 / B 58), Prediction score on held-back
-  week (A 22% / B 71%), Tokens and time (A 2.1k · 9s / B 48k · 64s).
+  bar: Main topics found (A 2 of 10 / B 8 of 10), Topics invented (A 5 / B 0), Order of
+  importance (A poor / B close), Direction right (A 1 of 2 / B 7 of 8), Prediction
+  score (A 22% / B 71%), Tokens and time (A 2.1k · 9s / B 48k · 64s).
 - **Two columns** of the document, A labeled "Without our data — the model on its own"
   in amber, B labeled "With retrieval — the model searching r/sailing's posts" in teal.
-  Each claim is underlined: teal-solid for grounded (hover shows the source post
-  excerpt), coral-dotted for unsupported (hover: "No matching post found in this
-  range"). Version A should read plausible but generic ("Sailors discussed maintenance
-  and safety as the season winds down").
-- **Topic coverage grid** below: rows are the range's real topics ranked by engagement;
-  two columns of check / cross for A and B.
+  Version A should read plausible but generic ("Sailors discussed maintenance and
+  safety as the season winds down").
+- **Topic grid** below — the answer key against both reports: rows are the range's real
+  topics ranked by engagement, with each one's measured direction; for A and B, whether
+  the report named it, what rank it gave it, and what direction it said. Extra rows at
+  the bottom, in coral, for topics a report named that the community didn't discuss.
 - **"What version B looked at"** drawer: the agent's tool calls in order — e.g.
   `search("impeller failure")` → 12 posts; `lookup(post 88213)`; `topic_trends()` —
   each expandable. A "Show on the dot plot" link returns to Explore with those posts
@@ -159,7 +159,7 @@ Opened from the topics panel or a document section.
 ### Screen 6 — Runs
 
 - A list of every report run: range, date run, model, status, and the headline scores
-  (grounded vs unsupported claims for A and B). Runs in progress show their live step.
+  (main topics found by A and by B). Runs in progress show their live step.
 - The committed example run is marked "Example — included with the repo".
 - Each row opens its Document or Comparison.
 
