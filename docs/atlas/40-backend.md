@@ -16,7 +16,7 @@ Everything else on this plate is *proposed*.
 | Dependencies | uv, with a lockfile *(proposed)* |
 | Tests | pytest, with stand-ins for the model, the embedder and the website (`CLAUDE.md` §7) *(proposed)* |
 | Lint and format | Ruff for both *(proposed)* |
-| Data store | **Postgres** — specified. How similarity search is done (the pgvector extension or otherwise) is on hold until the prediction approach is settled — OPEN-4 |
+| Data store | **Postgres with pgvector** — specified (OPEN-4, resolved) |
 | Writing model | Claude, through Anthropic's API *(proposed, OPEN-5)* |
 | Embedding model | A small open model run inside the container *(proposed, OPEN-5)* |
 | Running it | Its own service in Docker Compose *(proposed)* |
@@ -50,14 +50,13 @@ flowchart LR
 
 - **generation** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it
   never receives a retriever, so it cannot reach the store.
-- **ingestion** runs as a command (`docker compose run …`), not inside the web server,
+- **ingestion** fetches posts **daily** (specified). It runs as a command (`docker compose run …`), not inside the web server,
   and is never needed for the demo: a committed one-week snapshot is loaded instead.
 - **projection** squashes embeddings to two dimensions for the embedding map, for
   example with UMAP, and caches the result per week.
 
 ## Open in this draft
 
-- `?` Which community — OPEN-3. It decides what ingestion fetches.
-- `?` How similarity search is done inside Postgres — OPEN-4, on hold until the prediction approach is discussed.
-- `?` The writing model and the embedding model — OPEN-5.
+- `?` Which community — OPEN-3. Trawler Forum was requested but blocks automated access.
+- `?` The models — OPEN-5, deferred until the agentic loop is designed.
 - `?` Everything marked *proposed* above.

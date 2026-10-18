@@ -11,8 +11,8 @@ flowchart LR
     USER(["Reviewer<br/>(browser)"])
     FE["Frontend<br/>React · TanStack Query + Router · Zustand<br/>see 30"]
     API["Backend<br/>FastAPI<br/>see 40"]
-    STORE[("Passage store with vector search ?")]
-    INGEST["Ingestion ?"]
+    STORE[("Postgres + pgvector")]
+    INGEST["Ingestion<br/>daily fetch · community ?"]
 
     USER --> FE
     FE --> API
@@ -20,16 +20,16 @@ flowchart LR
     INGEST --> STORE
 
     classDef open stroke-dasharray: 5 5
-    class STORE,INGEST open
+    class INGEST open
 ```
 
 - **Frontend** — specified. Details on [30 Frontend](30-frontend.md).
 - **Backend** — FastAPI, specified. Its modules are on [40 Backend](40-backend.md).
-- **Passage store and ingestion** — `?` placeholders; proposals on
-  [40](40-backend.md), open as OPEN-3 and OPEN-4.
+- **Passage store** — Postgres with pgvector, specified.
+- **Ingestion** — fetches posts daily, specified; which community is still open (OPEN-3).
 - Everything runs under Docker Compose (the README's install steps already assume
   Docker).
 
 ## Open in this draft
 
-- `?` Passage store and ingestion: OPEN-3, OPEN-4.
+- `?` The community: OPEN-3.

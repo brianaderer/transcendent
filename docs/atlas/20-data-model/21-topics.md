@@ -8,9 +8,9 @@ topic's engagement has been moving, not guessed from one week of text.
 
 **Specified by Brian:** Postgres holds a table of topic tags. Each topic carries
 semantic information, and its engagement over time is easy to graph. Prediction is
-made from measured signals rather than by asking the model to guess. Topics are
-assigned on a schedule (every `[time_period]`, OPEN-6): that period's embeddings are
-clustered, each cluster's posts are compared with the topic tags' embeddings to
+made from measured signals rather than by asking the model to guess. Posts are fetched
+**daily**. Clustering runs **on demand, over whatever time period is requested**
+(OPEN-6, resolved): that period's embeddings are clustered, each cluster's posts are compared with the topic tags' embeddings to
 place the cluster in the domain space, and an LLM, given all of that, makes the final
 call for each cluster: **add it to an existing tag, mint a new tag, or ignore it as
 noise** (see *How topics stay the same topic*).
@@ -149,12 +149,13 @@ started three days ago and is growing fast").
 
 Comparing a cluster with the tags and the passage retrieval for the document are both "find
 the closest vectors" questions, which is what the pgvector extension does inside
-Postgres. That's a second use beyond retrieval, so the recommendation in OPEN-4 now
-covers both.
+Postgres. **pgvector is decided** (OPEN-4, resolved) for both jobs.
 
 ## Open in this draft
 
-- `?` How often clustering runs — the `[time_period]` — OPEN-6.
+- `?` When a requested period overlaps one already clustered, which passages are
+  clustered again. Proposed: only passages not yet decided; passages already tagged
+  keep their tag, so a tag's history never changes under it.
 - `?` The smallest group the clustering counts as a cluster, and how many nearest tags
   the LLM is shown — to be tuned against the real snapshot.
 - `?` How a passage is cut from a post (length, overlap) — a later plate on ingestion.

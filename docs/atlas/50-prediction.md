@@ -5,7 +5,8 @@
 How the "next week" half of the Community Voices Document is produced.
 
 **Specified by Brian:** topics are assigned period by period (plate
-[21](20-data-model/21-topics.md)). Lining those periods up gives each tag a **trend
+[21](20-data-model/21-topics.md)). Trend periods are cut from any requested time range,
+because clustering runs on demand. Lining those periods up gives each tag a **trend
 vector**, and next week is predicted by **extrapolating** each tag's trend.
 **Everything else is *proposed*.**
 
@@ -64,6 +65,9 @@ community and the dates.
 
 ## Backtest *(proposed)*
 
+The committed snapshot holds **eight weeks** (specified, OPEN-7): seven to fit, one to
+score against.
+
 Hold the most recent week back, predict it from the weeks before, and score both
 versions against what the community actually discussed: which tags each version
 expected to rise or appear, and which did. This puts a measured number on the
@@ -71,4 +75,4 @@ prediction half of the comparison.
 
 ## Open in this draft
 
-- `?` How many weeks of history the committed snapshot holds — OPEN-7.
+- `?` The agentic loop — which LLM steps run, in what order — not yet designed.
