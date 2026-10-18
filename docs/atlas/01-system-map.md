@@ -12,7 +12,7 @@ flowchart LR
     FE["Frontend<br/>React · TanStack Query + Router · Zustand<br/>see 30"]
     API["Backend<br/>FastAPI<br/>see 40"]
     STORE[("Postgres + pgvector")]
-    INGEST["Ingestion<br/>daily fetch · r/sailing via Reddit API"]
+    INGEST["Ingestion<br/>daily fetch · r/sailing · source ? (OPEN-8)"]
 
     USER --> FE
     FE --> API
@@ -26,10 +26,11 @@ flowchart LR
 - **Frontend** — specified. Details on [30 Frontend](30-frontend.md).
 - **Backend** — FastAPI, specified. Its modules are on [40 Backend](40-backend.md).
 - **Passage store** — Postgres with pgvector, specified.
-- **Ingestion** — fetches posts daily, specified; from r/sailing through Reddit's API (OPEN-3, resolved).
+- **Ingestion** — fetches posts daily, specified; from r/sailing (OPEN-3, resolved); where the posts are fetched from is OPEN-8.
 - Everything runs under Docker Compose (the README's install steps already assume
   Docker).
 
 ## Open in this draft
 
+- `?` Where r/sailing's posts are fetched from: OPEN-8.
 - `?` The models (OPEN-5), deferred until the agentic loop is designed.

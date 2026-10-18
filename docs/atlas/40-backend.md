@@ -57,5 +57,6 @@ flowchart LR
 
 ## Open in this draft
 
+- `?` Where the posts come from — OPEN-8: Reddit won't issue an API key without approval.
 - `?` The models — OPEN-5, deferred until the agentic loop is designed.
 - `?` Everything marked *proposed* above.
