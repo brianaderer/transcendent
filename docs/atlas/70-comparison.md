@@ -15,16 +15,14 @@ flowchart LR
     KEY[("Answer key<br/>tags + daily engagement for the range")]
     KEY --> MEAS
     BT["Prediction score<br/>see 50"]
-    RUN[("comparison_runs")]
     SCR["Comparison screen<br/>see 31"]
 
     REQ --> A
     REQ --> B
     A --> MEAS
     B --> MEAS
-    MEAS --> RUN
-    BT --> RUN
-    RUN --> SCR
+    MEAS --> SCR
+    BT --> SCR
 ```
 
 ## What makes it a fair test
@@ -32,7 +30,7 @@ flowchart LR
 - **One code path, one switch** ([60](60-agents.md), `CLAUDE.md` §7). Same model, same
   settings, same prompt wording, same date range, same output structure. The only difference
   is that version B has tools that read our store.
-- **Both run from the same request,** in parallel, and are saved together.
+- **Both run from the same request,** in parallel.
 
 ## The measurements
 
@@ -64,13 +62,10 @@ that same answer key *(proposed details below)*.
   fixed judging prompt for borderline matches, saved with the run and the same for
   both versions.
 
-## comparison_runs
+## No run history
 
-One row per comparison: the date range, the model and settings, both
-full prompts, both documents, version B's tool calls (and so the posts it retrieved),
-every measurement, the judging prompt, and timings. *(Proposed:)* the README links to
-one finished example run, so reviewers can see a result before running anything; how
-it ships depends on OPEN-13.
+Runs are not referred back to (Brian, OPEN-24): the two reports and their scores are
+shown when the run finishes, and nothing else keeps them.
 
 ## Open in this draft
 

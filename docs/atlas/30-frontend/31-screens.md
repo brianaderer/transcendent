@@ -14,9 +14,7 @@ flowchart LR
     CMP["3 Comparison"]
     TOP["4 Topic detail"]
     STA["5 Retrieval stats"]
-    RUN["6 Runs"]
-    MAIN -->|"Generate report"| RUN
-    RUN -->|"finished"| DOC
+    MAIN -->|"Generate report"| DOC
     DOC <-->|"A vs B"| CMP
     MAIN -->|"a topic"| TOP
     CMP -->|"cited post"| MAIN
@@ -49,7 +47,7 @@ for "without retrieval" (version A), and a coral used only for warnings (invente
 topics). Serif for the report's headings and body text; a clean sans-serif for UI,
 numbers and labels. Light and dark themes. No stock photos, no sailing clip-art.
 
-**Global layout.** A slim top bar with the app name, navigation (Explore, Runs,
+**Global layout.** A slim top bar with the app name, navigation (Explore,
 Retrieval stats), a theme toggle, and a status pill showing data freshness ("Data
 through 17 Oct · 8 weeks · 21,480 posts"). The date range chosen on Explore carries
 through to every other screen.
@@ -80,8 +78,7 @@ Everything on this page is governed by one control.
   results, and version B's text appearing as it's written; for example
   "Version A writing… done (9s)", "Version B: search('winterizing') → 15 posts",
   "Measuring…", with a progress bar. When done it offers "Read the report" and "See the
-  comparison". If a report already exists for exactly this range, the button reads
-  "Open report for 5–11 Oct" with a secondary "Generate again".
+  comparison". Reports aren't kept: generating again makes a new one.
 - **Highlight retrieved posts** toggle (shown once a report exists for the range):
   outlines the dots version B actually retrieved.
 
@@ -91,7 +88,7 @@ The Community Voices Document for the range it was generated for, as a readable 
 page (max width ~760px, centered).
 
 - **Masthead:** "Community Voices — r/sailing", the range, and a subtitle line:
-  "Written with retrieval · Claude · run #42 · Export as Markdown · See comparison".
+  "Written with retrieval · Claude · Export as Markdown · See comparison".
 - **The period in brief:** one paragraph summary.
 - **What the community talked about:** 5–7 topic sections. Each has:
   - the topic name and a one-line description;
@@ -156,13 +153,6 @@ Opened from the topics panel or a document section.
   retrieved by (report agent / tagging agent).
 - Filters: agent (default: report agent), run, date range.
 - A small bar chart above: retrievals per topic.
-
-### Screen 6 — Runs
-
-- A list of every report run: range, date run, model, status, and the headline scores
-  (main topics found by A and by B). Runs in progress show their live step.
-- The committed example run is marked "Example — included with the repo".
-- Each row opens its Document or Comparison.
 
 ## Open in this draft
 

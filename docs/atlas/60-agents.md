@@ -71,8 +71,8 @@ Specified by Brian; the details are *proposed*.
   - **upcoming events** — posts mentioning dates after the period (regattas, boat
     shows, weather windows).
 - **The tools are the retrieval.** Giving the agent tools rather than pasting posts
-  into the prompt lets it look up what it needs as it writes, and the tool calls are
-  saved, so the comparison can show exactly what version B looked at.
+  into the prompt lets it look up what it needs as it writes, and its tool calls stream
+  live, so the comparison can show exactly what version B looked at.
 - **Same model, same settings, same prompt wording** for both versions; only the tools
   differ.
 
@@ -85,8 +85,6 @@ Specified by Brian; the details are *proposed*.
 - **A cap on tool calls per run** (for example 30), so an agent that keeps searching
   ends with what it has instead of running up cost. The cap is saved with the run.
 
-- **Runs are saved** with LangGraph's Postgres checkpointer, in the same database: every
-  step, prompt, tool call and output, which is what the comparison screen replays.
 - **LangChain is wrapped behind our own small interfaces** (`CLAUDE.md` §8), so the rest
   of the code doesn't depend on it and tests can swap in LangChain's fake chat models
   and run offline.

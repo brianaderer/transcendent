@@ -18,15 +18,12 @@ flowchart LR
         TAG --> EMIT
         DAY --> EMIT
     end
-    LOG[("run_events<br/>Postgres: every event, numbered per stream")]
     PUB[("Redis pub/sub<br/>wakes listeners at once")]
     SSE["FastAPI SSE routes<br/>/streams/{stream}/events"]
     FE["Frontend<br/>EventSource → TanStack Query cache"]
 
-    EMIT --> LOG
     EMIT --> PUB
     PUB --> SSE
-    LOG -->|"replay on connect / reconnect"| SSE
     SSE --> FE
 ```
 
@@ -34,7 +31,7 @@ flowchart LR
 
 | Stream | What it carries | Seen on |
 |---|---|---|
-| `runs/{id}` | One report run: versions A and B side by side | Explore's progress panel, Runs |
+| `runs/{id}` | One report run: versions A and B side by side | Explore's progress panel, Comparison |
 | `ingestion` | Catch-up: which day, how many posts, which step, tagging decisions | First-start progress, status pill |
 
 ## Events
@@ -61,20 +58,13 @@ Every event has: a number (in order within its stream), a time, a type, which ve
   backend knows how events travel. Agents emit through LangGraph's event stream and
   LangChain callbacks, wrapped by our own code (`CLAUDE.md` §8), so the agents don't
   know about SSE.
-- **Written down first, then announced.** `emit` saves the event in `run_events`, then
-  publishes it on Redis. The SSE route listens on Redis for speed, but the saved copy
-  is the truth.
-- **Nothing is missed.** A browser that connects late, or loses its connection, sends
-  the number of the last event it saw (SSE's built-in `Last-Event-ID`); the route
-  replays everything after it from `run_events`, then continues live. A finished run
-  can be replayed in full later — which is also what the Runs screen and the
-  comparison's "what version B looked at" drawer read.
+- **Live only.** `emit` publishes on Redis and the SSE route passes it on. Events are
+  not stored: runs aren't referred back to (OPEN-24).
 - **Frontend.** One small hook opens an `EventSource` per stream and folds events into
   the TanStack Query cache, so screens just read data and re-render; Zustand isn't
   needed for this.
 - **Tokens are batched.** `llm.token` events are grouped (for example every 100
-  milliseconds) so the stream stays light; they are saved to `run_events` only as the
-  final text, not word by word.
+  milliseconds) so the stream stays light.
 - **A heartbeat** comment every 15 seconds keeps idle connections open through
   proxies.
 - **Tests** subscribe to a run in memory and assert the exact sequence of events a
