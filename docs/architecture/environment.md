@@ -28,7 +28,8 @@ exits 0, because `vite preview` doesn't stop on that signal by itself; so `Ctrl+
 at once and cleanly. The four backend services are all built from the same `backend/` folder and differ only
 in the command they run. Backend tests run with pytest's cache turned off
 (`backend/pyproject.toml`), because the ordinary user can't write one inside the container
-and the containers are thrown away after each run anyway. For the same reason the backend
+and the containers are thrown away after each run anyway. The same settings leave out tests
+marked `database` (they need a running Postgres; run them with `pytest -m database`). For the same reason the backend
 image points Ruff's cache at `/tmp/ruff-cache` (`RUFF_CACHE_DIR` in `backend/Dockerfile`), so
 linting works inside the container. The image also carries `alembic.ini` and `migrations/`,
 which the `setup` service needs.

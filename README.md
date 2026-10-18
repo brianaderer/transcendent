@@ -148,8 +148,10 @@ docker compose run --rm --no-deps api pytest
 docker compose run --rm --no-deps frontend npm test
 ```
 
-Each should end with every test passed (a `warning` line from a library is fine). The tests never call a real AI model or a
-real website, so they run offline in seconds.
+Each should end with every test passed (a `warning` line from a library is fine). The backend
+line also says `1 deselected`: that is the one test that needs a running database, which the
+default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
+tests never call a real AI model or a real website, so they run offline in seconds.
 
 **Atlas presentation page:** [https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ](https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ) (private; the clickable view of the plan).
 
