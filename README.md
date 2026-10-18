@@ -278,3 +278,7 @@ rather than a pause in the conversation. The full steps are in `CLAUDE.md` §3.3
     are in [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
 - [`docs/architecture/`](docs/architecture/README.md) describes how the code is
   actually built, one document per module.
+- [`design/`](design/) holds mockups of the app's screens, made in Claude Design from
+  the design brief on [atlas plate 31](docs/atlas/30-frontend/31-screens.md). Open
+  `design/Community Voices Screens.html` in a browser to see them. They are a proposal
+  for review, not the built app.

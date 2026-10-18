@@ -278,7 +278,8 @@ the guard.
   the first trailer line.
 - `.gitignore`: ignores `.boot-test/` (the throwaway clones made by `/test-boot`),
   `.test-tmp/` (the throwaway repos made by the hook tests), `.chain-worktrees/` (the
-  worktrees and logs made by `/commit-chain`), and `.env` (local secrets).
+  worktrees and logs made by `/commit-chain`), `.env` (local secrets), and `.DS_Store`
+  (folder metadata that macOS writes).
 - `.chain-worktrees/<short sha>-<process id>/`: one worktree per chain run, removed
   when the run finishes. `.chain-worktrees/logs/<sha>.log` holds the output of a chain
   started by the git hook; logs are kept.
