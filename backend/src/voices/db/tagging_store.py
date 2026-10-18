@@ -171,7 +171,7 @@ def _topic_for(
     decision = item.decision
     if decision.action == "attach":
         exists = connection.scalar(select(Topic.id).where(Topic.id == decision.topic_id))
-        return exists  # an id the agent invented joins nothing; the posts stay waiting
+        return exists  # None for an id the agent invented; _apply_one then deletes the posts
     if decision.action == "mint" and item.merged_into:
         return minted.get(item.merged_into)
     if decision.action == "mint":

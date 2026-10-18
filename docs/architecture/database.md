@@ -1,6 +1,6 @@
 # database
 
-**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py` and `backend/tests/test_store.py` (both need a database)
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py` and `backend/tests/test_tagging_store.py` (these three need a database)
 
 ## Purpose
 Describes the tables and keeps the database in step with them. The tables follow
@@ -15,8 +15,9 @@ Describes the tables and keeps the database in step with them. The tables follow
   and upvotes in one transaction; saving a day again adds nothing — the day's upvote rows
   are replaced as a whole, and every post they touched before or touch now is recounted
   from its days, so a redone day never double-counts and can also take upvotes away), the day ledger (`done_days`,
-  `mark_running`, `mark_done`, `mark_failed`) and `ingestion_status()` (days done, posts stored including comments, and
-  the latest done, running and failed day; the API adds how many days are wanted).
+  `mark_running`, `mark_done`, `mark_failed`) and `ingestion_status()` (days done, posts stored including comments,
+  the latest done, running and failed day, and `failed_reason`, the error recorded for the
+  latest failed day; the API adds how many days are wanted).
 - `voices.db.models` — the tables as SQLAlchemy classes (`Thread`, `Topic`,
   `ClusterDecision`, `Post`, `PostUpvotesDaily`, `TopicDailyEngagement`,
   `RetrievalEvent`, `IngestedDay`) on `Base.metadata`. This is the one description of
@@ -49,24 +50,30 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the six tests that need a running
-database: one checks that the models and the applied migrations agree, and five check that
+`docker compose run --rm api pytest -m database` runs the twelve tests that need a running
+database: one checks that the models and the applied migrations agree; five check that
 the store saves a day (twice without duplicates), never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, and keeps the day ledger. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+from different days, and keeps the day ledger; and six check that the tagging store reads
+the window, mints a topic, attaches to one and deletes noise, deletes posts left waiting
+too long, counts daily engagement, and finds posts by meaning while recording the
+retrievals. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 `topic_similarity` is double precision (`Float`); the earlier SQL file used `real`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
 `voices.config.load_settings`), [ingestion](ingestion.md) (the store saves its `DayBatch`,
-with its `EmbeddedItem`s and `NewThread`s), Postgres with pgvector,
+with its `EmbeddedItem`s and `NewThread`s), [tagging](tagging.md) (`tagging_store` returns
+its `WindowPost`, `TypicalPost` and `CandidateTopic` and applies its `DecidedCluster`s),
+Postgres with pgvector,
 SQLAlchemy, Alembic.
 
 ## Used by
 [environment](environment.md): the `setup` service in `compose.yaml` runs setup.
 [worker](worker.md) builds the store and hands it to the [ingestion](ingestion.md)
-catch-up, which saves each day and keeps the day ledger through it; [api](api.md) uses it for `GET /api/ingestion` (its health check connects to Postgres
+catch-up, which saves each day and keeps the day ledger through it; the worker also builds
+`TaggingStore` on the same connection and hands it to [tagging](tagging.md); [api](api.md) uses it for `GET /api/ingestion` (its health check connects to Postgres
 directly).
 
 ## Configuration and data

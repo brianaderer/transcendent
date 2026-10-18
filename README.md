@@ -106,9 +106,12 @@ OPENROUTER_API_KEY=sk-or-v1-...
 The app needs the key from its first start: as it loads the r/sailing history it sorts
 each day's posts into topics, and that uses the AI model. Without the key the app still
 starts, but loading stops at the first day and the page says
-**Loading stopped at … OPENROUTER_API_KEY is not set**. If that happens, add the key,
-then restart with `docker compose restart worker`. Sorting the eight weeks of history on
-first start costs roughly $5 of model use on that key.
+**Loading stopped at** a date, then **OPENROUTER_API_KEY is not set in .env**. If that
+happens, add the key to `.env`, press `Ctrl+C` in the terminal running the app, and start
+it again with `docker compose up --build` (step 4). Docker notices that `.env` changed and
+starts the app with the key; `docker compose restart` would not, because it keeps the
+settings the app first started with. Sorting the eight weeks of history on first start
+costs roughly $5 of model use on that key (an estimate; not yet measured).
 
 The `.env` file stays on your machine. Git is set to ignore it, so the key can't be
 committed by accident.
@@ -137,15 +140,19 @@ Below that, the page shows the r/sailing history loading. It may say **Waiting t
 loading r/sailing history** for the first minute or so, while the worker downloads, once,
 the 130 MB model that prepares posts for search. Then it reads, for example,
 **Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
-arrives. The first start fetches eight weeks of posts from the Arctic Shift archive (a
-public archive of Reddit, so your computer needs an internet connection) and prepares each
-one for search, which takes about 40–45 minutes; the worker uses about 2 GB of memory
-while it does. You can leave it running in the background. When it's done the line reads
+is loaded and sorted into topics. The first start fetches eight weeks of posts from the
+Arctic Shift archive (a public archive of Reddit, so your computer needs an internet
+connection), prepares each one for search, and then has the AI model sort each day's posts
+into topics through OpenRouter. Fetching and preparing alone took about 40–45 minutes on a
+laptop; sorting into topics adds about ten model calls per day and hasn't been timed yet,
+so allow longer. The worker uses about 2 GB of memory while it runs. You can leave it
+running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are
-missing. If it reads **Loading stopped at** a date, something went wrong on that day (the
-archive not answering, for example). Nothing from that day was saved. Stopping and
-starting the app again (below) picks up from that day; otherwise the next try is the daily
-run at 06:00 UTC.
+missing. If it reads **Loading stopped at** a date, something went wrong on that day, and
+the reason follows (the archive not answering, for example, or the key missing from step 3).
+The app tries that day again by itself ten minutes later, and keeps trying every ten
+minutes; stopping and starting the app again (below) also picks up from that day. A day
+that is tried again is fetched from the start, and nothing in it is counted twice.
 
 Ignore the `Network:` address the frontend prints in the log; it's internal to Docker.
 Use http://localhost:5173.
@@ -168,7 +175,7 @@ docker compose run --rm --no-deps frontend npm test
 ```
 
 Each should end with every test passed (a `warning` line from a library is fine). The backend
-line also says `6 deselected`: those are the six tests that need a running database, which the
+line also says `12 deselected`: those are the twelve tests that need a running database, which the
 default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline in seconds.
 

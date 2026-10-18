@@ -25,8 +25,9 @@ Python's standard `logging`.
 
 ## Used by
 [api](api.md) (and `voices/health.py`), [worker](worker.md), [database](database.md) (setup),
-[ingestion](ingestion.md) (archive retries), [events](events.md) (every emitted event is
-also logged).
+[ingestion](ingestion.md) (archive retries), [tagging](tagging.md) (every turn of the
+tagging agent, `tagging.turn`, and each decision, `tagging.decided`), [events](events.md)
+(every emitted event is also logged).
 
 ## Configuration and data
 `LOG_DIR` (default `/var/log/voices`), on the `logs` volume. Read the files with

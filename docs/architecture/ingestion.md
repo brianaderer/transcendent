@@ -5,19 +5,23 @@
 ## Purpose
 Fills the database with r/sailing, one day at a time, from the Arctic Shift archive of
 Reddit. Plans: [atlas plate 40](../atlas/40-backend.md) (the catch-up) and
-[plate 21](../atlas/20-data-model/21-topics.md) (what is kept). Clustering and tagging come
-in build step 3; posts are stored as `pending` until then.
+[plate 21](../atlas/20-data-model/21-topics.md) (what is kept). Posts are stored as
+`pending`; [tagging](tagging.md) sorts them into topics right after each day is loaded.
 
 ## Public interface
 - `catch_up.CatchUp(ledger, process, emit).run(now, history_days=56)` — processes every
   complete day not yet done, oldest first, at most `history_days` back. Marks each day in
   the ledger and emits its events; stops at the first day that fails, re-raising its error.
+  The failure is recorded as `ErrorName: message` (for example `MissingModelKey:
+  OPENROUTER_API_KEY is not set…`), which the API returns as `failed_reason` and the page
+  shows.
   `ledger` is anything with `done_days`, `mark_running`, `mark_done` and `mark_failed`
   (the `Ledger` interface); `process` takes a day and returns its counts; `emit(event_type,
   **body)` sends one event on the ingestion stream (the worker binds `RedisEvents.emit` to
   the `ingestion` stream).
 - `catch_up.missing_days(...)`, `catch_up.last_complete_day(now)` — a day is complete six
   hours after it ends, so the archive has caught up.
+- `catch_up.Emit` — the shape of that `emit` function; [tagging](tagging.md) uses it too.
 - `day.DayIngestion(archive, embedder, agreement, store).process(day)` — one day, returning counts
   (`fetched`, `dropped_unwanted`, `dropped_without_thread`, `dropped_orphan_upvotes`,
   `stored`, `threads_added`, `upvotes`), read off what was left after each step. Each
@@ -43,8 +47,11 @@ in build step 3; posts are stored as `pending` until then.
 A day: fetch every post and every comment *created* that day (new comments on old threads
 arrive with the day they were written), drop removed and deleted posts and bots, look up
 the title of any older thread a comment belongs to, turn agreeing replies into upvotes on
-their parent, embed the rest, and save it all in one transaction. A day that fails leaves
-nothing behind and is retried at the next catch-up.
+their parent, embed the rest, and save it all in one transaction. A day whose loading fails
+leaves nothing behind. In the worker, `process` loads the day and then tags it; if tagging
+fails, the loaded posts stay (still `pending`) and the day is marked failed. Either way the
+day is redone from the start at the next catch-up (the worker retries a failed one after ten
+minutes), and saving it again adds nothing.
 
 - **The archive** returns at most 100 items a request, so reads are paged by creation time;
   an item repeated across a page boundary is kept once, and a page that never advances is
@@ -58,12 +65,12 @@ nothing behind and is retried at the next catch-up.
   `post_upvotes_daily`. One whose parent we don't have is dropped. Re-saving a day replaces
   that day's upvote rows as a whole and recounts every post they touched, so a redone day
   never double-counts and can also take upvotes away.
-- **Embedding**: posts are embedded whole as `search_document:`; search terms will be
-  embedded as `search_query:`; agreement checks use `classification:`, as nomic-embed-text
+- **Embedding**: posts are embedded whole as `search_document:`; the tagging agent's search
+  terms are embedded as `search_query:`; agreement checks use `classification:`, as nomic-embed-text
   expects. Texts go in batches of 8, shortest first: memory grows with batch size times the
   longest text, and the library's default of 256 ran Docker out of memory.
 
-**Measured on a laptop, first start:** about 35–50 seconds a day, so roughly 40–45 minutes
+**Measured on a laptop, first start, loading only (before tagging was added):** about 35–50 seconds a day, so roughly 40–45 minutes
 for the full eight weeks; around 550–600 posts and comments kept a day; the worker uses
 about 2 GB.
 
@@ -74,8 +81,11 @@ about 2 GB.
 the store and the `emit` function, which match the small interfaces above.
 
 ## Used by
-[worker](worker.md) (the catch-up job builds and runs it); [database](database.md)
-(`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s).
+[worker](worker.md) (the catch-up job builds and runs it, and hands the same
+`NomicEmbedder` to tagging); [database](database.md)
+(`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s);
+[tagging](tagging.md) (`day_tagging` uses the `Emit` interface; its search tools embed terms
+with `NomicEmbedder.embed_query`).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`

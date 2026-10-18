@@ -41,7 +41,8 @@ which the `setup` service needs.
 
 ## Used by
 - [api](api.md), [worker](worker.md) and [database](database.md) (setup) read their
-  settings through `voices.config.load_settings()`.
+  settings through `voices.config.load_settings()`; the worker passes
+  `OPENROUTER_API_KEY` and `MODEL_NAME` on to [tagging](tagging.md).
 - [ingestion](ingestion.md) (the catch-up) and [api](api.md) (`GET /api/ingestion`) read
   `voices.config.HISTORY_DAYS`.
 - The README's install and run steps.
@@ -50,17 +51,24 @@ which the `setup` service needs.
 - `.env` (copied from `.env.example`): `PORT` (default 5173), the port the app is opened
   on; `OPENROUTER_API_KEY`, needed from the first start (tagging each loaded day calls the
   model; without it loading stops at the first day with the reason on the page).
-  `MODEL_NAME` (default `anthropic/claude-sonnet-5.5`) can be set to use another
-  OpenRouter model.
+  `MODEL_NAME` (default `anthropic/claude-sonnet-5.5`, set in `voices/config.py`) is not
+  in `.env.example`; adding a `MODEL_NAME=` line to `.env` switches to another OpenRouter
+  model. Both reach the backend containers through `env_file: .env` in `compose.yaml`,
+  which is read when a container is created: after editing `.env`, run `docker compose up`
+  again (it re-creates the containers whose settings changed); `docker compose restart`
+  keeps the old values.
 - Set by `compose.yaml` for the backend services: `DATABASE_URL`, `REDIS_URL`, `LOG_DIR`,
   and `SERVICE_NAME` (each container's own name, used in its log lines).
 - `MODEL_DIR` is set nowhere; its default in `voices/config.py`,
   `/home/voices/.cache/models`, is where the worker downloads the embedding model, on the
   `model-cache` volume.
 - The backend's dependencies are pinned in `backend/pyproject.toml` and `backend/uv.lock`;
-  among them `fastembed` runs the embedding model and `httpx` reads the archive.
+  among them `fastembed` runs the embedding model, `httpx` reads the archive,
+  `scikit-learn` clusters posts (HDBSCAN), and `langgraph`, `langchain-core` and
+  `langchain-openai` run the tagging agent against OpenRouter.
 - The first start needs an internet connection (the worker fetches from the Arctic Shift
-  archive and downloads the model) and about 2 GB of memory for the worker.
+  archive, downloads the embedding model, and calls the tagging model on OpenRouter) and
+  about 2 GB of memory for the worker.
 - Named volumes (created as `community-voices_<name>`): `postgres-data`, `redis-data`
   (Redis writes an append-only file), `model-cache` (the embedding model's files, from
   build step 2, mounted at `/home/voices/.cache`), `logs` (mounted at `/var/log/voices`).

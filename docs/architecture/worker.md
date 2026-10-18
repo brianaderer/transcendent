@@ -4,8 +4,8 @@
 
 ## Purpose
 Runs background jobs through Celery, with Celery Beat scheduling them. Its main job is the
-catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-backend.md),
-[ingestion](ingestion.md)).
+catch-up that fills the database from the archive and sorts each day into topics
+([atlas plate 40](../atlas/40-backend.md), [ingestion](ingestion.md), [tagging](tagging.md)).
 
 ## Public interface
 - `celery_app` — the Celery application.
@@ -27,13 +27,18 @@ catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-
 - **One job, days in order:** the catch-up is one job that walks the missing days oldest
   first, under one trace id per day (`day-YYYY-MM-DD`). Each day is loaded
   ([ingestion](ingestion.md)) and then tagged ([tagging](tagging.md)); it is marked done only
-  when both have happened. The embedding model, database and archive connections are built
-  once per worker process; the chat model is connected per day, so a key added to `.env`
-  is picked up after a restart.
+  when both have happened; the day's counts are the two sets of counts together. The
+  embedding model, database and archive connections, and the settings (including the
+  OpenRouter key), are read once per worker process. The chat model is connected per day,
+  so a missing key fails the day (with a message saying where the key goes) rather than the
+  worker's start. A key added to `.env` reaches the worker only when its container is
+  created again, which `docker compose up` does when `.env` has changed;
+  `docker compose restart` keeps the old settings.
 - **A failed catch-up tries again by itself** ten minutes later (`RETRY_FAILED_CATCH_UP_SECONDS`),
-  and keeps doing so, so a brief archive outage doesn't hold a first start until the next
-  06:00 run. Without an OpenRouter key every try stops at the first day, with the reason
-  shown on the page.
+  and keeps doing so with no limit, so a brief archive outage doesn't hold a first start
+  until the next 06:00 run. A catch-up that did nothing because another holds the lock is
+  not a failure and is not retried. Without an OpenRouter key every try fetches the first
+  missing day again and stops there, with the reason shown on the page.
 
 Redis is both the queue and the result store. Celery's own logging is replaced with the
 JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go to
@@ -41,7 +46,7 @@ JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go 
 startup (`broker_connection_retry_on_startup`), which also silences its startup warning.
 
 ## Uses
-[ingestion](ingestion.md), [tagging](tagging.md), [database](database.md) (`voices.db.store`), [events](events.md),
+[ingestion](ingestion.md), [tagging](tagging.md), [database](database.md) (`voices.db.store`, `voices.db.tagging_store`), [events](events.md),
 [logging](logging.md), [environment](environment.md) (settings), Redis.
 
 ## Used by
@@ -49,5 +54,7 @@ startup (`broker_connection_retry_on_startup`), which also silences its startup 
 the worker's own start-up queue `voices.catch_up`.
 
 ## Configuration and data
-`REDIS_URL`, `DATABASE_URL`, `MODEL_DIR`, `LOG_DIR`, `SERVICE_NAME`. Beat keeps its schedule
+`REDIS_URL`, `DATABASE_URL`, `MODEL_DIR`, `LOG_DIR`, `SERVICE_NAME`, `OPENROUTER_API_KEY`,
+`MODEL_NAME`. Fixed in code: `RETRY_FAILED_CATCH_UP_SECONDS = 600`,
+`LOCK_SECONDS = 12 hours`. Beat keeps its schedule
 file in `/tmp` inside its container. The worker uses about 2 GB while embedding.

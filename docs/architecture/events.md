@@ -19,15 +19,17 @@ are the permanent record.
 ## How it works
 Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.finished`
-(with the day's counts) and `day.failed` (with the error), and `decision.made` (one per cluster the tagging agent
-decides: action, topic, label, reason, posts).
+(with the day's counts, from loading and tagging together), `day.failed` (with the error,
+as `ErrorName: message`), and `decision.made` (one per cluster the tagging agent decides:
+`cluster`, `posts`, `action`, `topic_id`, `label`, `merged_into`, `reason`).
 
 ## Uses
 Redis, [logging](logging.md).
 
 ## Used by
 [worker](worker.md) (`catch_up_task.py` builds `RedisEvents` and hands its `emit` to the
-[ingestion](ingestion.md) catch-up); [api](api.md) (the stream route uses
+[ingestion](ingestion.md) catch-up and to [tagging](tagging.md), which sends
+`decision.made` through it); [api](api.md) (the stream route uses
 `server_sent_events`); [frontend](frontend.md) (`IngestionStatus` uses `useLiveEvents`).
 
 ## Configuration and data

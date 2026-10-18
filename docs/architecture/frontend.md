@@ -15,8 +15,11 @@ build step 4 ([atlas plates 30](../atlas/30-frontend.md) and [31](../atlas/30-fr
 - `fetchHealth()` and `describeHealth(health)` (the sentence shown) in `src/health.ts`.
 - `IngestionStatus` — how far the history has loaded ("Loading r/sailing history: 23 of
   56 days · 9,412 posts", then "History up to date through 17 Oct"; "Waiting to start
-  loading r/sailing history" before the first day begins; "Loading stopped at …" when a
-  day failed), fetched again whenever a live `ingestion` event arrives. `describeIngestion(status)` in `src/ingestion.ts` writes
+  loading r/sailing history" before the first day begins; when a day failed, "Loading
+  stopped at 26 Aug" followed by the reason the API gives as `failed_reason`, with the
+  error's name taken off — for example "Loading stopped at 26 Aug: OPENROUTER_API_KEY is
+  not set in .env (README step 3); tagging needs it. It will try again at the next
+  catch-up"), fetched again whenever a live `ingestion` event arrives. `describeIngestion(status)` in `src/ingestion.ts` writes
   the sentence.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 
