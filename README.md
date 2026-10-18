@@ -185,7 +185,9 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
   - `/tdd` takes a single defect from a failing test to a proven fix.
   - `/document-commit` documents each commit and follows every reference outward,
     updating anything the change made stale. It runs automatically after every
-    commit. To enable it for commits made outside Claude Code, run
-    `git config core.hooksPath .githooks` once after cloning.
+    commit. Inside Claude Code it needs `jq` installed. To enable it for commits
+    made outside Claude Code, run `git config core.hooksPath .githooks` once after
+    cloning; that hook also needs the `claude` command. How it all fits together is in
+    [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
 - [`docs/architecture/`](docs/architecture/README.md) describes how the code is
   actually built, one document per module.

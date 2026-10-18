@@ -10,3 +10,4 @@ configuration and data.
 
 | Module | Source | What it does |
 |---|---|---|
+| [tooling](tooling.md) | `.claude/`, `.githooks/` | Commit hooks, loop guard, and the `/document-commit` skill and agent that keep documentation in step with every commit |
