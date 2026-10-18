@@ -31,6 +31,12 @@ about something that has an obvious answer is also a decision gate.
 
 ## 2. Working rules
 
+- **All work happens in this repo. Anything outside it is out of scope for edits —
+  no exceptions.** Other repos and folders (kontraktr, Vintly, datalinx, anything
+  else) may be *read* for patterns to copy here. They are never changed, committed
+  to, or pushed from this project. References to them in this repo are read-only
+  pointers to examples.
+
 - **Evidence over inference.** Logs, traces, and test runs are evidence. Comments,
   docstrings, and plan documents are not — they describe intent at some past moment
   and nothing verifies them. In every write-up, say which claims were *verified* (you
@@ -53,7 +59,7 @@ The atlas has two layers, and they always say the same thing:
 
 1. **The plates** — markdown files in `docs/atlas/`. These are the source of truth:
    every decision, every detail, every open question is written here first. Modeled
-   on the kontraktr atlas (`~/vintly/kontraktr/atlas`).
+   on the kontraktr atlas (`~/vintly/kontraktr/atlas`, read-only reference).
 2. **The presentation page** — `docs/atlas/atlas.html`, one interactive web page built
    from the plates, for viewing. Modeled on the Vintly Flow Atlas
    (https://claude.ai/artifact/PPfWjhKfmb6zXUoA6H5xSJ). It adds no information of its
