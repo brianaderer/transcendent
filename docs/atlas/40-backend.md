@@ -75,7 +75,7 @@ days missing are all the same operation over different ranges. Details are
 flowchart LR
     TRIG["Something asks: catch up<br/>first start · Beat at 06:00 UTC ·<br/>worker restart · by hand"]
     GAP["Find the missing days<br/>every complete day after the last processed one,<br/>at most eight weeks back"]
-    CHAIN["Queue one job per day,<br/>chained oldest first"]
+    CHAIN["One catch-up job walks the days,<br/>oldest first, one at a time"]
     DAY["Process one day<br/>fetch · filter · upvotes · embed ·<br/>cluster · tag · expire noise · roll up<br/>see 21"]
     MARK[("ingested_days<br/>day · status · counts · timings")]
     REPJ["Report run<br/>on demand, see 60"]
@@ -100,8 +100,9 @@ flowchart LR
   threads come in with the day they were written. Nothing is fetched twice; a repeat is
   dropped on insert, since every item is keyed by Reddit's own id (`CLAUDE.md` §7).
 - **Days run strictly in order, one at a time.** Tagging moves forward in time and the
-  three-day lookahead needs the days before it done (OPEN-11), so the jobs form a chain:
-  each day starts only when the one before has finished.
+  three-day lookahead needs the days before it done (OPEN-11). As built, one catch-up job
+  walks the missing days in order, each day in its own transaction, and stops at the first
+  failure; a day starts only when the one before has finished.
 - **Only complete days.** A day is processed once it's over and the archive has had a
   few hours to catch up, so the 06:00 UTC run takes yesterday.
 - **`ingested_days` is the record of what's done** — one row per day with its status,

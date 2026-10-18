@@ -48,7 +48,8 @@ Every event has: a number (in order within its stream), a time, a type, which ve
 | `tool.returned` | The tool answers | how many posts, their ids and excerpts, how long it took |
 | `decision.made` | The tagging agent decides on a cluster | attach / mint / noise, the tag, the reason |
 | `measurement.done` | A comparison measurement is computed | name and both scores |
-| `day.started` / `day.step` / `day.finished` | Catch-up progress | day, step (fetch, embed, cluster, tag), counts |
+| `catch_up.started` / `catch_up.finished` | A catch-up begins or ends | how many days it covers |
+| `day.started` / `day.finished` / `day.failed` | Catch-up progress | day, progress ("4 of 56"), the day's counts or the error *(`day.step` events within a day: not built)* |
 | `map.ready` | The dot plot's squashing for a newly selected range is done | the range, each post's position |
 | `usage` | After each model call | tokens in and out, running cost |
 
