@@ -119,7 +119,9 @@ docker compose up --build
 ```
 
 The first run downloads and builds everything, which takes a few minutes. It's ready
-when the log stops scrolling and shows lines from `api`, `worker` and `frontend`.
+when the log stops scrolling and shows lines from `api`, `worker` and `frontend`. A line
+`setup-1 exited with code 0` is normal: that step brings the database up to date, then
+stops.
 
 Open **http://localhost:5173** in your browser. You should see **Community Voices**
 and **Backend running**. If it says **Backend unreachable**, the API is still starting;
