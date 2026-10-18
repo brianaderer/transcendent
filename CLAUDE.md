@@ -230,6 +230,9 @@ fan-out tracing in `/document-commit` reliable.
   `.githooks/post-commit` runs `/document-commit` headlessly. Enable it once per clone
   with `git config core.hooksPath .githooks`. Skip it for one commit with
   `SKIP_DOC_SYNC=1 git commit …`.
+- **Requirements:** the Claude Code hook needs `jq` on the path; the git hook needs the
+  `claude` command and silently does nothing without it. Details in
+  `docs/architecture/tooling.md`.
 
 ### The loop guard — never weaken it
 

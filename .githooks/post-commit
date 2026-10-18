@@ -20,4 +20,4 @@ DOC_SYNC_RUNNING=1 claude -p "/document-commit $sha" \
   --allowedTools "Read" "Edit" "Write" "Grep" "Glob" "Agent" \
     "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)" \
     "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git add:*)" "Bash(git commit:*)" \
-    "Bash(git grep:*)" "Bash(.claude/hooks/is-doc-sync-commit.sh:*)"
+    "Bash(git grep:*)" "Bash(git status:*)" "Bash(ls:*)" "Bash(.claude/hooks/is-doc-sync-commit.sh:*)"
