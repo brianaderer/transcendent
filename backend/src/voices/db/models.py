@@ -140,3 +140,4 @@ class IngestedDay(Base):
     counts: Mapped[dict[str, int]] = mapped_column(JSONB, server_default="{}")
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error: Mapped[str | None] = mapped_column(Text)  # why the day failed, when it did

@@ -1,11 +1,15 @@
 from fastapi.testclient import TestClient
 
-from voices.api.main import create_app
+from voices.api.main import ApiServices, create_app
+
+
+def services_with(checks):
+    return ApiServices(health_checks=checks, ingestion_status=dict, event_stream=None)
 
 
 def client_with(database_up, queue_up):
     checks = {"database": lambda: database_up, "queue": lambda: queue_up}
-    return TestClient(create_app(checks))
+    return TestClient(create_app(services_with(checks)))
 
 
 def test_health_is_ok_when_every_dependency_answers():
@@ -35,7 +39,9 @@ def test_a_request_that_fails_is_still_logged(caplog):
     def broken_check():
         raise RuntimeError("check crashed")
 
-    client = TestClient(create_app({"database": broken_check}), raise_server_exceptions=False)
+    client = TestClient(
+        create_app(services_with({"database": broken_check})), raise_server_exceptions=False
+    )
     caplog.set_level("INFO")
 
     client.get("/api/health")

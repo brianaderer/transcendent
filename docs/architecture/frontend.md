@@ -1,6 +1,6 @@
 # frontend
 
-**Source:** `frontend/`   ·   **Tests:** `frontend/src/*.test.tsx`
+**Source:** `frontend/`   ·   **Tests:** `frontend/src/*.test.ts` and `*.test.tsx`
 
 ## Purpose
 The web app. For now it shows whether the backend is running; the Explore page arrives in
@@ -12,6 +12,11 @@ build step 4 ([atlas plates 30](../atlas/30-frontend.md) and [31](../atlas/30-fr
   when the API itself doesn't answer (for example while it is still starting). It
   rechecks every five seconds.
 - `fetchHealth()` and `describeHealth(health)` (the sentence shown) in `src/health.ts`.
+- `IngestionStatus` — how far the history has loaded ("Loading r/sailing history: 23 of
+  56 days · 9,412 posts", then "History up to date through 17 Oct"), refreshed whenever a
+  live `ingestion` event arrives. `describeIngestion(status)` in `src/ingestion.ts` writes
+  the sentence.
+- `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 
 ## How it works
 React with TanStack Query, built by Vite and served by `vite preview` on port 5173 inside its container (published on

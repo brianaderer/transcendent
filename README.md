@@ -124,7 +124,13 @@ when the log stops scrolling and shows lines from `api`, `worker` and `frontend`
 stops.
 
 Open **http://localhost:5173** in your browser. You should see **Community Voices**
-and **Backend running**. If it says **Backend unreachable**, the API is still starting;
+and **Backend running**. Below that, the page shows the r/sailing history loading:
+**Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
+arrives. The first start fetches eight weeks of posts from the Arctic Shift archive and
+prepares each one for search, which takes about 40–45 minutes; the first minute or so is a
+one-time download of the 130 MB model that does it. You can leave it running in the
+background. When it's done the line reads **History up to date through** the latest day.
+Later starts only fetch the days that are missing. If it says **Backend unreachable**, the API is still starting;
 if it says **Not answering:** followed by `database` or `queue`, that part of the app
 hasn't started yet. Either way, wait a few seconds and it updates by itself. To check
 the back end directly, open http://localhost:5173/api/health; it should show

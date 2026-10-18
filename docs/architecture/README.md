@@ -17,3 +17,5 @@ configuration and data.
 | [worker](worker.md) | `backend/src/voices/worker/` | Celery worker and Beat |
 | [database](database.md) | `backend/src/voices/db/`, `backend/migrations/` | The tables as SQLAlchemy models, Alembic migrations, and the setup step that applies them on every start |
 | [frontend](frontend.md) | `frontend/` | The web app; backend status for now |
+| [ingestion](ingestion.md) | `backend/src/voices/ingestion/` | The daily catch-up: fetch a day of r/sailing from Arctic Shift, filter, fold agreeing replies into upvotes, embed, store |
+| [events](events.md) | `backend/src/voices/events.py`, `frontend/src/useLiveEvents.ts` | Live events from jobs to the browser over SSE |

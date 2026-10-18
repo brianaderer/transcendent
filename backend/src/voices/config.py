@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     log_dir: str = "/var/log/voices"
     openrouter_api_key: str = ""
     service_name: str = ""  # each container sets its own, so log lines say which one
+    model_dir: str = "/home/voices/.cache/models"  # on the model-cache volume
 
 
 def load_settings() -> Settings:

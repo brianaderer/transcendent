@@ -1,6 +1,6 @@
 # database
 
-**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py` (needs a database)
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py` and `backend/tests/test_store.py` (both need a database)
 
 ## Purpose
 Describes the tables and keeps the database in step with them. The tables follow
@@ -8,6 +8,10 @@ Describes the tables and keeps the database in step with them. The tables follow
 [plate 40](../atlas/40-backend.md). Changes are made with Alembic migrations (atlas OPEN-28).
 
 ## Public interface
+- `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
+  for ingestion: `known_post_ids`, `known_thread_ids`, `save_day(batch)` (threads, posts
+  and upvotes in one transaction; repeats ignored), the day ledger (`done_days`,
+  `mark_running`, `mark_done`, `mark_failed`) and `ingestion_status()`.
 - `voices.db.models` — the tables as SQLAlchemy classes (`Thread`, `Topic`,
   `ClusterDecision`, `Post`, `PostUpvotesDaily`, `TopicDailyEngagement`,
   `RetrievalEvent`, `IngestedDay`) on `Base.metadata`. This is the one description of
@@ -24,7 +28,7 @@ Describes the tables and keeps the database in step with them. The tables follow
 ## How it works
 Alembic records which migrations have run in its own `alembic_version` table and applies
 the rest in order. `migrations/versions/0001_initial_tables.py` creates the pgvector
-extension and every table. Embeddings are `vector(768)`, the size nomic-embed-text
+extension and every table; `0002` adds `ingested_days.error`, why a day failed. Embeddings are `vector(768)`, the size nomic-embed-text
 produces (atlas OPEN-5).
 
 Tables: `threads`, `posts` (one embedding each; `pending` or `tagged`; `upvotes` from
@@ -51,8 +55,10 @@ database). Running the `alembic` command directly reads the address from `DATABA
 `voices.config.load_settings`), Postgres with pgvector, SQLAlchemy, Alembic.
 
 ## Used by
-[environment](environment.md): the `setup` service in `compose.yaml` runs it. No other
-module imports it yet; the [api](api.md) health check connects to Postgres directly.
+[environment](environment.md): the `setup` service in `compose.yaml` runs setup.
+[worker](worker.md) and [ingestion](ingestion.md) use the store to save each day;
+[api](api.md) uses it for `GET /api/ingestion` (its health check connects to Postgres
+directly).
 
 ## Configuration and data
 `DATABASE_URL`. Data lives on the `postgres-data` volume.
