@@ -1,35 +1,55 @@
 # database
 
-**Source:** `backend/src/voices/db/schema.sql`, `backend/src/voices/db/setup.py`   ·   **Tests:** `backend/tests/test_setup.py`
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`
 
 ## Purpose
-Creates the tables on first start. The tables follow [atlas plate 21](../atlas/20-data-model/21-topics.md)
-and the `ingested_days` record from [plate 40](../atlas/40-backend.md).
+Describes the tables and keeps the database in step with them. The tables follow
+[atlas plate 21](../atlas/20-data-model/21-topics.md) and the `ingested_days` record from
+[plate 40](../atlas/40-backend.md). Changes are made with Alembic migrations (atlas OPEN-28).
 
 ## Public interface
-- `python -m voices.db.setup` — waits for Postgres, then runs `schema.sql`. Run by the
-  `setup` service on every start.
+- `voices.db.models` — the tables as SQLAlchemy classes (`Thread`, `Topic`,
+  `ClusterDecision`, `Post`, `PostUpvotesDaily`, `TopicDailyEngagement`,
+  `RetrievalEvent`, `IngestedDay`) on `Base.metadata`. This is the one description of
+  the database; migrations are generated from it.
+- `python -m voices.db.setup` — waits for Postgres, then runs every migration not yet
+  applied (`alembic upgrade head`). Run by the `setup` service on every start; a second
+  start changes nothing.
 - `retry_connecting(connect, tries, pause_seconds)` — retries a connection, raising
   `DatabaseNotReady` after the last try (at once if `tries` is 0).
-- `wait_for_database_then_create_tables(database_url)`.
+- `wait_for_database_then_migrate(database_url)`.
+- `sqlalchemy_url(database_url)` — the same address with the `psycopg` driver named,
+  which SQLAlchemy needs.
 
 ## How it works
-Every statement in `schema.sql` is `IF NOT EXISTS`, so running it again changes nothing.
-Embeddings are `vector(768)`, the size nomic-embed-text produces (atlas OPEN-5).
+Alembic records which migrations have run in its own `alembic_version` table and applies
+the rest in order. `migrations/versions/0001_initial_tables.py` creates the pgvector
+extension and every table. Embeddings are `vector(768)`, the size nomic-embed-text
+produces (atlas OPEN-5).
 
 Tables: `threads`, `posts` (one embedding each; `pending` or `tagged`; `upvotes` from
-agreeing replies, apart from `reddit_score`), `post_upvotes_daily`, `topics` (label,
-description, keywords, centroid), `topic_daily_engagement`, `cluster_decisions`,
-`retrieval_events`, `ingested_days`. Each post records the cluster decision that tagged
-it (`cluster_decision_id`).
+agreeing replies, apart from `reddit_score`; the cluster decision that tagged it),
+`post_upvotes_daily`, `topics` (label, description, keywords, centroid),
+`topic_daily_engagement`, `cluster_decisions`, `retrieval_events`, `ingested_days`.
+
+**Changing the database:** edit `models.py`, then, with the stack running, generate the
+migration and read it before committing:
+
+```bash
+docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
+  api alembic revision --autogenerate -m "what changed"
+```
+
+`docker compose run --rm --no-deps api alembic check` says whether the models and the
+applied migrations agree.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
-`voices.config.load_settings`), Postgres with pgvector.
+`voices.config.load_settings`), Postgres with pgvector, SQLAlchemy, Alembic.
 
 ## Used by
 [environment](environment.md): the `setup` service in `compose.yaml` runs it. No other
-module imports it; the [api](api.md) health check connects to Postgres directly.
+module imports it yet; the [api](api.md) health check connects to Postgres directly.
 
 ## Configuration and data
 `DATABASE_URL`. Data lives on the `postgres-data` volume.

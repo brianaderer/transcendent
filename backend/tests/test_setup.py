@@ -1,6 +1,6 @@
 import pytest
 
-from voices.db.setup import DatabaseNotReady, retry_connecting
+from voices.db.setup import DatabaseNotReady, retry_connecting, sqlalchemy_url
 
 
 def test_retrying_returns_as_soon_as_an_attempt_succeeds():
@@ -26,3 +26,9 @@ def test_retrying_gives_up_after_the_last_try():
 def test_retrying_with_no_tries_gives_up_at_once():
     with pytest.raises(DatabaseNotReady):
         retry_connecting(lambda: "never called", tries=0, pause_seconds=0)
+
+
+def test_the_database_address_names_the_driver_sqlalchemy_should_use():
+    url = sqlalchemy_url("postgresql://voices:voices@postgres:5432/voices")
+
+    assert url == "postgresql+psycopg://voices:voices@postgres:5432/voices"
