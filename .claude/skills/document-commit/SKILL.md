@@ -51,3 +51,10 @@ Wait for it to finish. Do not edit documentation yourself while it runs.
 - Confirm the agent's commit touched nothing but documentation, comments, and
   docstrings: `git show --stat HEAD`.
 - Relay the agent's report to Brian in prose. Never push.
+
+## 5. Boot check when boot steps changed
+
+If the agent's report says **Boot steps changed: yes**, run `/test-boot` on the new
+HEAD (the documentation commit, so the README being tested is the updated one) and
+relay its result too. A boot failure is reported plainly, with the friction points it
+found — it is never folded into a "documentation done" summary.

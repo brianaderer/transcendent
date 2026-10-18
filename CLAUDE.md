@@ -163,7 +163,8 @@ Commit atlas changes on their own, with messages starting `Atlas:` — for examp
 |---|---|
 | `/isolate-and-pin` | Any bug, regression, or "why is this failing". Gathers evidence, forms competing explanations, and tests each one in parallel in its own worktree to measure what each fix would actually do before anything is installed. |
 | `/tdd` | One explanation or one defect, taken from a failing test to a proven fix in an isolated worktree. Used by `/isolate-and-pin` for each explanation, or directly for a single known bug. |
-| `/document-commit [sha \| from..to]` | Documents a commit or range, then traces everything it touches or is referenced by and updates that documentation too, until nothing reachable is stale. Runs automatically after every commit (§6). |
+| `/document-commit [sha \| from..to]` | Documents a commit or range, then traces everything it touches or is referenced by and updates that documentation too, until nothing reachable is stale. Runs automatically after every commit (§6). Holds every change to the rules in §1, §3, §6 and §7 and the README's *Primary objective*; treats the README's boot steps as the most important document. |
+| `/test-boot [ref] [github]` | Plays the reviewer: fresh clone in a blank folder, README boot steps followed exactly, demo checked. Reports success or every friction point with the fix for each. Changes nothing. |
 
 ---
 
@@ -270,8 +271,10 @@ value. The brief is summarized in `README.md` → *Primary objective*.
   one week of community data and a command that loads it, so the app runs even if
   the source site is slow, rate-limits, or blocks the crawler. Live ingestion is a
   separate, optional command.
-- Before calling anything finished, re-run the README from a fresh clone in a scratch
-  folder and say whether it worked.
+- **Before calling boot-affecting work finished, run `/test-boot`.** It clones the
+  repo into a blank folder, follows the README exactly as a reviewer would, and
+  reports success or every friction point. `/document-commit` runs it automatically
+  when a commit changes the boot steps. Run it again before submitting.
 - **Submission needs a public repo.** The GitHub repo is private today; making it
   public is Brian's call, and happens only when he says so.
 

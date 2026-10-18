@@ -1,0 +1,5 @@
+# Throwaway clones made by /test-boot
+.boot-test/
+
+# Local secrets
+.env
