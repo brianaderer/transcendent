@@ -23,14 +23,16 @@ both have happened.
   one place the window is defined.
 - `decider.ToolLoopDecider(model, model_name, tools).decide(brief)` — the agent's decision for one
   cluster, as a `DecidedCluster` with the exact prompt it saw and the model's name. Raises
-  `RuntimeError` if the agent never gives a valid decision, which stops the day.
+  `NoDecision` if the agent never gives a valid decision, which stops the day.
 - `graph.decide_all(decider, briefs)` — every cluster decided in parallel (a LangGraph
   fan-out), returned in the briefs' order.
 - `decisions.Decision` (attach / mint / noise, with topic id, label, description, reason),
   `ClusterBrief`, `CandidateTopic`, `TypicalPost`, `DecidedCluster`, `settle_mints(...)`.
 - `tools.TaggingTools(store, embedder, day).run(name, arguments)` — `search`, `lookup`,
   `search_tags`; returns what the agent reads back, as JSON text (or a sentence naming the
-  real tools when asked for one that doesn't exist).
+  real tools when asked for one that doesn't exist). `TOOL_ARGUMENT` lists each tool with
+  its one required argument; the tool named `x` runs the method `_x`, and the schemas the
+  model sees (`decider.TOOLS`) must match that list.
 - `keywords.distinctive_keywords(cluster_texts, all_texts, limit)` — the words common in a
   cluster's posts and rare in the rest of the window, best first.
 - `model.connect_model(api_key, model_name)` — the chat model through OpenRouter; raises
@@ -54,6 +56,9 @@ For day D:
    full) or `search_tags` (existing topics by meaning, 10 at most), and answers by calling
    `Decision`. It gets six turns to look around (a turn may call several tools); then it is
    made to call `Decision`, and if that answer still isn't a valid decision the day fails.
+   If one reply calls `Decision` more than once, the first valid call is used and a malformed
+   one is skipped; when a reply has no valid decision, each `Decision` call in it is answered
+   with what was wrong with it.
    All clusters of a day are decided in parallel, at most eight at a time
    (`MAX_PARALLEL_DECISIONS`). A lookup of an id that isn't stored, a missing tool
    argument or an unknown tool is answered with an explanation, not an error. Search and lookup hits are recorded in

@@ -54,10 +54,14 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
 database: one checks that the models and the applied migrations agree; five check that
 the store saves a day (twice without duplicates), never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, and keeps the day ledger; and six check that the tagging store reads
+from different days, and keeps the day ledger; and fourteen check that the tagging store reads
 the window, mints a topic, attaches to one and deletes noise, deletes posts left waiting
-too long, counts daily engagement, and finds posts by meaning while recording the
-retrievals. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+too long, counts daily engagement (including upvotes on a day with no new posts), finds
+posts by meaning while recording the retrievals, leaves posts waiting when the agent
+attaches to a topic that doesn't exist (counting only posts that were waiting), joins a
+merged mint to the topic minted earlier and refuses one whose twin wasn't minted first,
+moves an attached topic's last-seen day and centre, and counts candidate topics' posts
+from the last week. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 `topic_similarity` is double precision (`Float`); the earlier SQL file used `real`.
 
