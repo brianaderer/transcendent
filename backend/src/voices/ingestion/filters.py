@@ -4,13 +4,7 @@ from voices.ingestion.items import Item
 
 REMOVED_TEXT = {"[deleted]", "[removed]", "[ Removed by Reddit ]"}
 DELETED_AUTHOR = "[deleted]"
-KNOWN_BOTS = {
-    "automoderator",
-    "remindmebot",
-    "sneakpeekbot",
-    "wikisummarizerbot",
-    "repostsleuthbot",
-}
+BOTS_NOT_NAMED_BOT = {"automoderator"}
 
 
 def is_unwanted(item: Item) -> bool:
@@ -22,6 +16,5 @@ def _is_removed(item: Item) -> bool:
 
 
 def _is_bot(author: str) -> bool:
-    # Reddit bots almost always say so in their name; a handful of common ones don't end in "bot".
     name = author.lower()
-    return name in KNOWN_BOTS or name.endswith("bot")
+    return name.endswith("bot") or name in BOTS_NOT_NAMED_BOT

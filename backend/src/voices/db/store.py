@@ -9,8 +9,7 @@ from sqlalchemy.dialects.postgresql import insert
 
 from voices.db.address import sqlalchemy_url
 from voices.db.models import IngestedDay, Post, PostUpvotesDaily, Thread
-from voices.ingestion.catch_up import HISTORY_DAYS
-from voices.ingestion.day import DayBatch
+from voices.ingestion.day import DayBatch, EmbeddedItem, NewThread
 
 
 class Store:
@@ -24,15 +23,17 @@ class Store:
         return self._existing(Thread.source_id, ids)
 
     def save_day(self, batch: DayBatch) -> None:
-        """Everything the day adds, in one transaction; repeats are ignored."""
+        """Everything the day adds, in one transaction. Saving the same day again changes
+        nothing: posts and threads already there are skipped, and the day's upvote count is
+        replaced, not added to, before each post's total is recounted from its days."""
         with self.engine.begin() as connection:
             if batch.threads:
                 connection.execute(_insert_new(Thread, [_thread_row(t) for t in batch.threads]))
             if batch.posts:
                 connection.execute(_insert_new(Post, [_post_row(p) for p in batch.posts]))
             for post_id, count in batch.upvotes.items():
-                connection.execute(_add_upvotes(post_id, count))
-                connection.execute(_add_daily_upvotes(post_id, batch.day, count))
+                connection.execute(_set_daily_upvotes(post_id, batch.day, count))
+                connection.execute(_recount_upvotes(post_id))
 
     def done_days(self) -> set[date]:
         with self.engine.connect() as connection:
@@ -50,11 +51,10 @@ class Store:
         self._record_day(day, status="failed", error=error, finished_at=_now())
 
     def ingestion_status(self) -> dict:
+        """Days done, posts stored (comments included), and the latest day in each state."""
         with self.engine.connect() as connection:
-            done = connection.scalar(_count_days("done"))
             return {
-                "days_done": done,
-                "days_wanted": HISTORY_DAYS,
+                "days_done": connection.scalar(_count_days("done")),
                 "posts": connection.scalar(select(func.count()).select_from(Post)),
                 "latest_day": _iso(connection.scalar(_latest_day("done"))),
                 "running_day": _iso(connection.scalar(_latest_day("running"))),
@@ -81,11 +81,11 @@ def _insert_new(table, rows: list[dict]):
     return insert(table).values(rows).on_conflict_do_nothing()
 
 
-def _thread_row(thread) -> dict:
+def _thread_row(thread: NewThread) -> dict:
     return {"source_id": thread.source_id, "title": thread.title, "created_at": thread.created_at}
 
 
-def _post_row(embedded) -> dict:
+def _post_row(embedded: EmbeddedItem) -> dict:
     item = embedded.item
     return {
         "source_id": item.source_id,
@@ -100,16 +100,20 @@ def _post_row(embedded) -> dict:
     }
 
 
-def _add_upvotes(post_id: str, count: int):
-    return update(Post).where(Post.source_id == post_id).values(upvotes=Post.upvotes + count)
-
-
-def _add_daily_upvotes(post_id: str, day: date, count: int):
+def _set_daily_upvotes(post_id: str, day: date, count: int):
     statement = insert(PostUpvotesDaily).values(post_source_id=post_id, day=day, count=count)
     return statement.on_conflict_do_update(
-        index_elements=["post_source_id", "day"],
-        set_={"count": PostUpvotesDaily.count + statement.excluded.count},
+        index_elements=["post_source_id", "day"], set_={"count": statement.excluded.count}
     )
+
+
+def _recount_upvotes(post_id: str):
+    total = (
+        select(func.coalesce(func.sum(PostUpvotesDaily.count), 0))
+        .where(PostUpvotesDaily.post_source_id == post_id)
+        .scalar_subquery()
+    )
+    return update(Post).where(Post.source_id == post_id).values(upvotes=total)
 
 
 def _count_days(status: str):

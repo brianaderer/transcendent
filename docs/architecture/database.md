@@ -10,8 +10,10 @@ Describes the tables and keeps the database in step with them. The tables follow
 ## Public interface
 - `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
   for ingestion: `known_post_ids`, `known_thread_ids`, `save_day(batch)` (threads, posts
-  and upvotes in one transaction; repeats ignored), the day ledger (`done_days`,
-  `mark_running`, `mark_done`, `mark_failed`) and `ingestion_status()`.
+  and upvotes in one transaction; saving a day again adds nothing — the day's upvote count
+  is replaced and each post's total recounted from its days), the day ledger (`done_days`,
+  `mark_running`, `mark_done`, `mark_failed`) and `ingestion_status()` (days done, posts stored including comments, and
+  the latest done, running and failed day; the API adds how many days are wanted).
 - `voices.db.models` — the tables as SQLAlchemy classes (`Thread`, `Topic`,
   `ClusterDecision`, `Post`, `PostUpvotesDaily`, `TopicDailyEngagement`,
   `RetrievalEvent`, `IngestedDay`) on `Base.metadata`. This is the one description of
@@ -44,10 +46,10 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the four tests that need a running
-database: one checks that the models and the applied migrations agree, and three check
-that the store saves a day (twice without duplicates), adds agreeing replies to the
-upvote counts, and keeps the day ledger. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+`docker compose run --rm api pytest -m database` runs the five tests that need a running
+database: one checks that the models and the applied migrations agree, and four check that
+the store saves a day (twice without duplicates), never double-counts a re-saved day's
+upvotes, adds up upvotes from different days, and keeps the day ledger. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 `topic_similarity` is double precision (`Float`); the earlier SQL file used `real`.
 

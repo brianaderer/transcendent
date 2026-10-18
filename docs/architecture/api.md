@@ -8,7 +8,8 @@ The web API the frontend calls. Every route lives under `/api`.
 ## Public interface
 - `GET /api/health` — `200 {"status": "ok", "checks": {...}}` when every dependency
   answers; `503 {"status": "degraded", "checks": {...}}` naming each one that doesn't.
-- `GET /api/ingestion` — how far the catch-up has got: `days_done`, `days_wanted`, `posts`,
+- `GET /api/ingestion` — how far the catch-up has got: `days_done`, `days_wanted` (56, added
+  by the route), `posts`,
   `latest_day`, `running_day`, `failed_day`.
 - `GET /api/streams/{stream}/events` — live events as server-sent events ([events](events.md));
   404 for a stream that doesn't exist.

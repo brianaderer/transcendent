@@ -4,7 +4,20 @@ from voices.ingestion.agreement import AgreementDetector
 class MeaningByWords:
     """Stand-in embedder: agreement-like words point one way, everything else another."""
 
-    AGREEING = {"+1", "this", "same", "agree", "agreed", "exactly", "yes", "true", "100%"}
+    AGREEING = {
+        "+1",
+        "this",
+        "same",
+        "agree",
+        "agreed",
+        "exactly",
+        "yes",
+        "true",
+        "100%",
+        "point",
+        "said",
+        "summary",
+    }
 
     def embed_for_comparison(self, texts):
         return [self._vector(text) for text in texts]

@@ -13,6 +13,7 @@ from voices.config import load_settings
 from voices.db.store import connect_store
 from voices.events import server_sent_events
 from voices.health import database_is_reachable, queue_is_reachable
+from voices.ingestion.catch_up import HISTORY_DAYS
 from voices.log import configure_logging, log_event, tracing
 
 HealthChecks = dict[str, Callable[[], bool]]
@@ -25,7 +26,7 @@ class ApiServices:
 
     health_checks: HealthChecks
     ingestion_status: Callable[[], dict]
-    event_stream: Callable[[str], AsyncIterator[str]] | None
+    event_stream: Callable[[str], AsyncIterator[str]]
 
 
 logger = logging.getLogger(__name__)
@@ -49,12 +50,12 @@ def create_app(services: ApiServices) -> FastAPI:
     @app.get("/api/ingestion")
     def report_ingestion() -> dict:
         """How far the catch-up has got through the history."""
-        return services.ingestion_status()
+        return {**services.ingestion_status(), "days_wanted": HISTORY_DAYS}
 
     @app.get("/api/streams/{stream}/events")
     def stream_events(stream: str) -> StreamingResponse:
         """Live events as server-sent events (atlas plate 41)."""
-        if stream not in STREAMS or services.event_stream is None:
+        if stream not in STREAMS:
             raise HTTPException(status_code=404, detail=f"no stream named {stream}")
         return StreamingResponse(services.event_stream(stream), media_type="text/event-stream")
 

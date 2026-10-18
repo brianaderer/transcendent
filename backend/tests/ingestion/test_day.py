@@ -1,6 +1,6 @@
 from datetime import UTC, date, datetime
 
-from voices.ingestion.day import process_day
+from voices.ingestion.day import DayIngestion
 from voices.ingestion.items import Item
 
 DAY = date(2026, 10, 15)
@@ -54,7 +54,7 @@ class FakeStore:
 
 
 def run(archive, store):
-    return process_day(DAY, archive, FakeEmbedder(), AgreesWithPlusOne(), store)
+    return DayIngestion(archive, FakeEmbedder(), AgreesWithPlusOne(), store).process(DAY)
 
 
 def test_posts_and_comments_are_stored_with_their_embeddings():
@@ -129,3 +129,11 @@ def test_a_comment_whose_thread_cannot_be_found_is_dropped():
 
     assert store.saved.posts == []
     assert counts["dropped_without_thread"] == 1
+
+
+def test_an_agreeing_reply_to_a_post_from_the_same_day_upvotes_it():
+    store = FakeStore()
+    run(FakeArchive([post("p1")], [comment("c1", "+1", parent="p1")]), store)
+
+    assert store.saved.upvotes == {"p1": 1}
+    assert [p.item.source_id for p in store.saved.posts] == ["p1"]

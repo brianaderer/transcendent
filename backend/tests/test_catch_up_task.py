@@ -1,3 +1,5 @@
+import pytest
+
 from voices.worker.catch_up_task import CATCH_UP_LOCK, catch_up_once, forget_stale_catch_up
 
 
@@ -34,23 +36,22 @@ def test_the_lock_is_freed_even_when_the_catch_up_fails():
     def fail():
         raise RuntimeError("archive down")
 
-    try:
+    with pytest.raises(RuntimeError):
         catch_up_once(lock, fail)
-    except RuntimeError:
-        pass
 
     assert lock.released
 
 
 def test_a_lock_left_by_a_crashed_worker_is_cleared_when_a_worker_starts():
-    class FakeQueue:
-        deleted = []
+    class FakeRedis:
+        def __init__(self):
+            self.deleted = []
 
         def delete(self, key):
             self.deleted.append(key)
 
-    queue = FakeQueue()
+    redis_client = FakeRedis()
 
-    forget_stale_catch_up(queue)
+    forget_stale_catch_up(redis_client)
 
-    assert queue.deleted == [CATCH_UP_LOCK]
+    assert redis_client.deleted == [CATCH_UP_LOCK]

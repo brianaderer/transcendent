@@ -3,8 +3,13 @@ from fastapi.testclient import TestClient
 from voices.api.main import ApiServices, create_app
 
 
+async def no_events(_stream):
+    return
+    yield
+
+
 def services_with(checks):
-    return ApiServices(health_checks=checks, ingestion_status=dict, event_stream=None)
+    return ApiServices(health_checks=checks, ingestion_status=dict, event_stream=no_events)
 
 
 def client_with(database_up, queue_up):

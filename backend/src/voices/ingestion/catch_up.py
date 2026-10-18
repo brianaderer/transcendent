@@ -19,34 +19,40 @@ class Ledger(Protocol):
     def mark_failed(self, day: date, error: str) -> None: ...
 
 
-Emit = Callable[..., None]
+class Emit(Protocol):
+    """Sends one live event on the ingestion stream (atlas plate 41)."""
+
+    def __call__(self, event_type: str, **body: object) -> None: ...
 
 
-def run_catch_up(
-    now: datetime,
-    ledger: Ledger,
-    process: Callable[[date], dict[str, int]],
-    emit: Emit,
-    history_days: int = HISTORY_DAYS,
-) -> None:
-    days = missing_days(last_complete_day(now), ledger.done_days(), history_days)
-    emit("ingestion", "catch_up.started", days=len(days))
-    for number, day in enumerate(days, start=1):
-        _process_one(day, ledger, process, emit, f"{number} of {len(days)}")
-    emit("ingestion", "catch_up.finished", days=len(days))
+ProcessDay = Callable[[date], dict[str, int]]
 
 
-def _process_one(day: date, ledger: Ledger, process, emit: Emit, progress: str) -> None:
-    ledger.mark_running(day)
-    emit("ingestion", "day.started", day=day.isoformat(), progress=progress)
-    try:
-        counts = process(day)
-    except Exception as error:
-        ledger.mark_failed(day, repr(error))
-        emit("ingestion", "day.failed", day=day.isoformat(), error=repr(error))
-        raise
-    ledger.mark_done(day, counts)
-    emit("ingestion", "day.finished", day=day.isoformat(), progress=progress, counts=counts)
+class CatchUp:
+    def __init__(self, ledger: Ledger, process: ProcessDay, emit: Emit):
+        self.ledger = ledger
+        self.process = process
+        self.emit = emit
+
+    def run(self, now: datetime, history_days: int = HISTORY_DAYS) -> None:
+        """Process the missing days in order; stop at the first that fails."""
+        days = missing_days(last_complete_day(now), self.ledger.done_days(), history_days)
+        self.emit("catch_up.started", days=len(days))
+        for number, day in enumerate(days, start=1):
+            self._process_one(day, progress=f"{number} of {len(days)}")
+        self.emit("catch_up.finished", days=len(days))
+
+    def _process_one(self, day: date, progress: str) -> None:
+        self.ledger.mark_running(day)
+        self.emit("day.started", day=day.isoformat(), progress=progress)
+        try:
+            counts = self.process(day)
+        except Exception as error:
+            self.ledger.mark_failed(day, repr(error))
+            self.emit("day.failed", day=day.isoformat(), error=repr(error))
+            raise
+        self.ledger.mark_done(day, counts)
+        self.emit("day.finished", day=day.isoformat(), progress=progress, counts=counts)
 
 
 def last_complete_day(now: datetime) -> date:

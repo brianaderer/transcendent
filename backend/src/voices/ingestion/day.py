@@ -29,7 +29,7 @@ class Agreement(Protocol):
 
 
 @dataclass(frozen=True)
-class Thread:
+class NewThread:
     source_id: str
     title: str
     created_at: datetime
@@ -46,7 +46,7 @@ class DayBatch:
     """Everything one day adds to the database, saved together."""
 
     day: date
-    threads: list[Thread] = field(default_factory=list)
+    threads: list[NewThread] = field(default_factory=list)
     posts: list[EmbeddedItem] = field(default_factory=list)
     upvotes: dict[str, int] = field(default_factory=dict)  # parent post id -> agreeing replies
 
@@ -57,70 +57,91 @@ class DayStore(Protocol):
     def save_day(self, batch: DayBatch) -> None: ...
 
 
-def process_day(
-    day: date, archive: Archive, embedder: DocumentEmbedder, agreement: Agreement, store: DayStore
-) -> dict[str, int]:
-    counts: Counter[str] = Counter()
-    items = _wanted_items(_fetch_day(day, archive), counts)
-    threads, items = _attach_threads(items, archive, store, counts)
-    upvotes, items = _fold_agreeing_replies(items, agreement, store, counts)
-    embedded = _embed(items, embedder)
-    store.save_day(DayBatch(day, threads, embedded, upvotes))
-    counts.update(stored=len(embedded), threads_added=len(threads), upvotes=sum(upvotes.values()))
-    return dict(counts)
+@dataclass(frozen=True)
+class DaySteps:
+    """What was left after each step of a day, kept so the day's counts can be read off it."""
+
+    fetched: list[Item]
+    wanted: list[Item]
+    threaded: list[Item]
+    agreeing: list[Item]
+    batch: DayBatch
 
 
-def _fetch_day(day: date, archive: Archive) -> list[Item]:
-    start = datetime.combine(day, time(), UTC)
-    end = start + timedelta(days=1)
-    return archive.posts_created_between(start, end) + archive.comments_created_between(start, end)
+class DayIngestion:
+    def __init__(
+        self, archive: Archive, embedder: DocumentEmbedder, agreement: Agreement, store: DayStore
+    ):
+        self.archive = archive
+        self.embedder = embedder
+        self.agreement = agreement
+        self.store = store
+
+    def process(self, day: date) -> dict[str, int]:
+        """Fetch, filter, fold and embed one day, save it, and say what happened."""
+        fetched = self._fetch(day)
+        wanted = [item for item in fetched if not is_unwanted(item)]
+        threads, threaded = self._attach_threads(wanted)
+        agreeing, kept = _split_agreeing(threaded, self.agreement)
+        upvotes = self._upvotes_for_parents(agreeing, kept)
+        batch = DayBatch(day, threads, self._embed(kept), upvotes)
+        self.store.save_day(batch)
+        return _day_counts(DaySteps(fetched, wanted, threaded, agreeing, batch))
+
+    def _fetch(self, day: date) -> list[Item]:
+        start = datetime.combine(day, time(), UTC)
+        end = start + timedelta(days=1)
+        posts = self.archive.posts_created_between(start, end)
+        return posts + self.archive.comments_created_between(start, end)
+
+    def _attach_threads(self, items: list[Item]) -> tuple[list[NewThread], list[Item]]:
+        """Threads started today come from today's posts; a comment on an older thread brings
+        that thread's title from the archive. Comments whose thread can't be found are dropped."""
+        started_today = {i.source_id: _thread_of(i) for i in items if i.kind == "post"}
+        older_ids = {i.thread_source_id for i in items} - started_today.keys()
+        in_store = self.store.known_thread_ids(sorted(older_ids))
+        from_archive = self.archive.posts_by_id(sorted(older_ids - in_store))
+        new_threads = started_today | {p.source_id: _thread_of(p) for p in from_archive}
+        known = new_threads.keys() | in_store
+        return list(new_threads.values()), [i for i in items if i.thread_source_id in known]
+
+    def _upvotes_for_parents(self, agreeing: list[Item], kept: list[Item]) -> dict[str, int]:
+        """One upvote per agreeing reply, for parents we have; replies to others are dropped."""
+        parents = [reply.parent_source_id for reply in agreeing]
+        present = {i.source_id for i in kept} | self.store.known_post_ids(parents)
+        return dict(Counter(parent for parent in parents if parent in present))
+
+    def _embed(self, items: list[Item]) -> list[EmbeddedItem]:
+        if not items:
+            return []
+        vectors = self.embedder.embed_documents([item.body for item in items])
+        return [EmbeddedItem(item, vector) for item, vector in zip(items, vectors, strict=True)]
 
 
-def _wanted_items(items: list[Item], counts: Counter[str]) -> list[Item]:
-    wanted = [item for item in items if not is_unwanted(item)]
-    counts.update(fetched=len(items), dropped_unwanted=len(items) - len(wanted))
-    return wanted
+def _thread_of(post: Item) -> NewThread:
+    return NewThread(post.source_id, post.title or "", post.created_at)
 
 
-def _attach_threads(
-    items: list[Item], archive: Archive, store: DayStore, counts: Counter[str]
-) -> tuple[list[Thread], list[Item]]:
-    """New threads come from today's posts; a comment on an older thread brings that thread's
-    title from the archive. Comments whose thread can't be found are dropped."""
-    threads = {i.source_id: _thread_of(i) for i in items if i.kind == "post"}
-    needed = {i.thread_source_id for i in items} - threads.keys()
-    unknown = sorted(needed - store.known_thread_ids(sorted(needed)))
-    threads.update((p.source_id, _thread_of(p)) for p in archive.posts_by_id(unknown))
-    available = threads.keys() | (needed - set(unknown))
-    kept = [i for i in items if i.thread_source_id in available]
-    counts.update(dropped_without_thread=len(items) - len(kept))
-    return list(threads.values()), kept
-
-
-def _thread_of(post: Item) -> Thread:
-    return Thread(post.source_id, post.title or "", post.created_at)
-
-
-def _fold_agreeing_replies(
-    items: list[Item], agreement: Agreement, store: DayStore, counts: Counter[str]
-) -> tuple[dict[str, int], list[Item]]:
-    comments = [i for i in items if i.kind == "comment"]
-    agreeing = {
-        c.source_id
-        for c, a in zip(comments, agreement.agreeing([c.body for c in comments]), strict=True)
-        if a
+def _split_agreeing(items: list[Item], agreement: Agreement) -> tuple[list[Item], list[Item]]:
+    """Separates comments that only agree with their parent from everything else."""
+    comments = [item for item in items if item.kind == "comment"]
+    verdicts = agreement.agreeing([comment.body for comment in comments])
+    agreeing_ids = {
+        comment.source_id for comment, agrees in zip(comments, verdicts, strict=True) if agrees
     }
-    parents = [c.parent_source_id for c in comments if c.source_id in agreeing]
-    reachable = store.known_post_ids(parents) | {
-        i.source_id for i in items if i.source_id not in agreeing
+    agreeing = [item for item in items if item.source_id in agreeing_ids]
+    kept = [item for item in items if item.source_id not in agreeing_ids]
+    return agreeing, kept
+
+
+def _day_counts(steps: DaySteps) -> dict[str, int]:
+    upvotes = sum(steps.batch.upvotes.values())
+    return {
+        "fetched": len(steps.fetched),
+        "dropped_unwanted": len(steps.fetched) - len(steps.wanted),
+        "dropped_without_thread": len(steps.wanted) - len(steps.threaded),
+        "upvotes": upvotes,
+        "dropped_orphan_upvotes": len(steps.agreeing) - upvotes,
+        "stored": len(steps.batch.posts),
+        "threads_added": len(steps.batch.threads),
     }
-    upvotes = Counter(p for p in parents if p in reachable)
-    counts.update(dropped_orphan_upvotes=len(parents) - sum(upvotes.values()))
-    return dict(upvotes), [i for i in items if i.source_id not in agreeing]
-
-
-def _embed(items: list[Item], embedder: DocumentEmbedder) -> list[EmbeddedItem]:
-    if not items:
-        return []
-    vectors = embedder.embed_documents([item.body for item in items])
-    return [EmbeddedItem(item, vector) for item, vector in zip(items, vectors, strict=True)]

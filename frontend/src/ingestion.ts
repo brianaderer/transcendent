@@ -14,7 +14,7 @@ export async function fetchIngestionStatus(): Promise<IngestionStatus> {
 
 /** One sentence on how far the history has loaded (atlas plate 04: first start shows progress). */
 export function describeIngestion(status: IngestionStatus): string {
-  if (status.failed_day && status.failed_day !== status.latest_day) {
+  if (status.failed_day) {
     return `Loading stopped at ${shortDate(status.failed_day)}; it will try again at the next catch-up`;
   }
   if (status.days_done >= status.days_wanted && status.latest_day) {

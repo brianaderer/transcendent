@@ -165,7 +165,7 @@ docker compose run --rm --no-deps frontend npm test
 ```
 
 Each should end with every test passed (a `warning` line from a library is fine). The backend
-line also says `4 deselected`: those are the four tests that need a running database, which the
+line also says `5 deselected`: those are the five tests that need a running database, which the
 default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline in seconds.
 

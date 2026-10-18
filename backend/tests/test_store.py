@@ -8,8 +8,7 @@ from sqlalchemy import delete, select
 from voices.config import load_settings
 from voices.db.models import EMBEDDING_DIMENSIONS, IngestedDay, Post, PostUpvotesDaily, Thread
 from voices.db.store import connect_store
-from voices.ingestion.day import DayBatch, EmbeddedItem
-from voices.ingestion.day import Thread as NewThread
+from voices.ingestion.day import DayBatch, EmbeddedItem, NewThread
 from voices.ingestion.items import Item
 
 pytestmark = pytest.mark.database
@@ -24,7 +23,9 @@ def store():
     store = connect_store(load_settings().database_url)
     yield store
     with store.engine.begin() as connection:
-        connection.execute(delete(PostUpvotesDaily).where(PostUpvotesDaily.day == DAY))
+        connection.execute(
+            delete(PostUpvotesDaily).where(PostUpvotesDaily.post_source_id.like("test-%"))
+        )
         connection.execute(delete(Post).where(Post.source_id.like("test-%")))
         connection.execute(delete(Thread).where(Thread.source_id.like("test-%")))
         connection.execute(delete(IngestedDay).where(IngestedDay.day == DAY))
@@ -45,18 +46,34 @@ def test_a_saved_day_can_be_found_again_and_saving_it_twice_adds_nothing(store):
     assert store.known_thread_ids(["test-p"]) == {"test-p"}
 
 
-def test_agreeing_replies_add_to_the_post_and_to_that_days_count(store):
-    store.save_day(batch({"test-p": 2}))
-    store.save_day(DayBatch(DAY, [], [], {"test-p": 1}))
+OTHER_DAY = date(1999, 1, 3)
 
+
+def upvotes_of(store, post_id):
     with store.engine.connect() as connection:
-        assert connection.scalar(select(Post.upvotes).where(Post.source_id == "test-p")) == 3
-        assert (
-            connection.scalar(
-                select(PostUpvotesDaily.count).where(PostUpvotesDaily.post_source_id == "test-p")
-            )
-            == 3
+        total = connection.scalar(select(Post.upvotes).where(Post.source_id == post_id))
+        daily = dict(
+            connection.execute(
+                select(PostUpvotesDaily.day, PostUpvotesDaily.count).where(
+                    PostUpvotesDaily.post_source_id == post_id
+                )
+            ).all()
         )
+    return total, daily
+
+
+def test_saving_the_same_day_twice_does_not_double_its_upvotes(store):
+    store.save_day(batch({"test-p": 2}))
+    store.save_day(batch({"test-p": 2}))
+
+    assert upvotes_of(store, "test-p") == (2, {DAY: 2})
+
+
+def test_upvotes_from_different_days_add_up(store):
+    store.save_day(batch({"test-p": 2}))
+    store.save_day(DayBatch(OTHER_DAY, [], [], {"test-p": 1}))
+
+    assert upvotes_of(store, "test-p") == (3, {DAY: 2, OTHER_DAY: 1})
 
 
 def test_the_ledger_remembers_done_days_and_why_a_day_failed(store):

@@ -58,24 +58,39 @@ class ArcticShift:
             after = _next_page_start(after, page[-1]["created_utc"])
 
     def _get(self, path: str, query: dict) -> list[dict]:
+        last_error: _TryAgain | None = None
         for attempt in range(1, self.attempts + 1):
             time.sleep(self.pause_seconds * attempt)
-            data = self._try_get(path, query)
-            if data is not None:
-                return data
-            log_event(logger, "archive.retry", path=path, attempt=attempt)
-        raise ArchiveUnavailable(f"{path} failed {self.attempts} times")
+            try:
+                return self._try_get(path, query)
+            except _TryAgain as error:
+                last_error = error
+                log_event(logger, "archive.retry", path=path, attempt=attempt, reason=str(error))
+        raise ArchiveUnavailable(
+            f"{path} failed {self.attempts} times; last: {last_error}"
+        ) from last_error
 
-    def _try_get(self, path: str, query: dict) -> list[dict] | None:
-        """The page's items, or None when the archive asks us to try again."""
+    def _try_get(self, path: str, query: dict) -> list[dict]:
         try:
             response = self.client.get(path, params=query)
-        except httpx.TransportError:
-            return None
-        if response.status_code != httpx.codes.OK:
-            return None
+        except httpx.TransportError as error:
+            raise _TryAgain(repr(error)) from error
+        if _worth_retrying(response.status_code):
+            raise _TryAgain(f"status {response.status_code}")
         body = response.json()
-        return None if body.get("error") else body["data"]
+        if response.status_code != httpx.codes.OK:
+            raise ArchiveUnavailable(f"{path}: status {response.status_code}: {body.get('error')}")
+        if body.get("error"):
+            raise _TryAgain(f"slow down: {body['error']}")
+        return body["data"]
+
+
+class _TryAgain(Exception):
+    """The archive is busy or briefly unreachable; the same request may work in a moment."""
+
+
+def _worth_retrying(status: int) -> bool:
+    return status == httpx.codes.TOO_MANY_REQUESTS or status >= httpx.codes.INTERNAL_SERVER_ERROR
 
 
 def _next_page_start(previous: int, last_on_page: int) -> int:

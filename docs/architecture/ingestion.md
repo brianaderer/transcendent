@@ -9,22 +9,27 @@ Reddit. Plans: [atlas plate 40](../atlas/40-backend.md) (the catch-up) and
 in build step 3; posts are stored as `pending` until then.
 
 ## Public interface
-- `catch_up.run_catch_up(now, ledger, process, emit, history_days=56)` — processes every
+- `catch_up.CatchUp(ledger, process, emit).run(now, history_days=56)` — processes every
   complete day not yet done, oldest first, at most `history_days` back. Marks each day in
   the ledger and emits its events; stops at the first day that fails, re-raising its error.
   `ledger` is anything with `done_days`, `mark_running`, `mark_done` and `mark_failed`
-  (the `Ledger` interface); `emit` is any function shaped like `RedisEvents.emit`.
+  (the `Ledger` interface); `process` takes a day and returns its counts; `emit(event_type,
+  **body)` sends one event on the ingestion stream (the worker binds `RedisEvents.emit` to
+  the `ingestion` stream).
 - `catch_up.missing_days(...)`, `catch_up.last_complete_day(now)` — a day is complete six
   hours after it ends, so the archive has caught up.
-- `day.process_day(day, archive, embedder, agreement, store)` — one day, returning counts
+- `day.DayIngestion(archive, embedder, agreement, store).process(day)` — one day, returning counts
   (`fetched`, `dropped_unwanted`, `dropped_without_thread`, `dropped_orphan_upvotes`,
-  `stored`, `threads_added`, `upvotes`). Each argument is a small interface (`Archive`,
+  `stored`, `threads_added`, `upvotes`), read off what was left after each step. Each
+  collaborator is a small interface (`Archive`,
   `DocumentEmbedder`, `Agreement`, `DayStore`), so tests pass stand-ins.
-- `day.DayBatch`, `day.EmbeddedItem`, `day.Thread` — what one day hands to the store to
+- `day.DayBatch`, `day.EmbeddedItem`, `day.NewThread` — what one day hands to the store to
   save together.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,
   `posts_by_id`; `connect_to_archive()` builds the real one. Raises `ArchiveUnavailable`
-  when a request still fails after five tries.
+  when a request still fails after five tries, naming the last reason (a status, the
+  archive's "slow down" message, or a network error). A bad request (a 4xx other than 429)
+  is not retried.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;
   `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).
 - `agreement.AgreementDetector.agreeing(texts)` — which replies only agree with their parent.
@@ -44,7 +49,8 @@ nothing behind and is retried at the next catch-up.
 - **Agreeing replies** (atlas OPEN-19): eight words or fewer, no question mark or link, and
   close in meaning (≥ 0.80) to examples such as "+1", "same here", "good point". They are
   not stored; each adds one to the parent's `upvotes` and to that day's
-  `post_upvotes_daily`. One whose parent we don't have is dropped.
+  `post_upvotes_daily`. One whose parent we don't have is dropped. Re-saving a day sets
+  its upvote count again rather than adding to it, so a redone day never double-counts.
 - **Embedding**: posts are embedded whole as `search_document:`; search terms will be
   embedded as `search_query:`; agreement checks use `classification:`, as nomic-embed-text
   expects. Texts go in batches of 8, shortest first: memory grows with batch size times the

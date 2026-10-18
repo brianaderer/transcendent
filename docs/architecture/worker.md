@@ -12,7 +12,7 @@ catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-
 - Task `voices.catch_up` — processes every complete day not yet done; returns whether it
   ran (it does nothing while another catch-up is running).
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
-- `catch_up_once(lock, run)`, `forget_stale_catch_up(queue)`, `catch_up_now()` in
+- `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` in
   `catch_up_task.py`.
 
 ## How it works
@@ -21,7 +21,8 @@ catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-
   queued by hand as the `voices.catch_up` task.
 - **One at a time:** a Redis lock (`lock:catch-up`) makes a second request do nothing while a
   catch-up is running. A worker that is starting clears any leftover lock first: none can be
-  running yet, so a held lock belongs to a run that died with its worker.
+  running yet, so a held lock belongs to a run that died with its worker. That holds while there is exactly one worker
+  container; with several, a starting worker could clear another's lock.
 - **One job, days in order:** the catch-up is one job that walks the missing days oldest
   first, each day in its own transaction and under its own trace id (`day-YYYY-MM-DD`). The
   embedding model, database and archive connections are built once per worker process.

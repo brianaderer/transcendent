@@ -95,3 +95,20 @@ def test_threads_are_looked_up_by_id():
     [thread] = archive(handler).posts_by_id(["p1", "p2"])
 
     assert thread.title == "Old thread"
+
+
+def test_the_last_failure_reason_is_in_the_unavailable_error():
+    with pytest.raises(ArchiveUnavailable, match="status 503"):
+        archive(lambda request: answer(status=503)).comments_created_between(DAY_START, DAY_END)
+
+
+def test_a_bad_request_is_not_retried():
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return answer(error="'limit' must be between 1 and 100", status=400)
+
+    with pytest.raises(ArchiveUnavailable, match="limit"):
+        archive(handler).comments_created_between(DAY_START, DAY_END)
+    assert len(calls) == 1
