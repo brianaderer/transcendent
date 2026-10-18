@@ -9,3 +9,6 @@
 
 # Isolated worktrees made by /commit-chain
 .chain-worktrees/
+
+# macOS folder metadata
+.DS_Store
