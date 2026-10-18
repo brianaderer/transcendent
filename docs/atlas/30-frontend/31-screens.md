@@ -11,7 +11,7 @@ not real data.
 flowchart LR
     MAIN["1 Explore — main page<br/>date-range slider · dot plot · topics · Generate report"]
     DOC["2 Document"]
-    CMP["3 Comparison"]
+    CMP["3 Comparison<br/>see 70"]
     TOP["4 Topic detail"]
     STA["5 Retrieval stats"]
     MAIN -->|"Generate report"| DOC

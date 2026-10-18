@@ -257,7 +257,8 @@ const DRILL={
   "40.WEB":"41","40.ING":"21","40.REP":"60","40.CMP":"70","40.DAY":"21","40.REPJ":"60",
   "50.ENG":"21",
   "60.C":"21",
-  "70.BT":"50","70.SCR":"31"
+  "70.BT":"50","70.SCR":"31",
+  "31.CMP":"70","41.REP":"60","41.TAG":"60"
 };
 
 const PLATES={
@@ -786,10 +787,11 @@ const PLATES={
  resolved:[
   ["OPEN-1","The frontend's API client is generated from an OpenAPI description the backend publishes (typed TanStack Query hooks, for example with orval). The backend choice must support publishing one.","2026-10-18"],
   ["OPEN-2","The embedding map is drawn with Apache ECharts.","2026-10-18"],
+  ["OPEN-3","The community is r/sailing on Reddit, fetched from Reddit through the Arctic Shift archive (OPEN-8). Trawler Forum was ruled out because it blocks automated access and bans AI crawlers in its robots.txt; r/trawlers was ruled out because it isn't busy enough for eight weeks of clusters and trends.","2026-10-18"],
   ["OPEN-4","Similarity search is done in Postgres with the pgvector extension, for both jobs: comparing clusters with topic tags, and retrieving posts for the document.","2026-10-18"],
+  ["OPEN-5","Writing and tag decisions: Claude Sonnet 5.5 through OpenRouter. Embeddings: a small open long-input model inside the container. Reviewers need one key, an OpenRouter key Brian sends in the submission email; the README says so.","2026-10-18"],
   ["OPEN-6","Posts are fetched daily. (Superseded by OPEN-10: clustering is no longer on demand; posts are tagged day by day on intake.)","2026-10-18"],
   ["OPEN-7","The stored history covers eight weeks: seven to fit trends, one held back for the backtest.","2026-10-18"],
-  ["OPEN-3","The community is r/sailing on Reddit, fetched from Reddit through the Arctic Shift archive (OPEN-8). Trawler Forum was ruled out because it blocks automated access and bans AI crawlers in its robots.txt; r/trawlers was ruled out because it isn't busy enough for eight weeks of clusters and trends.","2026-10-18"],
   ["OPEN-8","r/sailing's posts and comments are fetched from Arctic Shift (arctic-shift.photon-reddit.com), a free research archive of Reddit that needs no key, for both the eight-week history and the daily fetch. Reddit's own API was ruled out for now because creating an app requires approval under its Responsible Builder Policy.","2026-10-18"],
   ["OPEN-9","Stored data keeps authors' real Reddit usernames; no pseudonyms.","2026-10-18"],
   ["OPEN-10","Posts are tagged day by day on intake; any period, including the eight-week history and the trend periods, is a range of days.","2026-10-18"],
@@ -799,17 +801,16 @@ const PLATES={
   ["OPEN-15","The comparison gets a plate of its own (70).","2026-10-18"],
   ["OPEN-16","The document follows the brief: a web page covering the past week's topics with notable threads and quotes linked to real posts, and next week's predictions with their trend evidence. Screen specs for design mockups are on plate 31.","2026-10-18"],
   ["OPEN-17","The main page is governed by a date-range slider that populates and depopulates the dot plot, with a Generate report button for the selected range; each topic's engagement over time is graphed on Topic detail; runs show live progress. See plate 31.","2026-10-18"],
-  ["OPEN-19","Short agreeing replies (\"+1\", \"this\", \"same here\") are found by a basic semantic check (short, and close in meaning to a handful of agreement examples) and are not saved; each adds one to its parent post's upvotes, which count as engagement for the parent's tag. Proposed alongside: a per-day count so the trend knows when the agreement happened.","2026-10-18"],
-  ["OPEN-5","Writing and tag decisions: Claude Sonnet 5.5 through OpenRouter. Embeddings: a small open long-input model inside the container. Reviewers need one key, an OpenRouter key Brian sends in the submission email; the README says so.","2026-10-18"],
   ["OPEN-18","Everything runs under Docker Compose; every service that stores information (Postgres, Redis, the model cache) keeps it on a mounted volume. See plate 04.","2026-10-18"],
+  ["OPEN-19","Short agreeing replies (\"+1\", \"this\", \"same here\") are found by a basic semantic check (short, and close in meaning to a handful of agreement examples) and are not saved; each adds one to its parent post's upvotes, which count as engagement for the parent's tag. Proposed alongside: a per-day count so the trend knows when the agreement happened.","2026-10-18"],
+  ["OPEN-20","Each post is embedded once, at intake. The squashing to two dimensions for the dot plot is recomputed from the posts in the selected date range whenever the range changes (Brian, replacing the earlier stored-position decision).","2026-10-18"],
   ["OPEN-21","The document's conclusions are aggregate (which topics, how big, which way they're moving), drawn from the topic and engagement data, not per-post. The comparison scores both versions against one answer key computed from that data; per-sentence checking against posts is dropped.","2026-10-18"],
   ["OPEN-22","To try first: predictions are scored on a committed list of expected topics and directions, not on prose or numbers. Each report also predicts its own range from what was known the day before the range began, so it is scored at once. The code's numerical projections are checked separately, outside the A/B scores.","2026-10-18"],
-  ["OPEN-20","Each post is embedded once, at intake. The squashing to two dimensions for the dot plot is recomputed from the posts in the selected date range whenever the range changes (Brian, replacing the earlier stored-position decision).","2026-10-18"],
   ["OPEN-23","No longer applies: positions aren't stored, so first start doesn't need a layout.","2026-10-18"],
   ["OPEN-24","Runs are not referred back to: no run history, no LangGraph checkpoints, no stored event log, no Runs screen. Results are shown when a run finishes.","2026-10-18"],
-  ["OPEN-27","Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers.","2026-10-18"],
   ["OPEN-25","The report agent returns one answer in two parts: the prose report, and a fixed list of its topics with rank and direction plus its predicted topics. The page shows the prose with the list as a small table beside it; the app scores the list.","2026-10-18"],
-  ["OPEN-26","Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range.","2026-10-18"]]}
+  ["OPEN-26","Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range.","2026-10-18"],
+  ["OPEN-27","Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers.","2026-10-18"]]}
 };
 
 /* ===================================================================== RENDERER */

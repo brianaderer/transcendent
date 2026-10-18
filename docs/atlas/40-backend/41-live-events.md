@@ -10,8 +10,8 @@ Everything else is *proposed*.
 ```mermaid
 flowchart LR
     subgraph WORKER["Celery worker"]
-        REP["Report agent, A and B"]
-        TAG["Tagging agent"]
+        REP["Report agent, A and B<br/>see 60"]
+        TAG["Tagging agent<br/>see 60"]
         DAY["Day job (catch-up)"]
         EMIT["emit(event)<br/>one small function every job calls"]
         REP --> EMIT
