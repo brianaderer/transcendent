@@ -12,7 +12,7 @@ flowchart LR
     FE["Frontend<br/>React · TanStack Query + Router · Zustand<br/>see 30"]
     API["Backend<br/>FastAPI<br/>see 40"]
     STORE[("Postgres + pgvector")]
-    INGEST["Ingestion<br/>daily fetch · community ?"]
+    INGEST["Ingestion<br/>daily fetch · r/trawlers via Reddit API"]
 
     USER --> FE
     FE --> API
@@ -26,10 +26,10 @@ flowchart LR
 - **Frontend** — specified. Details on [30 Frontend](30-frontend.md).
 - **Backend** — FastAPI, specified. Its modules are on [40 Backend](40-backend.md).
 - **Passage store** — Postgres with pgvector, specified.
-- **Ingestion** — fetches posts daily, specified; which community is still open (OPEN-3).
+- **Ingestion** — fetches posts daily, specified; from r/trawlers through Reddit's API (OPEN-3, resolved).
 - Everything runs under Docker Compose (the README's install steps already assume
   Docker).
 
 ## Open in this draft
 
-- `?` The community: OPEN-3.
+- `?` Whether r/trawlers is busy enough; r/boating is the fallback.

@@ -57,6 +57,6 @@ flowchart LR
 
 ## Open in this draft
 
-- `?` Which community — OPEN-3. Trawler Forum was requested but blocks automated access.
+- `?` Whether r/trawlers (OPEN-3, resolved) is busy enough for eight weeks of clusters and trends.
 - `?` The models — OPEN-5, deferred until the agentic loop is designed.
 - `?` Everything marked *proposed* above.
