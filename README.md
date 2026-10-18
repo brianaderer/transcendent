@@ -191,8 +191,10 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
     [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
   - `/uncle-bob` reviews every commit that changes code against Robert C. Martin's
     *Clean Code*: clear names, small single-purpose functions, few arguments, honest
-    comments, proper error handling, and tests. It lists what to fix and how. The
-    guidelines are summarized in [`CLAUDE.md`](CLAUDE.md), section 8.
+    comments, proper error handling, and tests. It lists what to fix and how. It runs
+    automatically through the same hooks as `/document-commit`, so the
+    `git config core.hooksPath .githooks` step above turns it on for terminal commits
+    too. The guidelines are summarized in [`CLAUDE.md`](CLAUDE.md), section 8.
   - `/test-boot` checks this README's install and run steps the way you'll use them.
     It clones the repo into an empty folder, follows those steps exactly, tries the
     demo, and reports anything that failed or was harder than it should be. Details
