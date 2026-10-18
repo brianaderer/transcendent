@@ -322,10 +322,6 @@ value. The brief is summarized in `README.md` → *Primary objective*.
   single `make` target). Every extra manual step is a chance for the demo to fail.
 - Secrets never go in the repo. Provide `.env.example` with every variable named and
   explained, and say in the README exactly which keys the reviewer must supply.
-- **The demo must work without live crawling.** Ship a small, committed snapshot of
-  one week of community data and a command that loads it, so the app runs even if
-  the source site is slow, rate-limits, or blocks the crawler. Live ingestion is a
-  separate, optional command.
 - **Before calling boot-affecting work finished, run `/test-boot`.** It clones the
   repo into a blank folder, follows the README exactly as a reviewer would, and
   reports success or every friction point. `/document-commit` runs it automatically
