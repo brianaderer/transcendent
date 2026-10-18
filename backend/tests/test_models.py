@@ -18,14 +18,17 @@ def test_every_planned_table_is_described():
     }
 
 
-def test_posts_carry_one_embedding_and_the_decision_that_tagged_them():
-    posts = table("posts")
-
-    assert posts.c.embedding.type.dim == EMBEDDING_DIMENSIONS
-    assert posts.c.cluster_decision_id.foreign_keys
+def test_post_embeddings_have_the_embedding_model_size():
+    assert table("posts").c.embedding.type.dim == EMBEDDING_DIMENSIONS
 
 
-def test_reddit_score_and_our_upvotes_are_kept_apart():
+def test_a_post_points_to_the_cluster_decision_that_tagged_it():
+    foreign_keys = table("posts").c.cluster_decision_id.foreign_keys
+
+    assert {key.target_fullname for key in foreign_keys} == {"cluster_decisions.id"}
+
+
+def test_posts_keep_reddit_score_and_agreeing_reply_upvotes_as_separate_columns():
     posts = table("posts")
 
     assert {"reddit_score", "upvotes"} <= set(posts.c.keys())

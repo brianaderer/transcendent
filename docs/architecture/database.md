@@ -1,6 +1,6 @@
 # database
 
-**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py` (needs a database)
 
 ## Purpose
 Describes the tables and keeps the database in step with them. The tables follow
@@ -18,8 +18,8 @@ Describes the tables and keeps the database in step with them. The tables follow
 - `retry_connecting(connect, tries, pause_seconds)` — retries a connection, raising
   `DatabaseNotReady` after the last try (at once if `tries` is 0).
 - `wait_for_database_then_migrate(database_url)`.
-- `sqlalchemy_url(database_url)` — the same address with the `psycopg` driver named,
-  which SQLAlchemy needs.
+- `voices.db.address.sqlalchemy_url(database_url)` — the same address with the `psycopg`
+  driver named, which SQLAlchemy and Alembic need. Used by setup and by `migrations/env.py`.
 
 ## How it works
 Alembic records which migrations have run in its own `alembic_version` table and applies
@@ -40,8 +40,11 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm --no-deps api alembic check` says whether the models and the
-applied migrations agree.
+`docker compose run --rm api pytest -m database` checks that the models and the applied
+migrations agree (it's left out of the default test run because it needs a running
+database). Running the `alembic` command directly reads the address from `DATABASE_URL`.
+
+`topic_similarity` is double precision (`Float`); the earlier SQL file used `real`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through

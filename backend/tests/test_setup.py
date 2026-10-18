@@ -1,6 +1,8 @@
 import pytest
+from alembic.script import ScriptDirectory
 
-from voices.db.setup import DatabaseNotReady, retry_connecting, sqlalchemy_url
+from voices.db.address import sqlalchemy_url
+from voices.db.setup import DatabaseNotReady, alembic_config, retry_connecting
 
 
 def test_retrying_returns_as_soon_as_an_attempt_succeeds():
@@ -32,3 +34,9 @@ def test_the_database_address_names_the_driver_sqlalchemy_should_use():
     url = sqlalchemy_url("postgresql://voices:voices@postgres:5432/voices")
 
     assert url == "postgresql+psycopg://voices:voices@postgres:5432/voices"
+
+
+def test_alembic_finds_its_settings_and_exactly_one_latest_migration():
+    config = alembic_config("postgresql://u:p@nowhere/db")
+
+    assert len(ScriptDirectory.from_config(config).get_heads()) == 1

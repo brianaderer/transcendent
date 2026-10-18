@@ -4,11 +4,13 @@ from alembic import context
 from sqlalchemy import create_engine
 
 from voices.config import load_settings
+from voices.db.address import sqlalchemy_url
 from voices.db.models import Base
-from voices.db.setup import sqlalchemy_url
 
 
 def database_address() -> str:
+    """setup.py passes the address in; running the alembic command directly falls back to
+    DATABASE_URL."""
     return context.config.get_main_option("sqlalchemy.url") or sqlalchemy_url(
         load_settings().database_url
     )

@@ -15,9 +15,11 @@ from alembic import command
 from alembic.config import Config
 
 from voices.config import load_settings
+from voices.db.address import sqlalchemy_url
 from voices.log import configure_logging, log_event
 
-ALEMBIC_INI = Path(__file__).resolve().parents[3] / "alembic.ini"
+BACKEND_FOLDER = Path(__file__).resolve().parents[3]  # src/voices/db/setup.py -> backend/
+ALEMBIC_INI = BACKEND_FOLDER / "alembic.ini"
 CONNECT_TRIES = 30
 PAUSE_BETWEEN_TRIES_SECONDS = 1.0
 
@@ -56,11 +58,6 @@ def alembic_config(database_url: str) -> Config:
     config = Config(str(ALEMBIC_INI))
     config.set_main_option("sqlalchemy.url", sqlalchemy_url(database_url))
     return config
-
-
-def sqlalchemy_url(database_url: str) -> str:
-    """SQLAlchemy needs the driver named in the address; the rest of the code doesn't."""
-    return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
 
 def main() -> None:

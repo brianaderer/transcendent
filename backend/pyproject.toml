@@ -31,7 +31,8 @@ packages = ["src/voices"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q -p no:cacheprovider"  # tests run in throwaway containers; a cache only fails to write
+addopts = '-q -p no:cacheprovider -m "not database"'  # no cache: non-root containers can't write one
+markers = ["database: needs a running Postgres; run with -m database"]
 
 [tool.ruff]
 line-length = 100

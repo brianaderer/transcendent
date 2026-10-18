@@ -43,7 +43,7 @@ class Topic(Base):
     label: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
     keywords: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
-    centroid = mapped_column(Vector(EMBEDDING_DIMENSIONS), nullable=False)
+    centroid: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
     first_seen: Mapped[date] = mapped_column(Date)
     last_seen: Mapped[date] = mapped_column(Date)
 
@@ -59,7 +59,7 @@ class ClusterDecision(Base):
     decision: Mapped[str] = mapped_column(Text)
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"))
     reason: Mapped[str] = mapped_column(Text)
-    candidate_tags: Mapped[list] = mapped_column(JSONB, server_default="[]")
+    candidate_tags: Mapped[list[dict]] = mapped_column(JSONB, server_default="[]")
     prompt: Mapped[str] = mapped_column(Text)
     model: Mapped[str] = mapped_column(Text)
 
@@ -82,7 +82,7 @@ class Post(Base):
     reddit_score: Mapped[int] = mapped_column(Integer, server_default="0")
     upvotes: Mapped[int] = mapped_column(Integer, server_default="0")  # agreeing replies
     parent_source_id: Mapped[str | None] = mapped_column(Text)
-    embedding = mapped_column(Vector(EMBEDDING_DIMENSIONS))
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
     status: Mapped[str] = mapped_column(Text, server_default="pending")
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
     topic_similarity: Mapped[float | None] = mapped_column(Float)
@@ -137,6 +137,6 @@ class IngestedDay(Base):
 
     day: Mapped[date] = mapped_column(Date, primary_key=True)
     status: Mapped[str] = mapped_column(Text)
-    counts: Mapped[dict] = mapped_column(JSONB, server_default="{}")
+    counts: Mapped[dict[str, int]] = mapped_column(JSONB, server_default="{}")
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
