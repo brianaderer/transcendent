@@ -185,16 +185,20 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
   - `/tdd` takes a single defect from a failing test to a proven fix.
   - `/document-commit` documents each commit and follows every reference outward,
     updating anything the change made stale. It runs automatically after every
-    commit. Inside Claude Code it needs `jq` installed. To enable it for commits
-    made outside Claude Code, run `git config core.hooksPath .githooks` once after
-    cloning; that hook also needs the `claude` command. How it all fits together is in
+    commit that changes more than documentation. Inside Claude Code it needs `jq`
+    installed. To enable it for commits made outside Claude Code, run
+    `git config core.hooksPath .githooks` once after cloning; that hook also needs the
+    `claude` command. How it all fits together is in
     [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
   - `/uncle-bob` reviews every commit that changes code against Robert C. Martin's
     *Clean Code*: clear names, small single-purpose functions, few arguments, honest
     comments, proper error handling, and tests. It lists what to fix and how. It runs
-    automatically through the same hooks as `/document-commit`, so the
+    automatically through the same hooks as `/document-commit`, and before it, so the
     `git config core.hooksPath .githooks` step above turns it on for terminal commits
     too. The guidelines are summarized in [`CLAUDE.md`](CLAUDE.md), section 8.
+    The checks these hooks rely on have their own offline tests: run
+    `tests/hooks/test_commit_checks.sh` from the repo folder, and it should end with
+    `all tests passed`.
   - `/test-boot` checks this README's install and run steps the way you'll use them.
     It clones the repo into an empty folder, follows those steps exactly, tries the
     demo, and reports anything that failed or was harder than it should be. Details

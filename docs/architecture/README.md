@@ -10,4 +10,4 @@ configuration and data.
 
 | Module | Source | What it does |
 |---|---|---|
-| [tooling](tooling.md) | `.claude/`, `.githooks/` | Commit hooks, loop guard, and the `/document-commit` skill and agent that keep documentation in step with every commit; the `/uncle-bob` skill and agent that review each code commit against *Clean Code*; the `/test-boot` skill and agent that follow the README from a fresh clone the way a reviewer will |
+| [tooling](tooling.md) | `.claude/`, `.githooks/` | Commit hooks, loop guard, and the `/document-commit` skill and agent that keep documentation in step with every commit; the `/uncle-bob` skill and agent that review each code commit against *Clean Code*; the `/test-boot` skill and agent that follow the README from a fresh clone the way a reviewer will; offline tests for the hook checks |

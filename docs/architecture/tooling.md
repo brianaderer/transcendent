@@ -1,12 +1,12 @@
 # tooling
 
-**Source:** `.claude/`, `.githooks/`   ·   **Tests:** none yet
+**Source:** `.claude/`, `.githooks/`   ·   **Tests:** `tests/hooks/test_commit_checks.sh`
 
 ## Purpose
 The repo's own workflow machinery. Right now that means three things:
 
-- **The automatic documentation sync.** After every commit that changes code,
-  `/document-commit` runs, documents the change, follows every reference outward, and
+- **The automatic documentation sync.** After every commit that changes anything
+  outside `docs/` and `README.md`, `/document-commit` runs, documents the change, follows every reference outward, and
   makes one documentation-only commit. The rules this serves are in
   [`CLAUDE.md`](../../CLAUDE.md) §6.
 - **The boot test.** `/test-boot` plays the reviewer from the challenge brief: it
@@ -14,7 +14,7 @@ The repo's own workflow machinery. Right now that means three things:
   exactly as written, tries the demo, and reports what worked and what did not. The
   rule this serves is in [`CLAUDE.md`](../../CLAUDE.md) §7 (*The README is the demo*).
 - **The automatic code review.** After every commit that changes source code or tests,
-  `/uncle-bob` reviews the changed code against Robert C. Martin's *Clean Code* and
+  `/uncle-bob` runs first, before the documentation sync, and reviews the changed code against Robert C. Martin's *Clean Code* and
   lists what to fix and how. The reviewers asked for exactly this, and the guidelines
   it checks are in [`CLAUDE.md`](../../CLAUDE.md) §8.
 
@@ -31,8 +31,9 @@ This module contains no application code.
 - **The `document-commit` agent**, `.claude/agents/document-commit.md`. Launched only by
   the skill, with an already-filtered list of commits. Before starting, it reads the
   rules it documents against: `CLAUDE.md` §1 (plain language), §3 (never change an
-  atlas plate), §6 (where documentation lives and the module template) and §7 (the
-  challenge rules), and the README's *Primary objective*. It updates
+  atlas plate), §6 (where documentation lives and the module template), §7 (the
+  challenge rules) and §8 (the Clean Code guidelines, which apply to any comment or
+  docstring it corrects), and the README's *Primary objective*. It updates
   `docs/architecture/` and the README, with the README's install, configure and run
   steps treated as the most important text in the repo. It then traces the fan-out wave
   by wave, sweeps every doc for stale paths and names, logs any plan-versus-code
@@ -70,48 +71,76 @@ This module contains no application code.
   changed lines. Each finding has a severity (Must fix, Should fix, Consider), the file
   and function, what is wrong, and a concrete fix. Its report opens with a one-sentence
   verdict and ends with what was done well. It changes nothing and never commits.
+- **`.claude/hooks/changed-files.sh [sha]`** (default `HEAD`). Prints the paths the
+  commit changed, one per line. Exits 2 with a message when the commit does not exist,
+  so no caller can mistake an error for an answer. The other three check scripts get
+  their file list from it.
 - **`.claude/hooks/has-source-changes.sh [sha]`** (default `HEAD`). Exit 0 means the
   commit changes source code or tests, so it is worth a code review; exit 1 means it
-  only touches markdown, config, data, or lockfiles. "Source" means files ending in
-  `.py`, `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`, `.go`, `.rs`, `.java`, `.kt`,
-  `.rb`, `.sql` or `.sh`, plus anything under `.githooks/`.
-- **`.claude/hooks/is-doc-sync-commit.sh [sha]`** (default `HEAD`), the single loop
-  guard. Exit 0 means "do not document this commit": it carries a `Docs-Sync` trailer,
-  or it changes nothing outside `docs/` and `README.md`. Exit 1 means document it.
-- **`.claude/hooks/post-commit-document.sh`**, a Claude Code `PostToolUse` hook,
-  registered in `.claude/settings.json` for the `Bash` tool.
+  only touches markdown, config, data, or lockfiles; exit 2 means the commit does not
+  exist. "Source" means files ending in `.py`, `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`,
+  `.cjs`, `.go`, `.rs`, `.java`, `.kt`, `.rb`, `.sql` or `.sh`, plus anything under
+  `.githooks/` (git hook scripts have no file extension). It gives the right answer
+  for commits of any size, including ones that change thousands of files.
+- **`.claude/hooks/is-skippable-commit.sh [sha]`** (default `HEAD`), the single loop
+  guard. Exit 0 means "run no post-commit steps for this commit": it carries a
+  `Docs-Sync` trailer, or it changes nothing outside `docs/` and `README.md`. Exit 1
+  means process it; exit 2 means the commit does not exist. It was called
+  `is-doc-sync-commit.sh` before commit `b97420e`.
+- **`.claude/hooks/post-commit-steps.sh [sha]`** (default `HEAD`), the one place that
+  decides which skills run after a commit, and in what order. It prints one skill name
+  per line: `uncle-bob` when the commit changed source code or tests, then
+  `document-commit`. It prints nothing for a commit the loop guard skips, and exits 2
+  for a commit that does not exist. Both hooks ask it, so they cannot disagree. The
+  review comes first so that a fix commit it prompts is documented once, not twice.
+- **`.claude/hooks/claude-post-commit.sh`**, a Claude Code `PostToolUse` hook,
+  registered in `.claude/settings.json` for the `Bash` tool. It was called
+  `post-commit-document.sh` before commit `b97420e`.
 - **`.githooks/post-commit`**, a git hook for commits made outside Claude Code.
+- **`tests/hooks/test_commit_checks.sh`**, the tests for the check scripts above. Run
+  it after any change to `.claude/hooks/` or `.githooks/`; it prints one `ok` or
+  `FAIL` line per case and exits 1 if any case failed.
 
 ## How it works
 There are two ways a commit gets noticed, and both end at the same guard and the same
 two skills.
 
-**Inside Claude Code.** After every Bash tool call, `post-commit-document.sh` reads the
+**Inside Claude Code.** After every Bash tool call, `claude-post-commit.sh` reads the
 call from standard input. If the command was a `git commit` (also `git -C <dir>
 commit`), it moves to the repo, and checks that `HEAD` was committed in the last 60
 seconds, which is how it tells a commit that happened from one that failed. It then
-asks the loop guard. If the commit should be documented, the hook adds a note to
-Claude's context telling it to run `/document-commit <sha>` before any further code
-change. If `has-source-changes.sh` says the commit changed source code, the same note
-also tells Claude to run `/uncle-bob <sha>` after that. The hook only asks; Claude
-runs the skills.
+asks `post-commit-steps.sh` which skills to run. If there are any, the hook adds a note
+to Claude's context telling it to run them in order (for a code commit,
+`/uncle-bob <sha>`, then `/document-commit <sha>`) before any further code change. The
+hook only asks; Claude runs the skills.
 
 **Outside Claude Code.** The git hook `.githooks/post-commit` runs after a terminal
 commit, once enabled with `git config core.hooksPath .githooks`. It exits quietly when
 `CLAUDECODE` is set (the commit came from Claude Code, so the other hook handles it),
 when `SKIP_DOC_SYNC` is set, when `DOC_SYNC_RUNNING` is set (a sync is already running),
-or when the `claude` command is not installed. Otherwise it asks the loop guard. If the
-commit changed source code, it first runs `claude -p "/uncle-bob <sha>"` headlessly
-with a read-only list of allowed tools: file reading and searching, launching the
-agent, read-only git commands (`log`, `diff`, `show`, `diff-tree`, `rev-parse`,
-`rev-list`, `grep`), and the two filter scripts. The review is printed in the terminal
-and nothing is fixed automatically; a failed review does not stop what follows. Note
-the order is the reverse of the Claude Code hook, where documentation comes first.
-Then, if needed, it runs `claude -p "/document-commit <sha>"` headlessly with `DOC_SYNC_RUNNING=1`,
-edits accepted automatically, and a short list of allowed tools: file reading, editing,
-and searching; read-only git commands (`log`, `diff`, `show`, `diff-tree`, `rev-parse`,
-`rev-list`, `grep`, `status`) plus `git add` and `git commit`; `ls`; and the loop guard
-script. It cannot push.
+or when the `claude` command is not installed. Otherwise it asks `post-commit-steps.sh`
+which skills to run and runs each one headlessly, in the same order as the Claude Code
+hook:
+
+- `claude -p "/uncle-bob <sha>"` with a read-only list of allowed tools: file reading
+  and searching, launching the agent, read-only git commands (`log`, `diff`, `show`,
+  `diff-tree`, `rev-parse`, `rev-list`, `grep`, `status`), `ls`, and the four check
+  scripts. The review is printed in the terminal and nothing is fixed automatically.
+- `claude -p "/document-commit <sha>"` with `DOC_SYNC_RUNNING=1`, edits accepted
+  automatically, and the same read-only list plus file editing and writing, `git add`
+  and `git commit`. It cannot push.
+
+If a step fails, the hook prints which one failed and its exit code, tells you to run
+it by hand, and still runs the next step.
+
+**The tests.** `tests/hooks/test_commit_checks.sh` builds throwaway git repos under
+`.test-tmp/` in the repo (ignored by git, deleted when the tests finish) and checks
+each decision: which commits count as having source changes (including a 2,000-file
+commit), which are skippable (including one with the `Docs-Sync` trailer), which
+skills `post-commit-steps.sh` lists and in what order, and that an unknown commit is
+an error rather than a "no". It needs no network. It does not test
+`claude-post-commit.sh` or `.githooks/post-commit` themselves, only the scripts they
+ask.
 
 **The boot test.** `/test-boot` resolves the commit, checks that `.boot-test/` is
 ignored by git, and launches the `test-boot` agent. The agent uses a clone rather than
@@ -141,12 +170,13 @@ check after a terminal commit has to be run by hand with `/test-boot`.
 layers stop that: the `Docs-Sync` trailer on every sync commit, the guard skipping
 documentation-only commits, and the git hook's environment-variable checks. The skill
 also runs the guard on each commit before launching the agent, and confirms the agent's
-commit passes it afterwards.
+commit passes it afterwards. `/uncle-bob` runs the same guard before reviewing.
 
 ## Uses
 - `git`, for every check.
-- `grep`, used by `has-source-changes.sh` to match changed file names.
-- `jq`, used by `post-commit-document.sh` to read the hook input and write its output.
+- `grep`, used by `has-source-changes.sh` and `is-skippable-commit.sh` to match
+  changed file names.
+- `jq`, used by `claude-post-commit.sh` to read the hook input and write its output.
   The Claude Code hook fails without it.
 - The `claude` command-line tool, used by `.githooks/post-commit` for both the review
   and the documentation sync. Without it the git hook does nothing.
@@ -160,23 +190,29 @@ commit passes it afterwards.
 - The `/document-commit` skill runs `/test-boot` when its agent reports that the boot
   steps changed. `CLAUDE.md` §7 also requires `/test-boot` before calling boot-affecting
   work finished and before submitting.
-- `post-commit-document.sh`, `.githooks/post-commit` and the `/uncle-bob` skill all
-  call `has-source-changes.sh`.
+- `claude-post-commit.sh` and `.githooks/post-commit` both call `post-commit-steps.sh`,
+  which calls `is-skippable-commit.sh` and `has-source-changes.sh`. All three call
+  `changed-files.sh`.
+- The `/document-commit` skill, its agent, and the `/uncle-bob` skill call
+  `is-skippable-commit.sh`; the `/uncle-bob` skill also calls `has-source-changes.sh`.
+- `tests/hooks/test_commit_checks.sh` runs `has-source-changes.sh`,
+  `is-skippable-commit.sh` and `post-commit-steps.sh`.
 - No application module uses it.
 
 ## Configuration and data
 - `.claude/settings.json`: registers the `PostToolUse` hook, run as
-  `"$CLAUDE_PROJECT_DIR"/.claude/hooks/post-commit-document.sh`.
+  `"$CLAUDE_PROJECT_DIR"/.claude/hooks/claude-post-commit.sh`.
 - `core.hooksPath` (git config, set once per clone): enables `.githooks/post-commit`.
 - `SKIP_DOC_SYNC`: set for one commit to skip the git hook.
 - `DOC_SYNC_RUNNING`: set by the git hook while a headless sync runs.
 - `CLAUDECODE`: set by Claude Code; the git hook stands aside when it is present.
 - `Docs-Sync: <range>` commit trailer: marks a documentation-sync commit. It must be
   the first trailer line.
-- `.gitignore`: ignores `.boot-test/` (the throwaway clones made by `/test-boot`) and
-  `.env` (local secrets).
+- `.gitignore`: ignores `.boot-test/` (the throwaway clones made by `/test-boot`),
+  `.test-tmp/` (the throwaway repos made by the hook tests), and `.env` (local secrets).
 - `.boot-test/<date-time>/`: one folder per boot test, holding the clone in `app/` and
   the command output in `logs/`. Never committed; left in place after each run.
 - Writes: `/document-commit` writes files under `docs/`, `README.md`, and comments or
-  docstrings in source files. `/uncle-bob` writes nothing. `/test-boot` writes only inside its own `.boot-test/`
-  folder. Nothing outside the repo.
+  docstrings in source files. `/uncle-bob` writes nothing. `/test-boot` writes only
+  inside its own `.boot-test/` folder. The hook tests write only inside `.test-tmp/`,
+  and delete it when they finish. Nothing outside the repo.
