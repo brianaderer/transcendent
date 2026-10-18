@@ -1,6 +1,6 @@
 # Transcendent Atlas — Index
 
-**Presentation page:** not published yet. Once it is, the link goes here. Open
+**Presentation page:** [https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ](https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ) (private). Or open
 [`atlas.html`](atlas.html) from a checkout to click through the plates as diagrams.
 
 | Plate | What it shows |

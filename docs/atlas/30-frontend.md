@@ -26,7 +26,7 @@ proposed. The screens below are still a proposal.
 
 ## Screens
 
-The six screens — led by the Explore page, where a date-range slider governs the dot
+The five screens — led by the Explore page, where a date-range slider governs the dot
 plot and a Generate report button (specified by Brian) — are on
 [31 Screens](30-frontend/31-screens.md), written as a design brief for mockups.
 

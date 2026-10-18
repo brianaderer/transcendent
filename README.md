@@ -111,8 +111,7 @@ committed by accident.
 > The app isn't built yet. When it is, this step will be a single command, run from
 > the folder you cloned this repo into.
 
-**Atlas presentation page:** not published yet. The link goes here once the first plan
-is drawn.
+**Atlas presentation page:** [https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ](https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ) (private; the clickable view of the plan).
 
 Plans and design for this project live in the **atlas**, in
 [`docs/atlas/`](docs/atlas/00-index.md).

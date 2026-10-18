@@ -1,0 +1,1134 @@
+<title>Transcendent Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+/* Tokens. Light palette on :root; dark palette under prefers-color-scheme and under data-theme="dark". */
+:root{
+  --bg:#e9edf1; --grid:#dde3ea; --panel:#fbfcfd; --sunk:#e1e7ed; --line:#bcc6d1; --fg:#132131; --muted:#4f5f72; --faint:#7d8a9a;
+  --accent:#0a66c8; --accent-soft:#dcebfb; --on-accent:#ffffff;
+  --llm:#a0560b; --llm-soft:#fbeedd; --tool:#0d7566; --tool-soft:#dff2ee; --svc:#2a5ca6; --svc-soft:#e3ecf8;
+  --data:#56626f; --data-soft:#e4e8ec; --app:#6745ad; --app-soft:#eee8f9; --out:#132131;
+  --rec:#b3213a; --draft:#9a5a00; --draft-soft:#fff3dc; --scrim:rgba(12,20,30,.55); --shadow:rgba(10,20,35,.28);
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1219; --grid:#121b25; --panel:#121a24; --sunk:#0a1016; --line:#283545; --fg:#dde6ef; --muted:#97a6b8; --faint:#617084;
+  --accent:#5ca8ff; --accent-soft:#12253b; --on-accent:#06111d;
+  --llm:#e6a65e; --llm-soft:#2a1e10; --tool:#4fc8b1; --tool-soft:#0f241f; --svc:#80a9ee; --svc-soft:#131e30;
+  --data:#a4afbd; --data-soft:#18202a; --app:#b49ff3; --app-soft:#1e1931; --out:#dde6ef;
+  --rec:#f27389; --draft:#f0b55b; --draft-soft:#2a1f0d; --scrim:rgba(0,0,0,.66); --shadow:rgba(0,0,0,.6);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1219; --grid:#121b25; --panel:#121a24; --sunk:#0a1016; --line:#283545; --fg:#dde6ef; --muted:#97a6b8; --faint:#617084;
+  --accent:#5ca8ff; --accent-soft:#12253b; --on-accent:#06111d;
+  --llm:#e6a65e; --llm-soft:#2a1e10; --tool:#4fc8b1; --tool-soft:#0f241f; --svc:#80a9ee; --svc-soft:#131e30;
+  --data:#a4afbd; --data-soft:#18202a; --app:#b49ff3; --app-soft:#1e1931; --out:#dde6ef;
+  --rec:#f27389; --draft:#f0b55b; --draft-soft:#2a1f0d; --scrim:rgba(0,0,0,.66); --shadow:rgba(0,0,0,.6);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background-color:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+.wrap{max-width:1480px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;color:inherit}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:0 4px;overflow-wrap:anywhere}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--fg);padding-bottom:12px;margin-bottom:16px}
+.brand .eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand h1{font-family:var(--f-display);font-weight:700;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.05;margin:2px 0 0;letter-spacing:-.01em}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.platenav{display:flex;flex-wrap:wrap;gap:4px}
+.pbtn{font-family:var(--f-mono);font-size:.78rem;font-weight:600;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:5px 8px;cursor:pointer;min-width:38px}
+.pbtn:hover{border-color:var(--fg)}
+.pbtn.is-draft{border-style:dashed}
+.theme{font-family:var(--f-mono);font-size:.76rem;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:5px 10px;cursor:pointer}
+
+/* title block (drawing-sheet style) */
+.sheet{background:var(--panel);border:1.5px solid var(--fg);border-radius:4px}
+.tblock{display:grid;grid-template-columns:auto 1fr auto;border-bottom:1.5px solid var(--fg)}
+.tblock > div{padding:8px 12px;border-right:1px solid var(--line)}
+.tblock > div:last-child{border-right:0}
+.tb-no{font-family:var(--f-display);font-weight:700;font-size:1.6rem;line-height:1}
+.tb-k{display:block;font-family:var(--f-mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.tb-t{font-family:var(--f-display);font-weight:600;font-size:1.15rem;line-height:1.2}
+.lead{padding:10px 14px 0;margin:0;color:var(--muted);max-width:95ch}
+.frame{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0 0;border-top:1px solid var(--line)}
+svg.front{display:block;width:100%;min-width:980px;max-width:1480px;height:auto}
+.hint{font-size:.84rem;color:var(--muted);margin:8px 14px 12px}
+
+.chip-draft{display:inline-block;font-family:var(--f-mono);font-size:.68rem;font-weight:600;letter-spacing:.12em;color:var(--draft);background:var(--draft-soft);border:1px dashed var(--draft);border-radius:4px;padding:1px 6px;vertical-align:middle}
+.chip-final{display:inline-block;font-family:var(--f-mono);font-size:.68rem;font-weight:600;letter-spacing:.12em;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;vertical-align:middle}
+
+/* key */
+.key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.76rem;color:var(--muted);padding:10px 14px;border-top:1px solid var(--line)}
+.key .grp{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.key .grp > b{font-family:var(--f-mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key svg{display:block}
+
+/* index list */
+.index{margin-top:18px}
+.index h2,.sec h3{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 8px}
+.ilist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:8px}
+.irow{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;cursor:pointer}
+.irow:hover{border-color:var(--fg)}
+.irow.is-draft{border-style:dashed}
+.irow .no{font-family:var(--f-display);font-weight:700;font-size:1.35rem;line-height:1}
+.irow .nm{font-weight:600;font-size:.92rem}
+.irow .ds{display:block;font-size:.8rem;color:var(--muted);margin-top:2px}
+
+/* breakout dialog */
+.ov{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12px) max(10px,env(safe-area-inset-right,0px)) 12px max(10px,env(safe-area-inset-left,0px));z-index:20}
+.ov[hidden]{display:none}
+.dlg{background:var(--bg);border:1.5px solid var(--fg);border-radius:6px;width:min(1460px,100%);max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 24px 60px var(--shadow)}
+.dlg-h{position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1.5px solid var(--fg);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:stretch}
+.dlg-h .tb-no{padding:10px 14px;border-right:1px solid var(--line);display:flex;align-items:center}
+.dlg-h .ttl{padding:8px 14px;min-width:0}
+.dlg-h h2{font-family:var(--f-display);font-weight:700;font-size:1.35rem;line-height:1.15;margin:0}
+.dlg-h .acts{display:flex;gap:6px;align-items:center;padding:8px 10px;border-left:1px solid var(--line)}
+.ibtn{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:.84rem;white-space:nowrap}
+.ibtn:hover{border-color:var(--fg)}
+.x{font-size:1.25rem;line-height:1;width:36px;height:36px;padding:0}
+.dlg-b{padding:14px 16px 24px;display:flex;flex-direction:column;gap:16px}
+.dlg-b > .lead{padding:0;color:var(--fg)}
+.trail{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.trail button{font-family:var(--f-mono);font-size:.74rem;border:0;background:none;padding:2px 4px;cursor:pointer;color:var(--accent);text-decoration:underline}
+.facts{display:flex;flex-wrap:wrap;gap:6px}
+.fact{font-family:var(--f-mono);font-size:.74rem;border:1px solid var(--line);border-radius:4px;padding:3px 8px;background:var(--panel);overflow-wrap:anywhere}
+.fact em{font-style:normal;color:var(--muted);margin-right:6px;text-transform:uppercase;letter-spacing:.08em;font-size:.66rem}
+.fact.prop{border-style:dashed}
+.rel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.8rem;color:var(--muted)}
+.fig{margin:0}
+.fig h3{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 6px}
+.fig .frame2{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+.fig .frame2 svg{display:block}
+.keybox{background:var(--panel);border:1px solid var(--line);border-radius:4px}
+.keybox .key{border-top:0}
+.sec{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.sec p{margin:0 0 8px;max-width:100ch}
+.sec ul{margin:0;padding-left:1.2em;max-width:100ch}
+.sec li{margin:0 0 5px}
+.sec details{border-top:1px solid var(--line);padding:6px 0}
+.sec details:first-of-type{border-top:0}
+.sec summary{cursor:pointer;font-weight:600}
+.sec details > div{padding:6px 0 2px}
+.open-list{display:flex;flex-direction:column;gap:6px}
+.open-item{border:1.5px dashed var(--draft);background:var(--draft-soft);border-radius:4px;padding:8px 10px;font-size:.9rem}
+.open-item b{font-family:var(--f-mono);color:var(--draft);margin-right:6px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tbl{border-collapse:collapse;width:100%;font-size:.86rem}
+.tbl th,.tbl td{text-align:left;vertical-align:top;border-top:1px solid var(--line);padding:6px 8px}
+.tbl th{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;border-top:0}
+.tbl td:first-child{white-space:nowrap;font-weight:600}
+.tbl tr.flash td{background:var(--accent-soft)}
+.pl,.oq{font:inherit;font-size:inherit;border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.oq{font-family:var(--f-mono);font-size:.9em}
+
+/* SVG diagrams */
+svg.dg text{font-family:var(--f-body);fill:var(--fg)}
+svg.dg .lane{fill:var(--sunk);opacity:.7}
+svg.dg .lanel{font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;fill:var(--faint)}
+svg.dg .grpr{fill:none;stroke:var(--faint);stroke-width:1.2;stroke-dasharray:3 4}
+svg.dg .grpl{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;fill:var(--faint)}
+svg.dg .grpl.go{fill:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline}
+svg.dg .bx .r{fill:var(--panel);stroke:var(--line);stroke-width:1.3}
+svg.dg .bx .t{font-family:var(--f-display);font-size:13px;font-weight:600}
+svg.dg .bx .s{font-family:var(--f-mono);font-size:10px;fill:var(--muted)}
+svg.dg .bx .tag{font-family:var(--f-mono);font-size:8.5px;font-weight:600;letter-spacing:.1em}
+svg.dg .bx .dr{font-family:var(--f-mono);font-size:10px;font-weight:600;fill:var(--accent)}
+svg.dg .bx .halo{fill:none;stroke:var(--accent);stroke-width:1.6}
+svg.dg .bx .lid{fill:none;stroke:var(--data);stroke-width:1.1}
+svg.dg .k-llm .r{fill:var(--llm-soft);stroke:var(--llm);stroke-width:1.6} svg.dg .k-llm .tag{fill:var(--llm)}
+svg.dg .k-tool .r{fill:var(--tool-soft);stroke:var(--tool);stroke-width:1.6} svg.dg .k-tool .tag{fill:var(--tool)}
+svg.dg .k-svc .r{fill:var(--svc-soft);stroke:var(--svc);stroke-width:1.6} svg.dg .k-svc .tag{fill:var(--svc)}
+svg.dg .k-data .r{fill:var(--data-soft);stroke:var(--data);stroke-width:1.4} svg.dg .k-data .tag{fill:var(--data)}
+svg.dg .k-app .r{fill:var(--app-soft);stroke:var(--app);stroke-width:1.6} svg.dg .k-app .tag{fill:var(--app)}
+svg.dg .k-out .r{fill:var(--panel);stroke:var(--out);stroke-width:2.2} svg.dg .k-out .tag{fill:var(--out)}
+svg.dg .k-step .r{fill:var(--panel);stroke:var(--line);stroke-width:1.4} svg.dg .k-step .tag{fill:var(--muted)}
+svg.dg .bx.pend .r{stroke-dasharray:5 4}
+svg.dg .bx[role="button"]{cursor:pointer}
+svg.dg .bx[role="button"]:hover .r{stroke-width:2.6}
+svg.dg .bx:focus{outline:none}
+svg.dg .bx:focus-visible .halo,svg.dg .bx:focus-visible .r{stroke:var(--accent);stroke-width:3}
+svg.dg .bx.sel .r{stroke:var(--accent);stroke-width:3}
+svg.dg .a path{fill:none;stroke:var(--data);stroke-width:1.6}
+svg.dg .a .hd{fill:var(--data)}
+svg.dg .a.cond path{stroke-dasharray:1.5 4;stroke-linecap:round;stroke-width:1.9}
+svg.dg .a.loop path{stroke:var(--llm);stroke-dasharray:6 4} svg.dg .a.loop .hd{fill:var(--llm)}
+svg.dg .a.rec path{stroke:var(--rec);stroke-width:2.4;stroke-dasharray:9 4} svg.dg .a.rec .hd{fill:var(--rec)}
+svg.dg .a.attach path{stroke:var(--faint);stroke-width:1.4}
+svg.dg .al{font-family:var(--f-mono);font-size:10px;fill:var(--muted);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+svg.dg .al.go{fill:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline}
+svg.dg .al.go:focus{outline:none}
+svg.dg .al.go:focus-visible{fill:var(--fg)}
+svg.dg .k-sw{stroke-width:1.5}
+
+@media (max-width:640px){
+  .tblock{grid-template-columns:auto 1fr}
+  .tblock > div:last-child{grid-column:1 / -1;border-top:1px solid var(--line)}
+  .dlg-h{grid-template-columns:auto minmax(0,1fr)}
+  .dlg-h .acts{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line);justify-content:flex-end}
+  .ov{padding:0}
+  .dlg{max-height:100dvh;border-radius:0;border-left:0;border-right:0}
+}
+@media (prefers-reduced-motion:no-preference){
+  .irow,.pbtn,.ibtn{transition:border-color .15s}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">Community Voices · plan in plates</div>
+      <h1>Transcendent Atlas</h1>
+    </div>
+    <div class="tools">
+      <nav class="platenav" id="platenav" aria-label="Open a plate"></nav>
+      <button class="theme" id="theme" type="button" aria-label="Colour theme">Theme: auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="sheet" aria-labelledby="front-t">
+      <div class="tblock">
+        <div><span class="tb-k">Plate</span><span class="tb-no">01</span></div>
+        <div><span class="tb-k">Front view</span><span class="tb-t" id="front-t">System Map</span> <span id="front-status"></span></div>
+        <div><span class="tb-k">Source</span><code>docs/atlas/01-system-map.md</code></div>
+      </div>
+      <p class="lead" id="front-lead"></p>
+      <div class="frame" id="front-frame"></div>
+      <p class="hint">Click any box to open its plate. A box with a blue outline and “see NN” opens that plate; the others open plate 01, where they are specified.</p>
+      <div class="key" id="front-key"></div>
+    </section>
+
+    <section class="index" aria-labelledby="idx-t">
+      <h2 id="idx-t">All plates · from 00-index.md</h2>
+      <div class="ilist" id="ilist"></div>
+    </section>
+  </main>
+
+  <div class="ov" id="ov" hidden>
+    <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+      <div class="dlg-h">
+        <div class="tb-no" id="dlg-no"></div>
+        <div class="ttl"><span class="tb-k" id="dlg-k">Plate</span><h2 id="dlg-t"></h2></div>
+        <div class="acts">
+          <button class="ibtn" id="dlg-back" type="button" hidden>← Back</button>
+          <button class="ibtn x" id="dlg-x" type="button" aria-label="Close plate">×</button>
+        </div>
+      </div>
+      <div class="dlg-b" id="dlg-b"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   DATA. Everything drawn on this page comes from these tables, which are
+   transcribed from the markdown plates in docs/atlas/. The plates are the
+   source of truth; this page adds nothing of its own.
+
+   PLATES[n] = { t, draft, file, sum (from 00-index), links (the plate's
+                 link line), lead, facts, figs, tables, notes, open }
+   fig       = { h, cw, gx, gy, padTop, valign, lanes, boxes, arrows, groups }
+   box       = [id, col, row, kind, title, subLines, opts]
+               kind: llm tool svc data app out step;  opts: {tag, p (proposed/open)}
+   arrow     = [from, to, label, style, opts]
+               style: "" call · cond conditional · loop bounded loop · rec recursion · attach (no direction)
+   DRILL     = "plate.boxId" (or "plate.from>to" for an arrow, "plate.@group") -> plate it opens
+   ===================================================================== */
+
+const ORDER=["01","04","05","06","21","30","31","40","41","50","60","70","90"];
+
+const DRILL={
+  "01.FE":"30","01.API":"40","01.STORE":"21","01.WORKER":"40","01.AGENTS":"60","01.API>FE":"41","01.@COMPOSE":"04",
+  "04.VLOG":"05",
+  "21.LLM":"60",
+  "40.WEB":"41","40.ING":"21","40.REP":"60","40.CMP":"70","40.DAY":"21","40.REPJ":"60",
+  "50.ENG":"21",
+  "60.C":"21",
+  "70.BT":"50","70.SCR":"31"
+};
+
+const PLATES={
+
+"01":{t:"System Map",draft:true,file:"01-system-map.md",
+ sum:"The whole app: frontend, API, store, worker, agents, archive source and model provider",
+ links:["90"],
+ lead:"The whole Community Voices app at the highest level. Every box here is specified by Brian; the details behind each are on its own plate.",
+ facts:[["frontend","React · TanStack Query + Router · Zustand"],["backend","FastAPI"],["store","Postgres + pgvector"],["queue","Redis"],["jobs","Celery worker + Beat"],["agents","two LangGraph agents: tagging · report"],["model","Claude Sonnet 5.5 via OpenRouter"],["source","Arctic Shift · r/sailing"],["runs under","Docker Compose, every data store on a mounted volume"]],
+ figs:[{h:"The whole app",cw:196,gx:58,gy:56,padTop:74,
+  lanes:[["REVIEWER",0],["FRONTEND",1],["BACKEND",2],["STORES",3],["BACKGROUND WORK",4],["OUTSIDE",5]],
+  boxes:[
+   ["USER",0,0,"app","Reviewer",["(browser)"],{tag:"BROWSER"}],
+   ["FE",1,0,"app","Frontend",["React · TanStack Query + Router · Zustand"]],
+   ["API",2,0,"svc","Backend",["FastAPI"]],
+   ["STORE",3,0,"data","Postgres + pgvector",[]],
+   ["QUEUE",3,1,"svc","Redis",[],{tag:"QUEUE"}],
+   ["WORKER",4,1,"svc","Celery worker + Beat",["daily catch-up · report runs"]],
+   ["AGENTS",4,2,"llm","Two LangGraph agents",["tagging · report"],{tag:"AGENTS"}],
+   ["SRC",5,1,"svc","Arctic Shift",["r/sailing"],{tag:"OUTSIDE"}],
+   ["OR",5,2,"llm","OpenRouter",["Claude Sonnet 5.5"],{tag:"OUTSIDE"}]
+  ],
+  groups:[["COMPOSE",["FE","API","STORE","QUEUE","WORKER","AGENTS"],"DOCKER COMPOSE"]],
+  arrows:[
+   ["USER","FE",""],
+   ["FE","API",""],
+   ["API","FE","live events","",{via:"under",sx:.25,ex:.6,gy:-10}],
+   ["API","STORE",""],
+   ["API","QUEUE",""],
+   ["QUEUE","WORKER",""],
+   ["WORKER","SRC",""],
+   ["WORKER","AGENTS",""],
+   ["AGENTS","OR",""],
+   ["AGENTS","STORE","","",{via:"gapL",eyf:.8}],
+   ["WORKER","STORE","","",{ey:-8}]
+  ]}],
+ notes:[{h:"Each box",li:[
+  "**Frontend** — specified. Details on [30 Frontend](30).",
+  "**Backend** — FastAPI, specified. Its modules are on [40 Backend](40).",
+  "**Store** — Postgres with pgvector, specified. Tables on [21](21).",
+  "**Worker** — Celery with Beat, specified; one catch-up operation over a range of days ([40](40)).",
+  "**Agents** — two LangGraph agents, specified ([60](60)), on Claude Sonnet 5.5 through OpenRouter.",
+  "**Live events** — detailed server-sent events to the frontend, specified ([41](41)).",
+  "**Ingestion** — fetches posts daily, specified; from r/sailing (OPEN-3, resolved); fetched from the Arctic Shift archive (OPEN-8, resolved).",
+  "Everything runs under Docker Compose, with every data store on a mounted volume — see [04 Environment](04)."]}],
+ open:[]},
+
+"04":{t:"Environment",draft:true,file:"04-environment.md",
+ sum:"Docker Compose services, mounted volumes, first-start setup, and the one OpenRouter key",
+ links:["01","40","90"],
+ lead:"How the app runs on a reviewer's machine. **Specified by Brian:** everything runs under **Docker Compose**, and **every service that stores information keeps it on a mounted volume**. The model key is an **OpenRouter** key, sent to the reviewers in the submission email (README → *Install and run*). Everything else is *proposed*.",
+ facts:[["start","docker compose up"],["volumes","postgres-data · redis-data · model-cache · logs"],["key","OPENROUTER_API_KEY — the only one to fill in"],["settings file",".env.example, every setting explained"],["port","http://localhost:5173 (proposed)",1],["api access","frontend passes /api through, one port (proposed)",1],["redis","append-only file (proposed)",1],["first start","prewarm: eight weeks, day by day (OPEN-13)"],["model download","a few hundred megabytes, from Hugging Face"]],
+ figs:[{h:"docker compose up",cw:200,gx:56,gy:58,padTop:44,
+  boxes:[
+   ["FE",1,0,"app","frontend",["Vite build, served"]],
+   ["SETUP",2,0,"svc","setup",["runs once: create tables,","then asks the worker to catch up"]],
+   ["ENV",0,1,"data",".env",["OPENROUTER_API_KEY"],{tag:"FILE"}],
+   ["API",1,1,"svc","api",["FastAPI"]],
+   ["PG",2,1,"data","postgres + pgvector",[]],
+   ["VPG",3,1,"data","volume: postgres-data",[],{tag:"VOLUME"}],
+   ["VMOD",0,2,"data","volume: model-cache",["the embedding model's files"],{tag:"VOLUME"}],
+   ["WORK",1,2,"svc","worker",["Celery"]],
+   ["RD",2,2,"data","redis",[]],
+   ["VRD",3,2,"data","volume: redis-data",[],{tag:"VOLUME"}],
+   ["BEAT",1,3,"svc","beat",["Celery Beat, one copy"]],
+   ["VLOG",3,3,"data","volume: logs",[],{tag:"VOLUME"}]
+  ],
+  groups:[["COMPOSE",["FE","SETUP","API","PG","WORK","RD","BEAT"],"docker compose up"]],
+  arrows:[
+   ["FE","API",""],
+   ["API","PG",""],
+   ["API","RD","","",{sx:.85,ex:.3,gy:-7}],
+   ["WORK","PG","","",{sx:.65,ex:.6,gy:7}],
+   ["WORK","RD",""],
+   ["BEAT","RD",""],
+   ["SETUP","PG",""],
+   ["PG","VPG","","attach"],
+   ["RD","VRD","","attach"],
+   ["WORK","VMOD","","attach"],
+   ["API","VMOD","","attach",{sx:.22,ex:.78,gy:7}],
+   ["ENV","API","","cond"],
+   ["ENV","WORK","","cond",{gy:-7}]
+  ]}],
+ notes:[{h:"How it runs",li:[
+  "**Mounted volumes** (specified): the database, Redis, and the embedding model's downloaded files each live on a volume, so stopping and restarting keeps everything and the model isn't downloaded twice. Redis is set to write to disk (append-only file) so queued jobs survive a restart *(proposed)*.",
+  "**First start prewarms from live data** (specified for now, OPEN-13): no snapshot is committed. On first `docker compose up`, `setup` creates the tables and triggers the same catch-up the daily pull uses ([40](40)): with an empty database, the missing range is the full eight weeks, processed day by day in order. There is no separate prewarm code. The reviewer waits it out. *Proposed:* the frontend opens at once and shows prewarm progress (\"Day 23 of 56 · 9,412 posts · tagging…\") instead of a blank page, and the README says roughly how long it takes. A second start finds the data and skips it. How long it takes is to be measured once it's built.",
+  "**One key, one file:** `.env.example` lists every setting with an explanation; only `OPENROUTER_API_KEY` must be filled in. Prewarm needs it, because tagging calls the model.",
+  "**Ports:** the frontend on `http://localhost:5173` *(proposed)*. The browser also has to reach the API and its event streams; the frontend's server passes `/api` requests through to the API container, so only one port is exposed *(proposed)*.",
+  "**First start also downloads the embedding model** (a few hundred megabytes) onto its volume — another wait, and another outside service (Hugging Face) the first start depends on."]}],
+ open:["How long prewarm takes, and whether that's acceptable for the demo — OPEN-13."]},
+
+"05":{t:"Logging and observability",draft:true,file:"05-logging.md",
+ sum:"Everything logged, turn by turn: every model call, job step, outside call and error, as JSON lines on a mounted volume",
+ links:["01","04","90"],
+ lead:"**Specified by Brian:** turn-by-turn logging and observability. **Everything is logged.** It's **under the hood, for developers only**: JSON log files, no viewer, nothing in the app (OPEN-27). Everything else is *proposed*.",
+ facts:[["format","one line of JSON per event (proposed)",1],["fields","time · service · level · event name · trace id (proposed)",1],["written to","standard output + the logs volume (proposed)",1],["viewer","none — developers only (OPEN-27)"],["kept apart from","live events, plate 41"]],
+ figs:[],
+ notes:[
+  {h:"What is logged (proposed)",li:[
+   "**Every model turn**, in full: which agent, which run or day, the complete prompt, the complete answer, every tool call with its arguments and result, tokens in and out, cost, and how long it took.",
+   "**Every job step:** each day's catch-up (fetch, filter, upvotes, embed, cluster, tag, noise deleted, roll-up) with counts and timings; each report run's steps; each map recompute.",
+   "**Every outside call:** Arctic Shift requests and responses (status, item counts, time), OpenRouter calls, the embedding model.",
+   "**Every API request** and every error, with the full error."]},
+  {h:"How (proposed)",li:[
+   "**One line of JSON per event**, from every service (API, worker, Beat, setup), written through one small logging module so every line has the same fields: time, service, level, event name, and a **trace id** shared by everything one run or one day job does — so a single run can be followed end to end across services.",
+   "**Written to standard output and to a mounted volume** (`logs`), so `docker compose logs` shows it live and the files survive a restart (`CLAUDE.md`'s storage rule on [04](04)).",
+   "**Kept apart from the live events** ([41](41)): live events feed the screen and are not stored; logs are for the people running the app."]}],
+ open:[]},
+
+"06":{t:"Build order",draft:false,file:"06-build-order.md",
+ sum:"The six build steps, each ending with something that runs from a fresh clone",
+ links:["01","90"],
+ lead:"The order the app gets built in. Brian agreed this order on 2026-10-18. **Each step ends with something that runs from a fresh clone by following the README**, so there is always a working version to submit while the next step is built.",
+ facts:[["agreed","2026-10-18"],["steps","6, in order"],["each step ends","runnable from a fresh clone via the README"],["method","test-first (/tdd), commit chain on every commit"],["check","/test-boot at the end of each step"]],
+ figs:[{h:"Six steps",cw:178,gx:44,gy:40,
+  boxes:[
+   ["S1",0,0,"step","1 Foundation",["compose, Postgres + pgvector,","Redis, API, worker, logging"]],
+   ["S2",1,0,"step","2 Catch-up",["fetch days from Arctic Shift,","filter, upvotes, embed"]],
+   ["S3",2,0,"step","3 Tagging",["three-day clustering,","tagging agent, engagement"]],
+   ["S4",3,0,"step","4 Explore",["date slider, dot plot,","topics panel"]],
+   ["S5",4,0,"step","5 Report + A/B test",["report agent A and B,","live events, scoring"]],
+   ["S6",5,0,"step","6 Remaining screens",["topic detail, retrieval stats"]]
+  ],
+  arrows:[["S1","S2",""],["S2","S3",""],["S3","S4",""],["S4","S5",""],["S5","S6",""]]}],
+ tables:[{h:"What each step builds",cols:["Step","Built","Runs at the end of it","Plates"],rows:[
+  ["1 Foundation","Docker Compose with every service and its volumes, tables, the API's health route, the worker and Beat, the logging module, `.env.example`","`docker compose up` starts everything; the README's steps work","[04](04), [05](05)"],
+  ["2 Catch-up","The day job and the catch-up chain: fetch, drop deleted and bot posts, fold agreeing replies into upvotes, embed; `ingested_days`; progress events","First start fills eight weeks of posts with embeddings, and shows progress","[40](40), [21](21), [41](41)"],
+  ["3 Tagging","Three-day clustering, the tagging agent with its tools, noise deletion, daily engagement","Every post is tagged or deleted; each tag has a daily engagement history","[21](21), [60](60)"],
+  ["4 Explore","The frontend: date slider, dot plot recomputed per range, topics panel","A reviewer can explore the community visually","[30](30), [31](31)"],
+  ["5 Report + A/B test","The report agent with and without retrieval, trend extrapolation, the answer key and scoring, live events to the progress panel, the report and comparison screens","The brief is fully met: Generate report produces both versions, scored","[50](50), [60](60), [70](70)"],
+  ["6 Remaining screens","Topic detail with its engagement chart; retrieval statistics","Everything on the screens plate exists","[31](31)"]]}],
+ notes:[{p:["Every step is test-first (`/tdd`), and every commit goes through the commit chain (`CLAUDE.md` §6). `/test-boot` runs at the end of each step."]}],
+ open:[]},
+
+"21":{t:"Topics and engagement over time",draft:true,file:"20-data-model/21-topics.md",
+ sum:"The posts (with their agreeing-reply upvotes) and topic tags tables, the daily engagement table that graphs each tag over time, and the daily intake that clusters with a three-day lookahead and lets an LLM attach, mint or drop",
+ links:["01","40","50","60","90"],
+ lead:"How the community's conversation is stored as **topics** that can be followed day by day. This is what the prediction stands on: next week is forecast from how each topic's engagement has been moving, not guessed from one week of text.",
+ facts:[["store","Postgres + pgvector (OPEN-4)"],["embedding","one per post or comment, never cut into pieces"],["lookahead","three days to fall into a cluster"],["clustering","HDBSCAN (proposed)",1],["decision","LLM per cluster: attach · mint · noise"],["noise","deleted, not marked"],["cost","about ten LLM calls a day; a few hundred for eight weeks (estimate)",1],["graph table","topic_daily_engagement, under 2,000 rows for eight weeks"]],
+ figs:[
+  {h:"Tables",cw:250,gx:170,gy:70,valign:"top",
+   boxes:[
+    ["THREADS",0,0,"data","THREADS",["source_id text — Reddit's id, unique","title text","created_at timestamptz"],{tag:"TABLE"}],
+    ["POSTS",1,0,"data","POSTS",["source_id text — Reddit's id, unique, so a repeat is dropped","kind text — post or comment","author text","created_at timestamptz","body text","reddit_score int — Reddit's own score at fetch time, not used for trends","upvotes int — agreeing replies it received","parent_source_id text — what it replies to","embedding vector — its meaning, as numbers","status text — pending, tagged","topic_similarity float — how close it sits to its tag's center"],{tag:"TABLE"}],
+    ["TOPICS",2,0,"data","TOPICS",["label text — short name, written by the LLM","description text — one or two sentences, written by the LLM","keywords text_array — the words that most set it apart","centroid vector — the average meaning of its posts","first_seen date","last_seen date"],{tag:"TABLE"}],
+    ["TDE",3,0,"data","TOPIC_DAILY_ENGAGEMENT",["day date","posts int","comments int","upvotes int — agreeing replies","unique_authors int","new_threads int","unanswered_questions int"],{tag:"TABLE"}],
+    ["RE",0,1,"data","RETRIEVAL_EVENTS",["run text — which run","agent text — report or tagging","tool text — search or lookup","at timestamptz"],{tag:"TABLE"}],
+    ["PUD",1,1,"data","POST_UPVOTES_DAILY",["day date — when the agreeing replies were written","count int"],{tag:"TABLE"}],
+    ["CD",2,1,"data","CLUSTER_DECISIONS",["day date","decision text — attach, mint or noise","reason text — the LLM's explanation","candidate_tags jsonb — the nearest tags and how close each was","prompt text — exactly what the LLM was shown","model text"],{tag:"TABLE"}]
+   ],
+   arrows:[
+    ["THREADS","POSTS","contains · 1 : 0..n","attach"],
+    ["POSTS","TOPICS","tagged with · 0..n : 0..1","attach"],
+    ["POSTS","PUD","agreed with · 1 : 0..n","attach"],
+    ["TOPICS","TDE","measured by · 1 : 0..n","attach"],
+    ["CD","TOPICS","attached to or minted · 0..n : 0..1","attach"],
+    ["CD","POSTS","covers · 1 : 0..n","attach"],
+    ["POSTS","RE","returned in · 1 : 0..n","attach"]
+   ]},
+  {h:"The daily intake",cw:226,gx:52,gy:40,
+   boxes:[
+    ["PULL",1,0,"step","Fetch new posts and comments",["(Arctic Shift, since the newest stored)"]],
+    ["DROP",1,1,"step","Drop deleted and removed posts, and bots",["(AutoModerator and other known bot accounts)"]],
+    ["SHORT",1,2,"step","Agreeing reply?",["(short, and close in meaning to '+1', 'this', 'same here')"],{tag:"IF"}],
+    ["EMB",1,3,"llm","Embed each post or comment whole",["status: pending"],{tag:"EMBED"}],
+    ["REACT",3,3,"step","Add one to the parent's upvotes",["reply itself not saved"]],
+    ["EXPIRE",0,4,"out","Pending for three days and still in no cluster:",["noise, delete"]],
+    ["CL",1,4,"step","Cluster the last three days of posts",["(HDBSCAN · tagged posts in the window act as anchors)"]],
+    ["CMP",1,5,"step","Compare each cluster with the tags' centroids",["places it in the domain space"]],
+    ["LLM",1,6,"llm","Tagging agent decides, per cluster",[]],
+    ["ADD",0,7,"out","Attach to an existing tag",[]],
+    ["MINT",1,7,"out","Mint a new tag",[]],
+    ["NOISE",2,7,"out","Noise: delete",[]],
+    ["ROLL",1,8,"step","Rebuild topic_daily_engagement",["for the days touched"]]
+   ],
+   arrows:[
+    ["PULL","DROP",""],["DROP","SHORT",""],
+    ["SHORT","REACT","yes","cond"],["SHORT","EMB","no","cond"],
+    ["EMB","CL",""],["CL","CMP",""],["CMP","LLM",""],
+    ["LLM","ADD",""],["LLM","MINT",""],["LLM","NOISE",""],
+    ["CL","EXPIRE",""],
+    ["ADD","ROLL",""],["MINT","ROLL",""],["REACT","ROLL",""]
+   ]}],
+ notes:[
+  {h:"Specified by Brian",li:[
+   "Postgres holds a table of topic tags. Each tag carries semantic information, and its engagement over time is easy to graph.",
+   "Posts are fetched daily and **tagged by day on intake**. Any time range (a week, the eight weeks of history) is then just a range of days (OPEN-10).",
+   "Each day, embeddings are clustered with a **three-day lookahead**: a post has three days to fall into a cluster. Each cluster is compared with the tags' embeddings to place it in the domain space, and an LLM makes the final call per cluster: **add it to an existing tag, mint a new tag, or ignore it as noise**. A post that hasn't fallen into a cluster within three days **is noise and is deleted**.",
+   "**Posts are not cut into pieces**: one post or comment is one embedding.",
+   "Deleted posts and bot posts are dropped. **Short agreeing replies** (\"+1\", \"this\", \"same here\") are significant and inform the trend, but aren't saved as posts. A basic semantic check finds them, and each one adds to an **`upvotes`** count on the post it replies to, a magnitude increaser for that post (OPEN-19)."],
+   p2:"**Everything else on this plate is *proposed*.** In the intake flow, details in brackets are *proposed*."},
+  {h:"What each table is for",li:[
+   "**threads, posts** — the community's posts and comments as fetched, one embedding each. Reddit's id is unique, so the small overlap between daily pulls is dropped on insert (`CLAUDE.md` §7). A post is `pending` until a cluster takes it, then `tagged`; noise is deleted rather than marked.",
+   "**upvotes** — Brian's design: an agreeing reply isn't stored; it adds one to its parent's `upvotes`. *Proposed:* the count is also kept per day in **post_upvotes_daily** (post, day, count, with no text), because the trend needs to know *when* the agreement happened: \"+1\"s arriving on Friday for a Monday post are Friday's engagement. The name `upvotes` is ours; Reddit's own score is kept apart as `reddit_score` so the two are never confused. Upvotes ride on their parent: they count toward its tag, and go if it's deleted as noise.",
+   "**topics** — the topic tags. The *semantic information* is four things together: a **label** and **description** a person can read, written by the LLM from the tag's most typical posts; **keywords**, the words that most set it apart from other tags, computed by code; the **centroid**: the average of its posts' embeddings, the tag's position in meaning-space. Clusters are compared against the centroids to find the tags they might belong to, and the centroid moves whenever posts are added.",
+   "**topic_daily_engagement** — one row per tag per day: posts, comments, upvotes, distinct people, new threads and unanswered questions. **This is the graph.** Any range — a week, eight weeks — is a sum over its days. Rebuilt from the posts after each day's intake, never edited by hand. Eight weeks of about thirty tags is under two thousand rows.",
+   "**retrieval_events** — one row each time a post is returned by the agents' search or lookup tools ([60](60)): which run, which agent, which tool, when (OPEN-12, resolved). The retrieval-statistics screen counts these; the report agent's retrievals are shown apart from the tagging agent's.",
+   "**cluster_decisions** — one row per cluster per day: what the LLM decided, why, which tags it was choosing between and how close each was, and the exact prompt it saw. Every tag is traceable to the decisions that built it, and because tagging always moves forward one day at a time, it also records what was known on each day — which is what keeps the backtest honest (OPEN-11)."]},
+  {h:"The daily intake",li:[
+   "Runs once a day as a Celery job ([40](40)). The flow is specified by Brian; details in brackets are *proposed*.",
+   "**Why three days:** one day of r/sailing is often too few posts for a conversation to form a cluster. Giving every post three days lets a thread that starts slowly gather enough company, while anything still alone after three days really is noise.",
+   "**Why the LLM decides rather than a threshold:** closeness in meaning-space alone can't tell \"the same conversation continuing\" from \"a new conversation next door to an old one\". The LLM reads the posts and the candidate tags' descriptions.",
+   "**Tagging always moves forward in time**, one day after another. Nothing tagged is re-decided, so a tag's history never changes under it.",
+   "**Cost:** one LLM call per cluster per day, roughly ten a day for r/sailing. Tagging the eight-week history once is a few hundred calls *(estimate)*.",
+   "**Tests** replace the LLM and the embedder with stand-ins (`CLAUDE.md` §7)."]},
+  {h:"Where similarity search is used",p:["Comparing a cluster with the tags, and the agents' search tool ([60](60)), are both \"find the closest vectors\" questions, which pgvector answers inside Postgres (OPEN-4, resolved)."]}],
+ open:[
+  "The word limit and closeness threshold for an agreeing reply — tuned against the real data.",
+  "What happens to a reply whose parent was deleted as noise *(proposed: the parent keeps a stub row — id, author, time, no text or embedding — so threads stay connected and lookup can say \"removed as noise\")*.",
+  "The smallest group the clustering counts as a cluster, and how many nearest tags the LLM is shown — tuned against the real data.",
+  "Whether tags that go quiet are ever merged or retired."]},
+
+"30":{t:"Frontend",draft:true,file:"30-frontend.md",
+ sum:"The web app's stack (agreed) and the screens the brief implies (proposed)",
+ links:["01","90"],
+ lead:"The web app the reviewer clicks through. Brian specified React, TanStack Query, TanStack Router and Zustand, and on 2026-10-18 agreed to the rest of the stack as proposed. The screens below are still a proposal.",
+ facts:[["UI","React"],["routing","TanStack Router"],["server state","TanStack Query"],["client state","Zustand"],["build","TypeScript + Vite"],["chart","Apache ECharts"],["styling","Tailwind CSS"],["tests","Vitest + React Testing Library + MSW"],["lint","ESLint + Prettier"]],
+ figs:[],
+ tables:[{h:"Stack",cols:["Concern","Choice"],rows:[
+  ["UI library","**React** — specified"],
+  ["Routing","**TanStack Router** — specified"],
+  ["Server state","**TanStack Query** — specified. Everything fetched from the backend lives here, including live events folded in from the SSE streams ([41](41))"],
+  ["Client state","**Zustand** — specified, used only for state that lives purely in the browser (for example which comparison panel is expanded). Anything a reviewer should be able to link to — the selected date range, the selected run — lives in the address, through TanStack Router's search parameters"],
+  ["Language and build","TypeScript, built with Vite"],
+  ["Tables","TanStack Table, for the retrieval-statistics list and the comparison measurements"],
+  ["Embedding chart","Apache ECharts — draws a few thousand points in a 2D scatter on a canvas, with hover and coloring built in"],
+  ["Showing the document","The report's prose, with its committed list of topics, ranks and directions as a small table beside it (OPEN-25)"],
+  ["Styling","Tailwind CSS"],
+  ["API client","Typed client generated from the backend's API description — the backend must publish an OpenAPI description (OPEN-1 resolved)"],
+  ["Tests","Vitest + React Testing Library, with a stand-in backend (MSW) so tests run offline (`CLAUDE.md` §7)"],
+  ["Lint and format","ESLint + Prettier, one of each (`CLAUDE.md` §8)"],
+  ["Running it","Its own service in Docker Compose"]]}],
+ notes:[{h:"Screens",p:["The five screens — led by the Explore page, where a date-range slider governs the dot plot and a Generate report button (specified by Brian) — are on [31 Screens](31), written as a design brief for mockups."]}],
+ open:["The screens' layout — mockups from the brief on [31](31)."]},
+
+"31":{t:"Screens",draft:true,file:"30-frontend/31-screens.md",
+ sum:"The screens, led by the date-slider Explore page with its dot plot and Generate report button, written as a design brief ready to paste into Claude Design",
+ links:["30","21","50","70","90"],
+ lead:"The app's screens, written as a design brief: the section below the line can be pasted into Claude Design as-is to produce mockups. The document's content follows the brief (OPEN-16, resolved); layout and styling are *proposed*. Sample content is illustrative, not real data.",
+ facts:[["main control","date-range slider (specified)"],["primary action","Generate report (specified)"],["opens on","last 7 days (OPEN-26)"],["dot plot","recomputed per range (OPEN-20)"],["screens","5 in the diagram"],["layout and styling","proposed",1],["target","1440×900, still works at phone width"]],
+ figs:[{h:"Screens and how you move between them",cw:210,gx:120,gy:46,padTop:54,
+  boxes:[
+   ["MAIN",0,0,"app","1 Explore — main page",["date-range slider · dot plot · topics · Generate report"]],
+   ["DOC",1,0,"app","2 Document",[]],
+   ["CMP",2,0,"app","3 Comparison",[]],
+   ["TOP",1,1,"app","4 Topic detail",[]],
+   ["STA",1,2,"app","5 Retrieval stats",[]]
+  ],
+  arrows:[
+   ["MAIN","DOC","Generate report"],
+   ["DOC","CMP","A vs B","",{both:1}],
+   ["MAIN","TOP","a topic","",{sx:.72}],
+   ["CMP","MAIN","cited post","",{via:"over"}],
+   ["MAIN","STA","","",{sx:.36}]
+  ]}],
+ notes:[
+  {p:["**Specified by Brian:** the main page is governed by a **date-range slider**. Moving it populates and depopulates the dot plot, and a **Generate report** button produces the Community Voices Document for the selected range. Each topic's engagement over time is graphed (OPEN-17, resolved). Everything else is *proposed*."]},
+  {h:"Design brief for Claude Design",fold:[
+   ["Product, audience, style, global layout",[
+    "**Product.** *Community Voices* — a web app that writes a weekly report on what an online community talked about and predicts what it will talk about next week. The community is **r/sailing** on Reddit. The report is written by an AI agent that searches a database of the community's posts. The app also shows the same report written by the AI **without** access to that database, side by side, with measurements — that comparison is the centerpiece.",
+    "**Audience.** An engineering team watching a live demo on a laptop screen. It must read clearly at 1440×900 and still work at phone width.",
+    "**Style.** Calm, editorial, data-dense but uncluttered — a cross between a good newsletter and an analytics dashboard. A restrained nautical palette: deep navy ink, off-white paper, one teal accent for \"with retrieval\" (version B), one warm sand/amber for \"without retrieval\" (version A), and a coral used only for warnings (invented topics). Serif for the report's headings and body text; a clean sans-serif for UI, numbers and labels. Light and dark themes. No stock photos, no sailing clip-art.",
+    "**Global layout.** A slim top bar with the app name, navigation (Explore, Retrieval stats), a theme toggle, and a status pill showing data freshness (\"Data through 17 Oct · 8 weeks · 21,480 posts\"). The date range chosen on Explore carries through to every other screen."]],
+   ["Screen 1 — Explore (the main page)",[
+    "Everything on this page is governed by one control.",
+    "**Date-range slider** across the full width at the top, spanning the 8 weeks of history, with two handles and a small histogram of daily post volume behind it (so busy days are visible). It opens on the **last 7 days** (OPEN-26). Presets: \"Last 7 days\", \"Last 14 days\", \"All 8 weeks\". The chosen range is shown in words: \"5 Oct – 11 Oct 2026 · 2,614 posts\".",
+    "**The dot plot** fills the center: a large 2D scatter of every post in the range, each dot one post, colored by topic. The map is recomputed for each range (OPEN-20): when the slider is released, dots for posts leaving the range **fade out**, new ones **fade in**, and the dots that stay **glide** to their new places, so the reshaping is visible rather than a jump. A faint \"Recomputing map…\" note shows while it runs. Hovering a dot shows a card (username, date, excerpt, topic); clicking it opens the post. Caption: \"Each dot is a post. Posts close together mean similar things.\"",
+    "**Topics panel** on the right: the topics active in the range, each row with its color swatch, name, a sparkline of daily engagement across the range, post count, and a badge (Rising / Steady / Fading / New). Hovering a row highlights its dots on the plot and dims the rest; clicking opens Topic detail.",
+    "**Generate report** — the primary button, bottom-right of the plot, labeled with the range: \"Generate report for 5–11 Oct\". It starts a comparison run (both versions, with and without retrieval) and opens a progress panel in place, fed by live server-sent events: two lanes, A and B, each showing steps, tool calls with their results, and version B's text appearing as it's written; for example \"Version A writing… done (9s)\", \"Version B: search('winterizing') → 15 posts\", \"Measuring…\", with a progress bar. When done it offers \"Read the report\" and \"See the comparison\". Reports aren't kept: generating again makes a new one.",
+    "**Highlight retrieved posts** toggle (shown once a report exists for the range): outlines the dots version B actually retrieved."]],
+   ["Screen 2 — Document",[
+    "The Community Voices Document for the range it was generated for, as a readable long page (max width ~760px, centered).",
+    "**Masthead:** \"Community Voices — r/sailing\", the range, and a subtitle line: \"Written with retrieval · Claude · See comparison\", and a Download button *(maybe — reports are ephemeral; downloading is the only way to keep one)*.",
+    "**The period in brief:** one paragraph summary.",
+    "**What the community talked about:** 5–7 topic sections. Each has: the topic name and a one-line description; a small engagement sparkline for the 8 weeks with the report's range highlighted, and a badge: Rising / Steady / Fading / New; two or three paragraphs of the report; \"Notable threads\": 2–3 thread titles as links, each with comment count; one or two pull-quotes from real posts, with username and date. Every quote and cited fact has a small superscript marker linking to the source post.",
+    "**What we expect next:** predictions for the period of the same length that follows the range. 4–6 prediction cards, each: topic name, badge, a small line chart of daily engagement plus a dashed projection band, and one sentence of evidence. A card for a scheduled event.",
+    "**Footer note:** \"Brand-new conversations can't be predicted; this forecast covers topics already in motion.\""]],
+   ["Screen 3 — Comparison (the centerpiece)",[
+    "Version A (without retrieval) and version B (with retrieval) of the same document, side by side.",
+    "**Scoreboard strip** across the top, A vs B, each metric as two numbers with a small bar: Main topics found, Topics invented, Order of importance, Direction right, Prediction score, Tokens and time.",
+    "**Two columns** of the document, A labeled \"Without our data — the model on its own\" in amber, B labeled \"With retrieval — the model searching r/sailing's posts\" in teal. Version A should read plausible but generic.",
+    "**Topic grid** below — the answer key against both reports: rows are the range's real topics ranked by engagement, with each one's measured direction; for A and B, whether the report named it, what rank it gave it, and what direction it said. Extra rows at the bottom, in coral, for topics a report named that the community didn't discuss.",
+    "**\"What version B looked at\"** drawer: the agent's tool calls in order — e.g. `search(\"impeller failure\")` → 12 posts; `lookup(post 88213)`; `topic_trends()` — each expandable. A \"Show on the dot plot\" link returns to Explore with those posts outlined.",
+    "Run metadata: model, settings, date run, \"identical prompt except for tools\"."]],
+   ["Screen 4 — Topic detail",[
+    "Opened from the topics panel or a document section.",
+    "Name, description, keywords as chips, first-seen date, badge.",
+    "**The main chart:** daily engagement across the 8 weeks as stacked areas — posts, comments, upvotes (agreeing replies like \"+1\") — with distinct people as a line, the Explore range shaded, and the projection for the next period as a dashed band.",
+    "\"Typical posts\": 3 post cards (username, date, excerpt, link).",
+    "\"How this topic was built\": a compact timeline of tagging decisions."]],
+   ["Screen 5 — Retrieval stats",[
+    "A sortable table: rank, post excerpt, author, topic, times retrieved, last retrieved, retrieved by (report agent / tagging agent).",
+    "Filters: agent (default: report agent), run, date range.",
+    "A small bar chart above: retrievals per topic."]]
+  ]}],
+ open:["Everything in the design brief is a proposal until Brian reviews the mockups."]},
+
+"40":{t:"Backend",draft:true,file:"40-backend.md",
+ sum:"FastAPI, the stack, the modules, and the one catch-up operation that does all ingestion",
+ links:["01","30","90"],
+ lead:"The server side: the API the frontend calls, and the modules behind it that ingest, store, retrieve, write and compare. Brian specified **FastAPI** and **Postgres**. Everything else on this plate is *proposed*.",
+ facts:[["web","FastAPI, publishes OpenAPI (OPEN-1)"],["language","Python 3.12 (proposed)",1],["data shapes","Pydantic (proposed)",1],["dependencies","uv + lockfile (proposed)",1],["tests","pytest with stand-ins (proposed)",1],["lint","Ruff (proposed)",1],["store","Postgres + pgvector (OPEN-4)"],["model","Claude Sonnet 5.5 via OpenRouter (OPEN-5)"],["embedding","small open long-input model in the container, e.g. nomic-embed-text"],["jobs","Celery + Celery Beat; broker Redis (proposed)"],["schedule","Beat at 06:00 UTC, yesterday"],["record","ingested_days"],["live","server-sent events, plate 41"],["agents","LangGraph / LangChain, plate 60"]],
+ figs:[
+  {h:"Modules (proposed) — the arrows are who calls whom",cw:200,gx:60,gy:56,
+   boxes:[
+    ["CMP",1,0,"step","comparison",["runs both versions · scores against the answer key"],{p:1}],
+    ["REP",2,0,"llm","report",["report agent, retrieval on or off"],{p:1}],
+    ["WEB",0,1,"svc","web",["FastAPI routes + live event streams"],{p:1}],
+    ["RET",2,1,"tool","retrieval",["search + lookup tools, count each hit"],{p:1}],
+    ["MAP",1,2,"step","projection",["squash the selected range to 2D"],{p:1}],
+    ["STORE",2,2,"data","storage",["posts, embeddings, tags, engagement,","retrieval events"],{p:1}],
+    ["ING",3,2,"step","ingestion",["catch-up by day: fetch · filter · upvotes ·","embed · cluster · tag"],{p:1}]
+   ],
+   arrows:[
+    ["WEB","CMP","","",{dy:-10}],
+    ["WEB","MAP","","",{dy:10}],
+    ["WEB","STORE","","",{via:"under",ex:.3}],
+    ["CMP","REP",""],
+    ["REP","RET","only when retrieval is on","cond"],
+    ["RET","STORE",""],
+    ["ING","STORE",""],
+    ["MAP","STORE",""]
+   ]},
+  {h:"Background jobs — one catch-up operation over a range of days",cw:196,gx:54,gy:52,
+   boxes:[
+    ["TRIG",0,0,"step","Something asks: catch up",["first start · Beat at 06:00 UTC ·","worker restart · by hand"]],
+    ["GAP",1,0,"step","Find the missing days",["every complete day after the last processed one,","at most eight weeks back"]],
+    ["CHAIN",2,0,"step","Queue one job per day,",["chained oldest first"]],
+    ["JWEB",3,0,"svc","web (FastAPI)",[]],
+    ["MARK",4,0,"data","ingested_days",["day · status · counts · timings"],{tag:"TABLE"}],
+    ["REDIS",3,1,"svc","Redis",[],{tag:"QUEUE"}],
+    ["DAY",4,1,"step","Process one day",["fetch · filter · upvotes · embed ·","cluster · tag · expire noise · roll up"]],
+    ["AS",5,1,"svc","Arctic Shift",[],{tag:"OUTSIDE"}],
+    ["REPJ",4,2,"llm","Report run",["on demand"],{tag:"JOB"}],
+    ["PG",5,2,"data","Postgres + pgvector",[]]
+   ],
+   arrows:[
+    ["TRIG","GAP",""],["GAP","CHAIN",""],["CHAIN","REDIS",""],
+    ["JWEB","REDIS","queues on request"],
+    ["REDIS","DAY",""],["REDIS","REPJ",""],
+    ["DAY","AS",""],["DAY","PG",""],["DAY","MARK",""],["REPJ","PG",""]
+   ]}],
+ notes:[
+  {h:"Modules (proposed)",li:[
+   "`CLAUDE.md` §7 asks for these to be separate modules behind small interfaces.",
+   "**report** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it never receives the retrieval tools, so it cannot reach the store.",
+   "**ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs in the Celery worker, not inside the web server; first start and the daily pull are the same catch-up over a range of days (OPEN-13).",
+   "**projection** (specified, OPEN-20): a post is embedded once, at intake. The squashing to two dimensions is **recomputed from the posts in the selected date range** whenever the range changes, so the dot plot always shows the clearest map of that range. *(Proposed details: computed in the worker when the slider is released, not while it's dragged; a fixed random seed so the same range always gives the same picture; each result cached by range; progress and result sent over the live events ([41](41)).)*"]},
+  {h:"Background jobs",p:["**Specified by Brian:** there is **one ingestion operation: process a range of days, through Celery**. First start, the daily pull, and waking up after downtime to find ten days missing are all the same operation over different ranges. Details are *proposed*."],li:[
+   "**The unit of work is one day.** A day job fetches every post and comment *created that day* (Arctic Shift searches both by subreddit and creation time), then runs the whole daily intake for it ([21](21)). New comments on old threads come in with the day they were written. Nothing is fetched twice; a repeat is dropped on insert, since every item is keyed by Reddit's own id (`CLAUDE.md` §7).",
+   "**Days run strictly in order, one at a time.** Tagging moves forward in time and the three-day lookahead needs the days before it done (OPEN-11), so the jobs form a chain: each day starts only when the one before has finished.",
+   "**Only complete days.** A day is processed once it's over and the archive has had a few hours to catch up, so the 06:00 UTC run takes yesterday.",
+   "**`ingested_days` is the record of what's done** — one row per day with its status, item counts and timings. \"Catch up\" just means \"every complete day not marked done\". A day that fails stays not-done, the chain stops there, and the next catch-up retries it. Progress is streamed live ([41](41)); this table gives the measured prewarm time (OPEN-13).",
+   "**Catch-up is safe to trigger twice.** A lock means a second request while a chain is running does nothing, so Beat, a restart and a click can't start parallel chains.",
+   "**What only-new fetching gives up: upvote counts.** Reddit's score keeps changing after a post is fetched and is never re-fetched, so trends use counts that never change once something exists, and `reddit_score` is stored but not used for trends.",
+   "**Why daily is enough.** Trends are counted by the day; pulling more often adds load on a volunteer-run archive without changing any result.",
+   "**Report runs are Celery jobs too.** A report makes many LLM calls; the web request queues it and returns at once, and the frontend watches it through live events ([41](41)).",
+   "**Beat runs as exactly one copy.**"]}],
+ open:["Everything marked *proposed* above."]},
+
+"41":{t:"Live events to the frontend",draft:true,file:"40-backend/41-live-events.md",
+ sum:"Detailed server-sent events from every agent and job to the frontend: streams and event types",
+ links:["40","60","31","90"],
+ lead:"How the frontend watches work happen. **Specified by Brian:** with several agents and many tool calls, the backend sends **detailed server-sent events (SSE)** to the frontend: a one-way stream from server to browser over an ordinary web request. Everything else is *proposed*.",
+ facts:[["route","/streams/{stream}/events"],["streams","runs/{id} · ingestion"],["transport","Redis pub/sub (proposed)",1],["emit","one small emit(event) function (proposed)",1],["tokens","batched, e.g. every 100 ms (proposed)",1],["heartbeat","every 15 s (proposed)",1],["stored","no — live only (OPEN-24)"]],
+ figs:[{h:"From every job to the screen",cw:196,gx:56,gy:40,
+  boxes:[
+   ["REP",0,0,"llm","Report agent, A and B",[]],
+   ["TAG",0,1,"llm","Tagging agent",[]],
+   ["DAY",0,2,"step","Day job (catch-up)",[]],
+   ["EMIT",1,1,"step","emit(event)",["one small function every job calls"]],
+   ["PUB",2,1,"svc","Redis pub/sub",["wakes listeners at once"],{tag:"QUEUE"}],
+   ["SSE",3,1,"svc","FastAPI SSE routes",["/streams/{stream}/events"]],
+   ["FE",4,1,"app","Frontend",["EventSource → TanStack Query cache"]]
+  ],
+  groups:[["WORKER",["REP","TAG","DAY","EMIT"],"Celery worker"]],
+  arrows:[["REP","EMIT",""],["TAG","EMIT",""],["DAY","EMIT",""],["EMIT","PUB",""],["PUB","SSE",""],["SSE","FE",""]]}],
+ tables:[
+  {h:"Streams",cols:["Stream","What it carries","Seen on"],rows:[
+   ["`runs/{id}`","One report run: versions A and B side by side","Explore's progress panel, Comparison"],
+   ["`ingestion`","Catch-up: which day, how many posts, which step, tagging decisions","First-start progress, status pill"]]},
+  {h:"Events — every event has a number (in order within its stream), a time, a type, which version (A or B) or which day it belongs to, and a small JSON body",cols:["Type","When","Body, in short"],rows:[
+   ["`run.started` / `run.finished` / `run.failed`","A run begins, ends, or stops on an error","range, model, totals; the error in plain words"],
+   ["`step.started` / `step.finished`","A LangGraph step is entered or left","step name, duration"],
+   ["`llm.token`","The report agent writes, a few words at a time","the text so far is rebuilt by the frontend, so the document visibly writes itself"],
+   ["`tool.called`","An agent calls a tool","tool name and arguments: `search(\"heavy weather\")`, `lookup(88213)`"],
+   ["`tool.returned`","The tool answers","how many posts, their ids and excerpts, how long it took"],
+   ["`decision.made`","The tagging agent decides on a cluster","attach / mint / noise, the tag, the reason"],
+   ["`measurement.done`","A comparison measurement is computed","name and both scores"],
+   ["`day.started` / `day.step` / `day.finished`","Catch-up progress","day, step (fetch, embed, cluster, tag), counts"],
+   ["`map.ready`","The dot plot's squashing for a newly selected range is done","the range, each post's position"],
+   ["`usage`","After each model call","tokens in and out, running cost"]]}],
+ notes:[{h:"How it works",li:[
+  "**One place emits.** Every job calls one small `emit` function; nothing else in the backend knows how events travel. Agents emit through LangGraph's event stream and LangChain callbacks, wrapped by our own code (`CLAUDE.md` §8), so the agents don't know about SSE.",
+  "**Live only.** `emit` publishes on Redis and the SSE route passes it on. Events are not stored: runs aren't referred back to (OPEN-24).",
+  "**Frontend.** One small hook opens an `EventSource` per stream and folds events into the TanStack Query cache, so screens just read data and re-render; Zustand isn't needed for this.",
+  "**Tokens are batched.** `llm.token` events are grouped (for example every 100 milliseconds) so the stream stays light.",
+  "**A heartbeat** comment every 15 seconds keeps idle connections open through proxies.",
+  "**Tests** subscribe to a run in memory and assert the exact sequence of events a stand-in agent produces."]}],
+ open:["Whether `llm.token` streaming is worth it for the demo (it makes the report visibly write itself, at the cost of more moving parts) — proposed yes, for the report agent only."]},
+
+"50":{t:"Prediction",draft:true,file:"50-prediction.md",
+ sum:"Per-tag trend vectors across periods, extrapolated to predict the next period, and the backtest that scores it",
+ links:["01","21","90"],
+ lead:"How the \"next week\" half of the Community Voices Document is produced. **Specified by Brian:** posts are tagged day by day on intake (plate [21](21)), so any period is a range of days. Lining those periods up gives each tag a **trend vector**, and next week is predicted by **extrapolating** each tag's trend. **Everything else is *proposed*.**",
+ facts:[["input","topic_daily_engagement (plate 21)"],["method","damped trend, Holt's method (proposed)",1],["scale","log (proposed)",1],["labels","rising · steady · fading · new"],["history","eight weeks (OPEN-7)"],["A/B scoring","a committed list of topics and directions (OPEN-22)"],["scored","at once, on a range that has already happened"]],
+ figs:[{h:"From engagement to a written prediction",cw:200,gx:52,gy:48,
+  boxes:[
+   ["ENG",0,0,"data","topic_daily_engagement",[]],
+   ["VEC",1,0,"step","Trend vector per tag",["one entry per period: posts, comments, upvotes,","distinct people, new threads, unanswered questions"]],
+   ["FIT",2,0,"step","Extrapolate one period ahead",["(damped trend: growth slows rather than running away)"]],
+   ["RANK",3,0,"step","Rank tags",["rising · steady · fading · new"]],
+   ["LLM",4,0,"llm","LLM writes the prediction",["each claim cites its numbers and posts"]],
+   ["BT",2,1,"out","Prediction score",["predict the range from the day before it,","score against what happened"],{p:1}],
+   ["CTX",4,1,"step","Signals the numbers can't see",["(dates mentioned in posts, threads still open)"],{p:1}]
+  ],
+  arrows:[["ENG","VEC",""],["VEC","FIT",""],["FIT","RANK",""],["RANK","LLM",""],["CTX","LLM",""],["FIT","BT",""]]}],
+ notes:[
+  {h:"The trend vector (proposed)",p:["For each tag, one row per period with the period's engagement: posts, comments, upvotes (agreeing replies), distinct people, new threads, unanswered questions, all summed from plate 21's daily table. A tag minted recently has a short vector. That's the \"new\" case, and the most interesting one to call out."]},
+  {h:"Extrapolating (proposed)",li:[
+   "**A damped trend, not a straight line.** With five to eight weeks of history a straight-line projection overreacts: one viral thread looks like a rocket. A damped trend (Holt's method with damping) follows the direction but expects it to level off, which is how online conversations usually behave.",
+   "**On a log scale,** so a topic going from 2 to 4 posts and one going from 50 to 100 read as the same growth.",
+   "**The output per tag:** expected engagement next period, a range, and a label — rising, steady, fading, or new."]},
+  {h:"What extrapolation can't see, and how it's covered (proposed)",li:[
+   "**A topic with no history** can't be extrapolated. New tags are flagged by their `first_seen` date and growth within the week.",
+   "**Scheduled things:** a contest deadline or a software release mentioned in posts. These are pulled from the period's posts and handed to the LLM alongside the numbers.",
+   "**Brand-new conversations next week** can't be predicted by any method. The document says so rather than inventing them."]},
+  {h:"The written prediction (proposed)",p:["The LLM receives the ranked tags with their trend numbers, the scheduled-event signals, and the most typical posts for each tag. It writes the prediction, and every claim names its evidence (\"up from 3 to 11 threads over three weeks\"). Version A of the comparison (`CLAUDE.md` §7) receives none of this, only the community and the dates."]},
+  {h:"Scoring the prediction — decided by Brian (OPEN-22), to try first",li:[
+   "**The A/B test scores a committed list, not prose or numbers.** Alongside its prose, each version (with and without our data) commits to a short fixed list: the topics it expects to be prominent in the next period, and whether each is rising, steady or fading. That list is checked against what actually happened: how many named topics became prominent, how many never came up, how many directions were right. Version A has no data to make numbers from, so comparing numbers would not be a fair contest.",
+   "**Scored straight away, on a period that has already happened.** When a report is generated for a date range, both versions are also asked to predict that range using only what was known the day before it began — posts, tags and centroids as they stood then, nothing from inside the range (OPEN-11). The range has already happened, so both predictions are scored at once, and every report shows a prediction score, including the first one in a demo.",
+   "**The code's numerical projections are checked separately.** How close the projected engagement for each topic came to the real figure is shown on its own, as a check on the trend method, and is not part of the A/B scores.",
+   "The stored history covers **eight weeks** (specified, OPEN-7), so the earliest ranges have little history before them; the score says how much history the prediction had."]}],
+ open:[]},
+
+"60":{t:"Agents",draft:true,file:"60-agents.md",
+ sum:"The two LangGraph agents (one ratifies topic tags, one writes the report with retrieval on or off) and their search and lookup tools",
+ links:["01","21","50","90"],
+ lead:"The LLM side of the app. **Specified by Brian:** a standard LangGraph / LangChain flow with **two agents**: one that **ratifies the topic tags**, and one that **generates the report**. Both agents have a **search** tool, to search posts for any term when they want to hone in on a concept, and a **lookup** tool, to read one post by its database id. Everything else on this plate is *proposed*.",
+ facts:[["framework","LangGraph / LangChain"],["model","Claude Sonnet 5.5 via OpenRouter"],["search(term)","semantic, at most 20 hits (limit proposed)"],["lookup(id)","one post or comment in full"],["tagging tools","search · lookup · search tags"],["report B tools","search · lookup · topic trends · upcoming events"],["report A","no tools at all"],["tool-call cap","for example 30 per run (proposed)",1],["tests","LangChain fake chat models, offline"]],
+ figs:[{h:"Two agents",cw:210,gx:56,gy:62,padTop:40,
+  boxes:[
+   ["C",0,0,"step","The day's clusters",[]],
+   ["FAN",1,0,"step","One decision per cluster, in parallel",[]],
+   ["DEC",2,0,"llm","LLM: attach · mint · noise",["structured answer + reason","tools: search · lookup · search tags"]],
+   ["APPLY",3,0,"step","Apply the decision",["tags, centroids, cluster_decisions"]],
+   ["STORE",3,1,"data","Postgres + pgvector",[]],
+   ["SW",1,2,"step","Retrieval on?",[],{tag:"IF"}],
+   ["TOOLS",2,2,"tool","Tools: search · lookup ·",["topic trends · upcoming events"]],
+   ["WRITE",3,2,"llm","LLM writes the Community Voices Document",["past week + prediction"]]
+  ],
+  groups:[["TAG",["C","FAN","DEC","APPLY"],"Tagging agent — daily, during intake"],["REP",["SW","TOOLS","WRITE"],"Report agent — one run per document"]],
+  arrows:[
+   ["C","FAN",""],["FAN","DEC",""],["DEC","APPLY",""],
+   ["SW","TOOLS","B: yes","cond"],["TOOLS","WRITE",""],["SW","WRITE","A: no tools","cond",{via:"under"}],
+   ["APPLY","STORE",""],["STORE","TOOLS",""]
+  ]}],
+ notes:[
+  {h:"Shared tools: search and lookup",p:["Specified by Brian; the details are *proposed*."],li:[
+   "**search(term)** — **semantic** (specified): the term is embedded and pgvector finds the posts and comments closest to it in meaning, so \"heavy weather\" also finds posts about reefing in a gale that never use those words. Limited to the period being worked on unless the agent asks wider; returns at most 20 hits, each with its post id, author, date, thread title, an excerpt, and how close it was *(proposed)*.",
+   "**lookup(id)** — returns one post or comment in full: its text, author, date, thread title, and the id of what it replies to, so the agent can climb a conversation one lookup at a time.",
+   "Every post either tool returns is counted in the retrieval statistics.",
+   "Both tools are read-only, and run through the same small query module the rest of the backend uses."]},
+  {h:"Tagging agent (proposed details)",li:[
+   "**One graph run per day, during intake.** Clustering happens first in plain code (plate [21](21)); the graph then sends every cluster to its own decision step, all in parallel (LangGraph's fan-out).",
+   "**Each decision is one LLM call with a structured answer:** attach (which tag), mint (label + description) or noise, plus a reason. It's shown the cluster's typical posts and the nearest tags with their descriptions and recent engagement.",
+   "**Tools:** search and lookup (above), to read more of a cluster's conversation before deciding; and **search tags**, to search all tags by meaning when none of the nearest candidates fits, before minting a duplicate.",
+   "**Order matters for minting.** Two clusters in the same run could both mint a tag for the same new conversation. Decisions that mint are re-checked against tags minted earlier in the same run before they're applied."]},
+  {h:"Report agent (proposed details)",li:[
+   "**One graph, one switch** (`CLAUDE.md` §7). Version A runs with **no tools at all, including search and lookup**: they read our store, and version A is by definition the model without our store. The model knows only the community and the dates. Version B gets four tools: **search** and **lookup** (above) — search is the retrieval: every hit is counted for the retrieval statistics; **topic trends** — the ranked, extrapolated tags from plate [50](50); **upcoming events** — posts mentioning dates after the period (regattas, boat shows, weather windows).",
+   "**The tools are the retrieval.** Giving the agent tools rather than pasting posts into the prompt lets it look up what it needs as it writes, and its tool calls stream live, so the comparison can show exactly what version B looked at.",
+   "**Same model, same settings, same prompt wording** for both versions; only the tools differ."]},
+  {h:"Around the agents (proposed)",li:[
+   "**Everything the agents do is streamed live** to the frontend — steps, tool calls and results, decisions, the report as it's written, token use — as server-sent events (specified by Brian; see [41](41)).",
+   "**A cap on tool calls per run** (for example 30), so an agent that keeps searching ends with what it has instead of running up cost. The cap is saved with the run.",
+   "**LangChain is wrapped behind our own small interfaces** (`CLAUDE.md` §8), so the rest of the code doesn't depend on it and tests can swap in LangChain's fake chat models and run offline.",
+   "**The comparison's measurements are not a third agent.** Both reports are scored by code against the same answer key computed from the topic data ([70](70)); the one judging prompt (matching a named topic to a tag) is fixed and identical for both versions."]}],
+ open:[]},
+
+"70":{t:"Comparison: with and without retrieval",draft:true,file:"70-comparison.md",
+ sum:"Version A without retrieval against version B with it: what makes it fair, and each measurement against one answer key",
+ links:["01","50","60","90"],
+ lead:"The brief's step 5: how the model writes the Community Voices Document **without** our store (version A) and **with** it (version B), compared inside the app. Brian asked for this plate (OPEN-15); everything on it is *proposed*.",
+ facts:[["fairness","one code path, one switch — only the tools differ"],["runs","both from the same request, in parallel"],["answer key","tags + daily engagement for the range"],["conclusions","aggregate, per-sentence checking dropped (OPEN-21)"],["scored form","fixed list of topics, ranks, directions (OPEN-25)"],["main topics","top ten by engagement (proposed, open)",1],["history","none — reports are ephemeral (OPEN-24)"]],
+ figs:[{h:"One request, two versions, one answer key",cw:206,gx:60,gy:48,
+  boxes:[
+   ["A",1,0,"llm","Report agent, version A",["no tools"]],
+   ["KEY",3,0,"data","Answer key",["tags + daily engagement for the range"]],
+   ["REQ",0,1,"app","Request: a date range",["from Explore's Generate report"]],
+   ["MEAS",2,1,"step","Score both against the same answer key",["topics, order, direction, prediction"]],
+   ["SCR",3,1,"app","Comparison screen",[]],
+   ["B",1,2,"llm","Report agent, version B",["search · lookup · trends · events"]],
+   ["BT",3,2,"out","Prediction score",[]]
+  ],
+  arrows:[
+   ["KEY","MEAS","","",{ex:.72}],
+   ["REQ","A","","",{dy:-10}],["REQ","B","","",{dy:10}],
+   ["A","MEAS","","",{ex:.28}],["B","MEAS",""],
+   ["MEAS","SCR",""],["BT","SCR",""]
+  ]}],
+ tables:[{h:"The measurements",cols:["Measurement","What it shows","How it's computed (proposed)"],rows:[
+  ["**Topics found**","Did the report name the range's real main topics?","Each topic the report names is matched to the nearest tag; count how many of the range's top topics (by engagement) it found"],
+  ["**Topics invented**","Topics the report names that the community didn't discuss in the range","Named topics that match no tag with real activity in the range"],
+  ["**Order of importance**","Did it rank the topics the way the data does?","How closely the report's ranking agrees with the ranking by engagement"],
+  ["**Direction**","For each topic it names, did it say rising, steady or fading correctly?","Compared with the measured trend for that tag"],
+  ["**Prediction**","Did the topics it said would be prominent next actually become prominent, moving the way it said?","Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began; scored against what happened in the range (OPEN-22, plate [50](50))"],
+  ["**Cost and time**","What retrieval costs","Tokens, tool calls, seconds"]]}],
+ notes:[
+  {h:"What makes it a fair test",li:[
+   "**One code path, one switch** ([60](60), `CLAUDE.md` §7). Same model, same settings, same prompt wording, same date range, same output structure. The only difference is that version B has tools that read our store.",
+   "**Both run from the same request,** in parallel."]},
+  {h:"The measurements",p:[
+   "**Specified by Brian:** the document's conclusions are **aggregate** — which topics the community talked about, how much, and which way each was moving — drawn from the topic and engagement data, not from individual posts. So the two versions are scored on whether their aggregate conclusions match what the data shows, **not** on whether each sentence traces to a post. Per-sentence checking is dropped (OPEN-21).",
+   "The answer key is computed by code from the topic tags and the daily engagement table ([21](21)) for the date range: which topics were biggest, in what order, which rose, which fell, which were new. Both versions are scored against that same answer key *(proposed details)*."],li:[
+   "**The report states its conclusions in a fixed form** alongside its prose: a list of topics, each with its rank and direction, plus the predicted ones (OPEN-25). That form is what gets scored, so scoring is code, not judgment.",
+   "**Matching a named topic to a tag** is the one step that needs judgment (\"winter prep\" versus the tag \"Winterizing and haul-out\"). It's done by meaning, with one fixed judging prompt for borderline matches, saved with the run and the same for both versions."]},
+  {h:"No run history",p:["Reports are ephemeral (Brian, OPEN-24): the two reports and their scores are shown when the run finishes, and nothing keeps them. They may be made downloadable — that's the only way a report outlives the page *(maybe, Brian)*."]}],
+ open:["How many of the range's top topics count as \"main topics\" for scoring — proposed the top ten by engagement."]},
+
+"90":{t:"Open Questions",draft:false,file:"90-open-questions.md",
+ sum:"Decisions still waiting on the owner, and the log of decisions made",
+ links:[],
+ lead:"Where decisions wait for Brian, and where they're recorded once made.",
+ questions:[
+  ["OPEN-13","For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) If prewarm proves slow or fragile, the fallback is committing the computed database.","04"]],
+ resolved:[
+  ["OPEN-1","The frontend's API client is generated from an OpenAPI description the backend publishes (typed TanStack Query hooks, for example with orval). The backend choice must support publishing one.","2026-10-18"],
+  ["OPEN-2","The embedding map is drawn with Apache ECharts.","2026-10-18"],
+  ["OPEN-4","Similarity search is done in Postgres with the pgvector extension, for both jobs: comparing clusters with topic tags, and retrieving posts for the document.","2026-10-18"],
+  ["OPEN-6","Posts are fetched daily. (Superseded by OPEN-10: clustering is no longer on demand; posts are tagged day by day on intake.)","2026-10-18"],
+  ["OPEN-7","The stored history covers eight weeks: seven to fit trends, one held back for the backtest.","2026-10-18"],
+  ["OPEN-3","The community is r/sailing on Reddit, fetched from Reddit through the Arctic Shift archive (OPEN-8). Trawler Forum was ruled out because it blocks automated access and bans AI crawlers in its robots.txt; r/trawlers was ruled out because it isn't busy enough for eight weeks of clusters and trends.","2026-10-18"],
+  ["OPEN-8","r/sailing's posts and comments are fetched from Arctic Shift (arctic-shift.photon-reddit.com), a free research archive of Reddit that needs no key, for both the eight-week history and the daily fetch. Reddit's own API was ruled out for now because creating an app requires approval under its Responsible Builder Policy.","2026-10-18"],
+  ["OPEN-9","Stored data keeps authors' real Reddit usernames; no pseudonyms.","2026-10-18"],
+  ["OPEN-10","Posts are tagged day by day on intake; any period, including the eight-week history and the trend periods, is a range of days.","2026-10-18"],
+  ["OPEN-11","Tagging moves forward in time one day at a time, and the backtest uses only tags and centroids as they stood before the held-back week.","2026-10-18"],
+  ["OPEN-12","A retrieval_events table records one row per post returned by a search or lookup, with the run, agent, tool and time; statistics separate the report agent from the tagging agent.","2026-10-18"],
+  ["OPEN-14","Large data: deleted and bot posts are dropped. Short replies are kept and tabulated as engagement. No cap on comments per thread. Posts are not cut into pieces. Clustering runs daily with a three-day lookahead; a post that falls into no cluster within three days is noise and is deleted.","2026-10-18"],
+  ["OPEN-15","The comparison gets a plate of its own (70).","2026-10-18"],
+  ["OPEN-16","The document follows the brief: a web page covering the past week's topics with notable threads and quotes linked to real posts, and next week's predictions with their trend evidence. Screen specs for design mockups are on plate 31.","2026-10-18"],
+  ["OPEN-17","The main page is governed by a date-range slider that populates and depopulates the dot plot, with a Generate report button for the selected range; each topic's engagement over time is graphed on Topic detail; runs show live progress. See plate 31.","2026-10-18"],
+  ["OPEN-19","Short agreeing replies (\"+1\", \"this\", \"same here\") are found by a basic semantic check (short, and close in meaning to a handful of agreement examples) and are not saved; each adds one to its parent post's upvotes, which count as engagement for the parent's tag. Proposed alongside: a per-day count so the trend knows when the agreement happened.","2026-10-18"],
+  ["OPEN-5","Writing and tag decisions: Claude Sonnet 5.5 through OpenRouter. Embeddings: a small open long-input model inside the container. Reviewers need one key, an OpenRouter key Brian sends in the submission email; the README says so.","2026-10-18"],
+  ["OPEN-18","Everything runs under Docker Compose; every service that stores information (Postgres, Redis, the model cache) keeps it on a mounted volume. See plate 04.","2026-10-18"],
+  ["OPEN-21","The document's conclusions are aggregate (which topics, how big, which way they're moving), drawn from the topic and engagement data, not per-post. The comparison scores both versions against one answer key computed from that data; per-sentence checking against posts is dropped.","2026-10-18"],
+  ["OPEN-22","To try first: predictions are scored on a committed list of expected topics and directions, not on prose or numbers. Each report also predicts its own range from what was known the day before the range began, so it is scored at once. The code's numerical projections are checked separately, outside the A/B scores.","2026-10-18"],
+  ["OPEN-20","Each post is embedded once, at intake. The squashing to two dimensions for the dot plot is recomputed from the posts in the selected date range whenever the range changes (Brian, replacing the earlier stored-position decision).","2026-10-18"],
+  ["OPEN-23","No longer applies: positions aren't stored, so first start doesn't need a layout.","2026-10-18"],
+  ["OPEN-24","Runs are not referred back to: no run history, no LangGraph checkpoints, no stored event log, no Runs screen. Results are shown when a run finishes.","2026-10-18"],
+  ["OPEN-27","Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers.","2026-10-18"],
+  ["OPEN-25","The report agent returns one answer in two parts: the prose report, and a fixed list of its topics with rank and direction plus its predicted topics. The page shows the prose with the list as a small table beside it; the app scores the list.","2026-10-18"],
+  ["OPEN-26","Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range.","2026-10-18"]]}
+};
+
+/* ===================================================================== RENDERER */
+const NS="http://www.w3.org/2000/svg";
+const TAG={llm:"MODEL",tool:"TOOL",svc:"SERVICE",data:"DATA",app:"SCREEN",out:"RESULT",step:""};
+const KIND_NAME={llm:"model call",tool:"tool",svc:"service / queue",data:"data store",app:"app screen",out:"result",step:"code step"};
+const CH={title:6.2,mono:6.05,tag:5.9};
+
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+/* Markdown-lite for plate text: `code`, **bold**, *em*, [label](NN) plate links, OPEN-n links. */
+function fmt(s){
+  const codes=[];
+  let h=esc(s).replace(/`([^`]+)`/g,(m,c)=>{codes.push(c);return "\u0000"+(codes.length-1)+"\u0000";});
+  h=h.replace(/\[([^\]]+)\]\((\d\d)\)/g,(m,l,n)=>PLATES[n]?`<button type="button" class="pl" data-plate="${n}">${l}</button>`:l);
+  h=h.replace(/\*\*(.+?)\*\*(?!\*)/g,"<strong>$1</strong>").replace(/\*([^*]+)\*/g,"<em>$1</em>");
+  h=h.replace(/OPEN-(\d+)/g,'<button type="button" class="oq" data-open="OPEN-$1">OPEN-$1</button>');
+  return h.replace(/\u0000(\d+)\u0000/g,(m,i)=>`<code>${codes[+i]}</code>`);
+}
+
+function wrap(text,max){
+  const words=String(text).split(" "),out=[];let line="";
+  for(const w of words){
+    if(!line){line=w;}
+    else if((line+" "+w).length<=max){line+=" "+w;}
+    else{out.push(line);line=w;}
+    while(line.length>max){out.push(line.slice(0,max));line=line.slice(max);}
+  }
+  if(line)out.push(line);
+  return out;
+}
+
+/* ---- layout: grid cells -> pixel geometry ---- */
+function layoutFig(fig,plate){
+  const cw=fig.cw||200,gx=fig.gx||56,gy=fig.gy||46,padX=24,padTop=fig.padTop||(fig.groups?40:24);
+  const boxes=fig.boxes.map(([id,c,r,k,t,s=[],o={}])=>{
+    const w=cw,go=DRILL[plate+"."+id],tag=o.tag!==undefined?o.tag:TAG[k];
+    const tagW=tag?tag.length*CH.tag+12:0;
+    const tl=wrap(t,Math.floor((w-20-tagW)/CH.title));
+    const sl=s.flatMap(x=>wrap(x,Math.floor((w-20)/CH.mono)));
+    const h=Math.max(fig.minH||50,20+(tl.length-1)*16+(sl.length?17+(sl.length-1)*13:0)+12+(go?14:0));
+    return {id,c,r,k,t,tl,sl,tag,go,p:!!o.p,w,h};
+  });
+  const nRows=Math.max(...boxes.map(b=>b.r))+1,nCols=Math.max(...boxes.map(b=>b.c))+1;
+  const rowH=[...Array(nRows)].map((_,r)=>Math.max(40,...boxes.filter(b=>b.r===r).map(b=>b.h)));
+  const rowTop=[];let y=padTop;for(let r=0;r<nRows;r++){rowTop[r]=y;y+=rowH[r]+gy;}
+  const colX=c=>padX+c*(cw+gx);
+  const G={},occ={};
+  boxes.forEach(b=>{b.x=colX(b.c);b.y=rowTop[b.r]+(fig.valign==="top"?0:(rowH[b.r]-b.h)/2);b.cx=b.x+b.w/2;b.cy=b.y+b.h/2;G[b.id]=b;occ[b.c+","+b.r]=b.id;});
+  return {boxes,G,occ,cw,gx,gy,padX,padTop,nRows,nCols,rowTop,rowH,colX,
+    rowBot:r=>rowTop[r]+rowH[r],
+    width:padX*2+nCols*cw+(nCols-1)*gx,height:y-gy+24};
+}
+
+/* ---- routing: orthogonal paths between boxes, from the grid ---- */
+function freeCells(L,cells,skip){return cells.every(([c,r])=>{const o=L.occ[c+","+r];return !o||skip.includes(o);});}
+function between(a,b){const lo=Math.min(a,b),hi=Math.max(a,b),o=[];for(let i=lo+1;i<hi;i++)o.push(i);return o;}
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+function route(A,B,o,L){
+  const at=(g,f)=>g.x+g.w*f, skip=[A.id,B.id], dy=o.dy||0;
+  if(o.via==="gapL"){const x=A.x-L.gx/2,ey=B.y+B.h*(o.eyf??.5);return [[A.x,A.cy+dy],[x,A.cy+dy],[x,ey],[B.x+B.w,ey]];}
+  if(o.via==="under"){const y=L.rowBot(Math.max(A.r,B.r))+L.gy/2+(o.gy||0),sx=at(A,o.sx??.5),ex=at(B,o.ex??.5);return [[sx,A.y+A.h],[sx,y],[ex,y],[ex,B.y+B.h]];}
+  if(o.via==="over"){const y=L.rowTop[Math.min(A.r,B.r)]-L.gy/2+(o.gy||0),sx=at(A,o.sx??.5),ex=at(B,o.ex??.5);return [[sx,A.y],[sx,y],[ex,y],[ex,B.y]];}
+  const right=B.c>A.c,down=B.r>A.r;
+  if(A.r===B.r){
+    if(!freeCells(L,between(A.c,B.c).map(c=>[c,A.r]),skip))return route(A,B,{...o,via:"under"},L);
+    const yy=clamp((A.cy+B.cy)/2+dy,Math.max(A.y,B.y)+8,Math.min(A.y+A.h,B.y+B.h)-8);
+    return [[right?A.x+A.w:A.x,yy],[right?B.x:B.x+B.w,yy]];
+  }
+  if(A.c===B.c){
+    const x=A.cx+(o.dx||0);
+    if(freeCells(L,between(A.r,B.r).map(r=>[A.c,r]),skip))return [[x,down?A.y+A.h:A.y],[x,down?B.y:B.y+B.h]];
+    const rx=Math.max(A.x+A.w,B.x+B.w)+18;return [[A.x+A.w,A.cy],[rx,A.cy],[rx,B.cy],[B.x+B.w,B.cy]];
+  }
+  const hv=freeCells(L,[...between(A.c,B.c).map(c=>[c,A.r]),[B.c,A.r],...between(A.r,B.r).map(r=>[B.c,r])],skip);
+  const vh=freeCells(L,[...between(A.r,B.r).map(r=>[A.c,r]),[A.c,B.r],...between(A.c,B.c).map(c=>[c,B.r])],skip);
+  const via=o.via||(hv?"hv":vh?"vh":"elbow");
+  if(via==="hv"){const yy=A.cy+dy,ex=at(B,o.ex??.5);return [[right?A.x+A.w:A.x,yy],[ex,yy],[ex,down?B.y:B.y+B.h]];}
+  if(via==="vh"){const x=at(A,o.sx??.5),yy=B.cy+(o.ey||0);return [[x,down?A.y+A.h:A.y],[x,yy],[right?B.x:B.x+B.w,yy]];}
+  const gyy=(down?L.rowBot(A.r)+L.gy/2:L.rowTop[A.r]-L.gy/2)+(o.gy||0);
+  const sx=o.sx!=null?at(A,o.sx):clamp(B.cx,A.x+14,A.x+A.w-14);
+  const ex=o.ex!=null?at(B,o.ex):clamp(A.cx,B.x+14,B.x+B.w-14);
+  return [[sx,down?A.y+A.h:A.y],[sx,gyy],[ex,gyy],[ex,down?B.y:B.y+B.h]];
+}
+
+function head(P,atStart){
+  const [x2,y2]=atStart?P[0]:P[P.length-1],[x1,y1]=atStart?P[1]:P[P.length-2];
+  const dx=Math.sign(x2-x1),dy=Math.sign(y2-y1);
+  return dx?`${x2},${y2} ${x2-8*dx},${y2-4.2} ${x2-8*dx},${y2+4.2}`:`${x2},${y2} ${x2-4.2},${y2-8*dy} ${x2+4.2},${y2-8*dy}`;
+}
+
+/* ---- draw one figure as SVG ---- */
+function renderFig(fig,plate,opt={}){
+  const L=layoutFig(fig,plate);
+  const svg=mk("svg",{class:"dg"+(opt.front?" front":""),role:"group","aria-label":fig.h});
+  const lanesG=mk("g",{},svg),grpG=mk("g",{},svg),arrG=mk("g",{},svg),boxG=mk("g",{},svg),lblG=mk("g",{},svg);
+  let maxX=L.width,maxY=L.height;
+
+  (fig.groups||[]).forEach(([gid,mem,label])=>{
+    const bs=mem.map(m=>L.G[m]);
+    const x=Math.min(...bs.map(b=>b.x))-12,y=Math.min(...bs.map(b=>b.y))-26,r=Math.max(...bs.map(b=>b.x+b.w))+12,bt=Math.max(...bs.map(b=>b.y+b.h))+12;
+    mk("rect",{class:"grpr",x,y,width:r-x,height:bt-y,rx:8},grpG);
+    const go=DRILL[plate+".@"+gid];
+    const t=mk("text",{class:"grpl"+(go?" go":""),x:x+10,y:y+15},grpG);
+    t.textContent=label+(go?"  ·  see "+go+" ↗":"");
+    if(go)makeButton(t,label+": open plate "+go,go);
+  });
+
+  const LBL=[];
+  fig.arrows.forEach(([f,t,label,style="",o={}])=>{
+    const A=L.G[f],B=L.G[t];
+    if(!A||!B){console.warn("arrow to missing box",plate,f,t);return;}
+    const P=route(A,B,o,L);
+    P.forEach(([x,y])=>{maxX=Math.max(maxX,x+24);maxY=Math.max(maxY,y+24);});
+    const g=mk("g",{class:"a "+style},arrG);
+    mk("path",{d:"M"+P.map(p=>p.join(" ")).join(" L")},g);
+    if(style!=="attach"){mk("polygon",{class:"hd",points:head(P,false)},g);if(o.both)mk("polygon",{class:"hd",points:head(P,true)},g);}
+    const go=DRILL[plate+"."+f+">"+t];
+    const text=go?(label?label+" · ":"")+"see "+go+" ↗":label;
+    if(text)LBL.push({text,P,go,name:f+" to "+t});
+  });
+
+  if(fig.lanes){
+    fig.lanes.forEach(([label,c])=>{
+      const x=L.colX(c)-L.gx/2+5,w=L.cw+L.gx-10;
+      mk("rect",{class:"lane",x,y:8,width:w,height:maxY-16,rx:6},lanesG);
+      mk("text",{class:"lanel",x:x+10,y:30},lanesG).textContent=label;
+    });
+  }
+
+  L.boxes.forEach(b=>drawBox(boxG,b,plate,opt));
+  placeLabels(lblG,LBL,L.boxes);
+
+  svg.setAttribute("viewBox",`0 0 ${Math.ceil(maxX)} ${Math.ceil(maxY)}`);
+  if(!opt.front){svg.setAttribute("width",Math.ceil(maxX));svg.setAttribute("height",Math.ceil(maxY));}
+  return svg;
+}
+
+function makeButton(el,label,plate,sel){
+  el.setAttribute("tabindex","0");el.setAttribute("role","button");el.setAttribute("aria-label",label);
+  el.dataset.go=plate;if(sel)el.dataset.sel=sel;
+}
+
+function drawBox(parent,b,plate,opt){
+  const cls=["bx","k-"+b.k];if(b.p)cls.push("pend");if(b.go)cls.push("drill");if(opt.sel===b.id)cls.push("sel");
+  const g=mk("g",{class:cls.join(" ")},parent);
+  const name=b.t+(b.sl.length?" — "+b.sl.join(" "):"");
+  if(b.go)makeButton(g,name+". "+KIND_NAME[b.k]+". Opens plate "+b.go+", "+PLATES[b.go].t,b.go);
+  else if(opt.front)makeButton(g,name+". "+KIND_NAME[b.k]+". Opens plate 01, where it is specified","01",b.id);
+  if(b.go)mk("rect",{class:"halo",x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8,rx:11},g);
+  mk("rect",{class:"r",x:b.x,y:b.y,width:b.w,height:b.h,rx:b.k==="data"?3:8},g);
+  if(b.k==="data")mk("path",{class:"lid",d:`M${b.x+4} ${b.y+5} H${b.x+b.w-4}`},g);
+  b.tl.forEach((l,i)=>{mk("text",{class:"t",x:b.x+10,y:b.y+20+i*16},g).textContent=l;});
+  const s0=b.y+20+(b.tl.length-1)*16+17;
+  b.sl.forEach((l,i)=>{mk("text",{class:"s",x:b.x+10,y:s0+i*13},g).textContent=l;});
+  if(b.tag)mk("text",{class:"tag",x:b.x+b.w-8,y:b.y+15,"text-anchor":"end"},g).textContent=b.tag;
+  if(b.go)mk("text",{class:"dr",x:b.x+b.w-9,y:b.y+b.h-8,"text-anchor":"end"},g).textContent="see "+b.go+" ↗";
+  const tt=mk("title",{},g);tt.textContent=name+(b.p?" (proposed)":"");
+}
+
+/* Arrow labels go on the longest segment, at the first spot that overlaps no box and no other label. */
+function placeLabels(parent,LBL,boxes){
+  const R=boxes.map(b=>({x:b.x-3,y:b.y-3,w:b.w+6,h:b.h+6})),placed=[];
+  const hits=r=>R.concat(placed).some(q=>r.x<q.x+q.w&&q.x<r.x+r.w&&r.y<q.y+q.h&&q.y<r.y+r.h);
+  const rectFor=(x,y,an,w)=>({x:an==="middle"?x-w/2:an==="end"?x-w:x,y:y-10,w,h:13});
+  LBL.forEach(({text,P,go,name})=>{
+    const w=text.length*6.05+6;
+    const segs=[];for(let i=1;i<P.length;i++)segs.push([P[i-1],P[i]]);
+    segs.sort((a,b)=>len(b)-len(a));
+    let best=null;
+    outer:for(const [[ax,ay],[bx,by]] of segs){
+      const c=[];
+      if(ay===by){const lo=Math.min(ax,bx),hi=Math.max(ax,bx);for(const f of [.5,.3,.7,.15,.85])for(const d of [-6,14])c.push([lo+(hi-lo)*f,ay+d,"middle"]);}
+      else{const lo=Math.min(ay,by),hi=Math.max(ay,by);for(const f of [.5,.3,.7,.2,.8])for(const [d,an] of [[7,"start"],[-7,"end"]])c.push([ax+d,lo+(hi-lo)*f+3,an]);}
+      for(const [x,y,an] of c){const r=rectFor(x,y,an,w);if(!hits(r)){best={x,y,an};placed.push(r);break outer;}}
+    }
+    if(!best){const [[ax,ay],[bx,by]]=segs[0];best={x:(ax+bx)/2+(ax===bx?7:0),y:(ay+by)/2-6,an:ax===bx?"start":"middle"};placed.push(rectFor(best.x,best.y,best.an,w));}
+    const t=mk("text",{class:"al"+(go?" go":""),x:best.x,y:best.y,"text-anchor":best.an},parent);
+    t.textContent=text;
+    if(go)makeButton(t,"Arrow "+name+", "+text+": open plate "+go,go);
+  });
+}
+function len([[ax,ay],[bx,by]]){return Math.abs(bx-ax)+Math.abs(by-ay);}
+
+/* ---- the key: same everywhere ---- */
+function keyHTML(){
+  const sw=k=>`<svg class="dg" width="22" height="14" aria-hidden="true"><g class="bx k-${k}"><rect class="r" x="1" y="1" width="20" height="12" rx="${k==="data"?2:3}"/></g></svg>`;
+  const ln=s=>`<svg class="dg" width="34" height="10" aria-hidden="true"><g class="a ${s}"><path d="M1 5 H${s==="attach"?33:26}"/>${s==="attach"?"":'<polygon class="hd" points="33,5 25,1 25,9"/>'}</g></svg>`;
+  const ol=c=>`<svg class="dg" width="26" height="18" aria-hidden="true"><g class="bx k-step ${c}">${c==="drill"?'<rect class="halo" x="1" y="1" width="24" height="16" rx="5"/>':""}<rect class="r" x="4" y="4" width="18" height="10" rx="3"/></g></svg>`;
+  return `<div class="grp"><b>Box = what it is</b>${["llm","tool","svc","data","app","out","step"].map(k=>`<span>${sw(k)}${KIND_NAME[k]}</span>`).join("")}</div>
+  <div class="grp"><b>Line = how control moves</b><span>${ln("")}plain call</span><span>${ln("cond")}conditional step</span><span>${ln("loop")}bounded loop</span><span>${ln("rec")}recursion</span><span>${ln("attach")}attached / related, no direction</span></div>
+  <div class="grp"><b>Outline</b><span>${ol("drill")}opens another plate</span><span>${ol("pend")}proposed or open (?)</span></div>`;
+}
+
+/* ===================================================================== PAGE */
+const ov=document.getElementById("ov"),dlgB=document.getElementById("dlg-b");
+let STACK=[],CUR=null,lastFocus=null;
+
+function statusChip(p){return p.draft?'<span class="chip-draft">DRAFT</span>':'<span class="chip-final">SETTLED</span>';}
+
+function buildChrome(){
+  const nav=document.getElementById("platenav");
+  nav.innerHTML=ORDER.map(n=>`<button type="button" class="pbtn${PLATES[n].draft?" is-draft":""}" data-plate="${n}" title="${esc(n+" — "+PLATES[n].t+(PLATES[n].draft?" (DRAFT)":""))}" aria-label="${esc("Plate "+n+": "+PLATES[n].t+(PLATES[n].draft?", draft":""))}">${n}</button>`).join("");
+  document.getElementById("ilist").innerHTML=ORDER.map(n=>{const p=PLATES[n];
+    return `<button type="button" class="irow${p.draft?" is-draft":""}" data-plate="${n}"><span class="no">${n}</span><span><span class="nm">${esc(p.t)}</span> ${statusChip(p)}<span class="ds">${esc(p.sum)}</span></span></button>`;}).join("");
+  const p1=PLATES["01"];
+  document.getElementById("front-status").innerHTML=statusChip(p1);
+  document.getElementById("front-lead").innerHTML=fmt(p1.lead);
+  document.getElementById("front-frame").appendChild(renderFig(p1.figs[0],"01",{front:true}));
+  document.getElementById("front-key").innerHTML=keyHTML();
+}
+
+function openPlate(n,{push=false,sel=null,flash=null}={}){
+  const p=PLATES[n];if(!p)return;
+  if(ov.hidden){STACK=[];lastFocus=document.activeElement;}
+  else if(push&&CUR&&CUR!==n)STACK.push(CUR);
+  CUR=n;
+  document.getElementById("dlg-no").textContent=n;
+  document.getElementById("dlg-k").innerHTML="Plate · <code>docs/atlas/"+esc(p.file)+"</code> "+statusChip(p);
+  document.getElementById("dlg-t").textContent=p.t;
+  const back=document.getElementById("dlg-back");
+  back.hidden=!STACK.length;
+  if(STACK.length)back.textContent="← "+STACK[STACK.length-1]+" "+PLATES[STACK[STACK.length-1]].t;
+  dlgB.innerHTML="";
+  if(n==="90")buildQuestions(p);else buildBreakout(n,p,sel);
+  ov.hidden=false;document.body.style.overflow="hidden";
+  setHash(n);
+  dlgB.parentElement.scrollTop=0;
+  if(flash){const row=dlgB.querySelector(`[data-row="${flash}"]`);if(row){row.classList.add("flash");row.scrollIntoView({block:"center"});}}
+  document.getElementById("dlg-x").focus({preventScroll:true});
+}
+
+function add(html,cls,tag="div"){const e=document.createElement(tag);if(cls)e.className=cls;e.innerHTML=html;dlgB.appendChild(e);return e;}
+
+function buildBreakout(n,p,sel){
+  if(STACK.length)add("Trail: "+STACK.concat([n]).map((k,i,a)=>i<a.length-1?`<button type="button" data-trail="${i}">${k}</button> →`:`<b>${k}</b>`).join(" "),"trail");
+  add(fmt(p.lead),"lead","p");
+  if(p.facts&&p.facts.length)add(p.facts.map(([k,v,prop])=>`<span class="fact${prop?" prop":""}"><em>${esc(k)}</em>${fmt(v)}</span>`).join(""),"facts");
+  const rel=["00"].concat(p.links||[]);
+  add("Linked from this plate: "+rel.map(r=>r==="00"?'<button type="button" class="ibtn" data-home="1">← Index</button>':`<button type="button" class="ibtn" data-plate="${r}">${r} ${esc(PLATES[r].t)}</button>`).join(" "),"rel");
+  if(p.figs&&p.figs.length){
+    add('<div class="key">'+keyHTML()+"</div>","keybox");
+    p.figs.forEach(f=>{const fig=add(`<h3>${esc(f.h)}</h3><div class="frame2"></div>`,"fig","figure");fig.querySelector(".frame2").appendChild(renderFig(f,n,{sel}));});
+  }
+  (p.tables||[]).forEach(t=>add(`<h3>${esc(t.h)}</h3><div class="tw"><table class="tbl"><thead><tr>${t.cols.map(c=>`<th scope="col">${esc(c)}</th>`).join("")}</tr></thead><tbody>${t.rows.map(r=>`<tr>${r.map(c=>`<td>${fmt(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`,"sec"));
+  (p.notes||[]).forEach(s=>{
+    let h=s.h?`<h3>${esc(s.h)}</h3>`:"";
+    (s.p||[]).forEach(x=>h+=`<p>${fmt(x)}</p>`);
+    if(s.li)h+=`<ul>${s.li.map(x=>`<li>${fmt(x)}</li>`).join("")}</ul>`;
+    if(s.p2)h+=`<p style="margin-top:8px">${fmt(s.p2)}</p>`;
+    if(s.fold)h+=s.fold.map(([sum,items])=>`<details><summary>${esc(sum)}</summary><div><ul>${items.map(x=>`<li>${fmt(x)}</li>`).join("")}</ul></div></details>`).join("");
+    add(h,"sec");
+  });
+  add(`<h3>Open in this draft</h3>`+(p.open&&p.open.length?`<div class="open-list">${p.open.map(o=>`<div class="open-item"><b>?</b>${fmt(o)}</div>`).join("")}</div>`:"<p>Nothing open on this plate.</p>"),"sec");
+}
+
+function buildQuestions(p){
+  if(STACK.length)add("Trail: "+STACK.concat(["90"]).map((k,i,a)=>i<a.length-1?`<button type="button" data-trail="${i}">${k}</button> →`:`<b>${k}</b>`).join(" "),"trail");
+  add(fmt(p.lead)+" Each question links to the plate that raised it; a decided question moves to the Resolved table with its date.","lead","p");
+  add(`<button type="button" class="ibtn" data-home="1">← Index</button>`,"rel");
+  add(`<h3>Waiting on Brian · ${p.questions.length}</h3><div class="tw"><table class="tbl"><thead><tr><th scope="col">ID</th><th scope="col">Question</th><th scope="col">Raised on</th></tr></thead><tbody>${p.questions.map(([id,q,on])=>`<tr data-row="${id}"><td><span class="open-item" style="padding:1px 6px;display:inline-block"><b style="margin:0">${id}</b></span></td><td>${fmt(q)}</td><td><button type="button" class="pl" data-plate="${on}">${on}</button></td></tr>`).join("")}</tbody></table></div>`,"sec");
+  add(`<h3>Resolved · ${p.resolved.length}</h3><div class="tw"><table class="tbl"><thead><tr><th scope="col">ID</th><th scope="col">Decision</th><th scope="col">Date</th></tr></thead><tbody>${p.resolved.map(([id,d,dt])=>`<tr data-row="${id}"><td>${id}</td><td>${fmt(d).replace(/<button type="button" class="oq" data-open="(OPEN-\d+)">\1<\/button>/g,(m,x)=>x===id?x:m)}</td><td style="white-space:nowrap">${dt}</td></tr>`).join("")}</tbody></table></div>`,"sec");
+}
+
+function closePlate(){
+  ov.hidden=true;document.body.style.overflow="";STACK=[];CUR=null;setHash("");
+  if(lastFocus&&lastFocus.focus)lastFocus.focus();
+}
+function goBack(){if(!STACK.length)return;const k=STACK.pop();openPlate(k,{});}
+function setHash(n){try{history.replaceState(null,"",n?"#"+n:location.pathname+location.search);}catch(e){/* history may be unavailable in a sandboxed frame */}}
+
+/* ---- events ---- */
+function activate(el){
+  if(el.dataset.trail!==undefined){const i=+el.dataset.trail,k=STACK[i];STACK=STACK.slice(0,i);openPlate(k,{});return true;}
+  if(el.dataset.home){closePlate();document.getElementById("ilist").scrollIntoView({block:"start"});return true;}
+  if(el.dataset.open){openPlate("90",{push:!ov.hidden,flash:el.dataset.open});return true;}
+  const n=el.dataset.go||el.dataset.plate;
+  if(n){openPlate(n,{push:!ov.hidden,sel:el.dataset.sel||null});return true;}
+  return false;
+}
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-go],[data-plate],[data-open],[data-trail],[data-home]");
+  if(el&&activate(el)){e.preventDefault();return;}
+  if(e.target===ov)closePlate();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!ov.hidden){closePlate();return;}
+  if((e.key==="Enter"||e.key===" ")&&e.target.closest&&e.target.closest("svg")){
+    const el=e.target.closest("[data-go]");if(el){e.preventDefault();activate(el);}
+  }
+  if(!ov.hidden&&e.key==="Tab"){ /* keep focus inside the open plate */
+    const f=[...ov.querySelectorAll('button:not([hidden]),[tabindex="0"],summary')].filter(x=>x.offsetParent!==null||x.closest("svg"));
+    if(!f.length)return;const first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
+document.getElementById("dlg-x").addEventListener("click",closePlate);
+document.getElementById("dlg-back").addEventListener("click",goBack);
+window.addEventListener("hashchange",openFromHash);
+function openFromHash(){const n=(location.hash||"").replace(/^#/,"");if(PLATES[n]&&n!==CUR)openPlate(n,{});}
+
+/* ---- theme ---- */
+const THEMES=["auto","light","dark"];
+function applyTheme(t){
+  if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);
+  document.getElementById("theme").textContent="Theme: "+t;
+}
+let theme="auto";
+try{theme=localStorage.getItem("atlas-theme")||"auto";}catch(e){theme="auto";}
+if(!THEMES.includes(theme))theme="auto";
+applyTheme(theme);
+document.getElementById("theme").addEventListener("click",()=>{
+  theme=THEMES[(THEMES.indexOf(theme)+1)%THEMES.length];applyTheme(theme);
+  try{localStorage.setItem("atlas-theme",theme);}catch(e){/* storage may be blocked; the theme still applies for this visit */}
+});
+
+buildChrome();
+openFromHash();
+</script>
