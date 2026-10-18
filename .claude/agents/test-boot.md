@@ -76,6 +76,24 @@ from the main repo's local `.env` (never from anywhere else), put it only in the
 clone's `.env`, never print it, and record that the step needed a reviewer-supplied
 secret. If the main repo has no such value, stop at that step and report it.
 
+**Keep apart from this machine's own copy of the app.** The developer's copy may be
+running here, with the same Docker Compose project name (`community-voices`), the same
+data volumes and the same port. A boot test must start from nothing, exactly as a
+reviewer's machine would, and must not touch that copy. So, before the first `docker
+compose` command, in the same shell:
+
+```bash
+export COMPOSE_PROJECT_NAME="boot-$(date +%Y%m%d-%H%M%S)"   # own containers and volumes
+export PORT=<a free port, e.g. 5190>                          # own port; check it's free
+```
+
+Both override the compose file and `.env` without changing a word of the README's
+commands, which you still run exactly as written. Wherever the README says
+`localhost:5173`, use your `PORT` instead, and say so in the report. Use the same two
+settings for every compose command, including clean-up. Docker's build cache is shared
+with this machine, so image builds can be faster than on a reviewer's machine; say so
+when you report timings.
+
 **Ports and services.** If a port the README uses is already taken on this machine,
 record it as a finding (the README should say how to change it) and say which process
 holds it. Don't stop the other process.
@@ -95,8 +113,8 @@ app would not know what to click.
 
 ## Step 4 — Clean up
 
-Stop every process and container you started (`docker compose down -v` if compose was
-used, kill background servers by the process ID you recorded). Leave the
+Stop every process and container you started (`docker compose down --volumes --rmi
+local` with your `COMPOSE_PROJECT_NAME` and `PORT` still set, if compose was used, kill background servers by the process ID you recorded). Leave the
 `.boot-test/` folder in place so the logs can be read, and say where it is. Confirm
 nothing you started is still running.
 
