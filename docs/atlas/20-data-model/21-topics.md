@@ -59,7 +59,6 @@ erDiagram
         int posts
         int comments
         int unique_authors
-        int total_score
         int new_threads
         int unanswered_questions
     }
@@ -91,7 +90,9 @@ erDiagram
     find the tags it might belong to, and the centroid is updated whenever a cluster
     is added.
 - **topic_daily_engagement** — one row per topic per day: how many posts, comments,
-  distinct people, upvotes, new threads and unanswered questions. **This is the
+  distinct people, new threads and unanswered questions. Upvotes are left out: posts
+  are fetched once and never re-fetched, so their scores are frozen at fetch time
+  ([40](../40-backend.md)). **This is the
   graph.** Engagement over time for any topic is one query, and weekly totals are sums
   of seven rows. It's a summary rebuilt from the posts after each ingestion, never
   edited by hand, so it can always be recreated from the raw data. Five weeks of about

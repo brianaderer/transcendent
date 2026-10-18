@@ -83,11 +83,17 @@ flowchart LR
     REPJ --> PG
 ```
 
-- **Daily, with a look-back.** Each pull fetches the last **seven days**, not just
-  yesterday, and updates what's already stored. Comments keep arriving on a post for
-  days, and upvote counts keep changing, so a strictly one-day pull would freeze every
-  thread at its first day. Posts and comments are keyed by Reddit's own id, so
-  re-fetching updates rows and never duplicates them (`CLAUDE.md` §7).
+- **Only what's new** (Brian's call). Arctic Shift searches posts *and comments* by
+  subreddit and creation time, so each pull asks for everything created since the
+  newest item already stored — new comments on old threads included. Nothing already
+  stored is fetched again. The start point is moved back an hour as a small overlap,
+  because the archive can lag a little behind Reddit; the few repeats it brings are
+  dropped on insert, since every post and comment is keyed by Reddit's own id
+  (`CLAUDE.md` §7).
+- **What that gives up: upvote counts.** A post's score keeps changing after it's
+  fetched, and an only-what's-new pull never sees the change. So trends are built from
+  counts that never change once something exists — posts, comments, distinct people,
+  new threads — and score is stored but not used for trends.
 - **Why daily is enough.** The document is weekly and trends are computed by the day;
   pulling more often adds load on a volunteer-run archive without changing any result.
 - **Tagging and report runs are Celery jobs too.** A report run makes many LLM calls and
