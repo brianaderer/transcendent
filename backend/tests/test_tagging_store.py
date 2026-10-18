@@ -243,3 +243,10 @@ def test_upvotes_count_on_a_day_with_no_new_posts(store):
             )
         ).one()
     assert (row.posts, row.comments, row.upvotes) == (0, 0, 4)
+
+
+def test_a_merged_mint_before_its_twin_raises(store):
+    twin = replace(decided("mint", ["test-2"], name="c2"), merged_into="c1")
+
+    with pytest.raises(RuntimeError, match="not minted yet"):
+        store.apply_decisions(DAY, [twin, decided("mint", ["test-1"], name="c1")], {})

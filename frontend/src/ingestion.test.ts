@@ -38,3 +38,9 @@ test("says where loading stopped, and why, when a day failed", () => {
 test("says it is waiting before the first day starts", () => {
   expect(describeIngestion(base)).toBe("Waiting to start loading r/sailing history");
 });
+
+test("says when no reason was recorded for a failed day", () => {
+  const status = { ...base, failed_day: "2026-08-26" };
+
+  expect(describeIngestion(status)).toBe("Loading stopped at 26 Aug: the reason wasn't recorded");
+});

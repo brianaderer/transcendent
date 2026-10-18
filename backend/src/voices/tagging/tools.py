@@ -13,7 +13,9 @@ from voices.db.tagging_store import PostNotFound
 from voices.tagging.window import window_start
 
 SEARCH_RESULTS = 20
-REQUIRED_ARGUMENT = {"search": "term", "lookup": "post_id", "search_tags": "term"}
+# Each tool's one required argument; the method that runs tool `x` is `_x`. The schemas the
+# model sees are in decider.TOOLS and must match.
+TOOL_ARGUMENT = {"search": "term", "lookup": "post_id", "search_tags": "term"}
 TAG_RESULTS = 10
 
 
@@ -41,12 +43,12 @@ class TaggingTools:
 
     def run(self, name: str, arguments: dict) -> str:
         """Runs one tool call and returns what the agent reads back."""
-        tool = {"search": self._search, "lookup": self._lookup, "search_tags": self._search_tags}
-        if name not in tool:
-            return f"There is no tool named {name}; use search, lookup or search_tags."
-        if REQUIRED_ARGUMENT[name] not in arguments:
-            return f"Tool {name} needs the argument '{REQUIRED_ARGUMENT[name]}'."
-        return json.dumps(tool[name](arguments), default=str)
+        if name not in TOOL_ARGUMENT:
+            return f"There is no tool named {name}; use {', '.join(TOOL_ARGUMENT)}."
+        if TOOL_ARGUMENT[name] not in arguments:
+            return f"Tool {name} needs the argument '{TOOL_ARGUMENT[name]}'."
+        run_tool = getattr(self, f"_{name}")
+        return json.dumps(run_tool(arguments), default=str)
 
     def _search(self, arguments: dict) -> list[dict]:
         embedding = self.embedder.embed_query(arguments["term"])

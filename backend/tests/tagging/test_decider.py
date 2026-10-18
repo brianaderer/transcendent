@@ -102,3 +102,27 @@ def test_the_model_name_given_is_recorded_with_the_decision():
     decided = ToolLoopDecider(model, "anthropic/claude-sonnet-5.5", FakeTools()).decide(BRIEF)
 
     assert decided.model == "anthropic/claude-sonnet-5.5"
+
+
+def test_a_valid_decision_after_a_malformed_one_in_the_same_reply_is_used():
+    reply = AIMessage(
+        content="",
+        tool_calls=[
+            {"name": "Decision", "args": {"action": "maybe", "reason": "?"}, "id": "1"},
+            {"name": "Decision", "args": DECIDE, "id": "2"},
+        ],
+    )
+
+    decided = ToolLoopDecider(ScriptedModel([reply]), "scripted", FakeTools()).decide(BRIEF)
+
+    assert decided.decision.topic_id == 3
+
+
+def test_every_answer_sent_to_the_model_is_logged(caplog):
+    caplog.set_level("INFO")
+    model = ScriptedModel([call("search", {"term": "impeller"}), call("Decision", DECIDE, "2")])
+
+    ToolLoopDecider(model, "scripted", FakeTools()).decide(BRIEF)
+
+    [answer] = [r for r in caplog.records if r.getMessage() == "tagging.answer"]
+    assert (answer.tool, answer.content) == ("search", "result of search")

@@ -104,18 +104,12 @@ class ToolLoopDecider:
             reply = conversation.take_turn(tool_choice=None)
             decision = _decision_in(reply)
             if decision:
-                return self._decided(conversation, decision)
+                return conversation.decided(decision, self.model_name)
             conversation.answer(reply)
         decision = _decision_in(conversation.take_turn(tool_choice=DECIDE))
         if not decision:
             raise NoDecision(f"cluster {brief.name}: no decision after {self.max_turns} turns")
-        return self._decided(conversation, decision)
-
-    def _decided(self, conversation: "_Conversation", decision: Decision) -> DecidedCluster:
-        brief = conversation.brief
-        log_event(logger, "tagging.decided", cluster=brief.name, decision=decision.model_dump())
-        prompt = f"{INSTRUCTIONS}\n\n{conversation.prompt}"
-        return DecidedCluster(brief, decision, prompt, self.model_name)
+        return conversation.decided(decision, self.model_name)
 
 
 class _Conversation:
@@ -145,13 +139,15 @@ class _Conversation:
             )
 
     def _result_of(self, call: dict) -> str:
-        if call["name"] != DECIDE:
-            return self.tools.run(call["name"], call["args"])
-        try:
-            _parse_decision(call["args"])
-        except MalformedDecision as error:
-            return str(error)
-        return f"Only one {DECIDE} call is read per turn; call it once."
+        """A reply being answered made no valid decision, so a Decision call here is malformed."""
+        if call["name"] == DECIDE:
+            return _decision_problem(call["args"])
+        return self.tools.run(call["name"], call["args"])
+
+    def decided(self, decision: Decision, model_name: str) -> DecidedCluster:
+        self._log("tagging.decided", decision=decision.model_dump())
+        prompt = f"{INSTRUCTIONS}\n\n{self.prompt}"
+        return DecidedCluster(self.brief, decision, prompt, model_name)
 
     def _say(self, message: BaseMessage, tool: str | None = None) -> None:
         self._log("tagging.answer", tool=tool, content=message.content)
@@ -170,14 +166,24 @@ class MalformedDecision(Exception):
 
 
 def _decision_in(reply: AIMessage) -> Decision | None:
-    """The reply's decision, if it made a valid one."""
+    """The reply's first valid decision, if it made one."""
     for call in reply.tool_calls:
         if call["name"] == DECIDE:
             try:
                 return _parse_decision(call["args"])
             except MalformedDecision:
-                return None
+                continue
     return None
+
+
+def _decision_problem(arguments: dict) -> str:
+    try:
+        _parse_decision(arguments)
+    except MalformedDecision as error:
+        return str(error)
+    return (
+        f"That decision was valid but another call in the same reply was read; call {DECIDE} once."
+    )
 
 
 def _parse_decision(arguments: dict) -> Decision:
