@@ -13,7 +13,7 @@ proposed. The screens below are still a proposal.
 | UI library | **React** — specified |
 | Routing | **TanStack Router** — specified |
 | Server state | **TanStack Query** — specified. Everything fetched from the backend lives here |
-| Client state | **Zustand** — specified. Proposed rule: only for state that lives purely in the browser (for example which comparison panel is expanded). Anything a reviewer should be able to link to — the selected week, the selected run — lives in the address, through TanStack Router's search parameters |
+| Client state | **Zustand** — specified, used only for state that lives purely in the browser (for example which comparison panel is expanded). Anything a reviewer should be able to link to — the selected week, the selected run — lives in the address, through TanStack Router's search parameters |
 | Language and build | TypeScript, built with Vite |
 | Tables | TanStack Table, for the retrieval-statistics list and the comparison measurements |
 | Embedding chart | Apache ECharts — draws a few thousand points in a 2D scatter on a canvas, with hover and coloring built in |
