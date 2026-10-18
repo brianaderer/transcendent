@@ -1,5 +1,6 @@
 import pytest
 
+from voices.tagging.model import MissingModelKey
 from voices.worker import app as worker
 
 
@@ -24,3 +25,15 @@ def test_a_failed_catch_up_tries_again_by_itself_in_ten_minutes(monkeypatch):
         worker.catch_up.run()
 
     assert retried[0]["countdown"] == worker.RETRY_FAILED_CATCH_UP_SECONDS == 600
+
+
+def test_a_missing_model_key_is_not_retried(monkeypatch):
+    def no_key():
+        raise MissingModelKey("OPENROUTER_API_KEY is not set")
+
+    retried = []
+    monkeypatch.setattr(worker, "catch_up_now", no_key)
+    monkeypatch.setattr(worker.catch_up, "retry", lambda **kw: retried.append(kw))
+
+    assert worker.catch_up.run() is False
+    assert retried == []

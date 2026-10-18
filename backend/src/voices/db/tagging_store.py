@@ -1,11 +1,21 @@
 """Reads and writes for tagging (atlas plate 21): the three-day window, the agent's searches,
 applying its decisions, deleting what never clustered, and the daily engagement table."""
 
-import json
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, time, timedelta
 
-from sqlalchemy import Connection, Engine, delete, func, insert, select, text, update
+from sqlalchemy import (
+    Connection,
+    Engine,
+    Insert,
+    Update,
+    delete,
+    func,
+    insert,
+    select,
+    text,
+    update,
+)
 
 from voices.db.models import ClusterDecision, Post, RetrievalEvent, Thread, Topic
 from voices.tagging.clustering import WindowPost
@@ -76,6 +86,7 @@ class TaggingStore:
             return [_hit(row) for row in connection.execute(query).all()]
 
     def lookup_post(self, post_id: str) -> dict:
+        """One post in full. Raises PostNotFound for an id that isn't stored."""
         query = (
             select(
                 Post.source_id,
@@ -91,7 +102,7 @@ class TaggingStore:
         with self.engine.connect() as connection:
             row = connection.execute(query).first()
         if row is None:
-            return {"error": f"no post with id {post_id}"}
+            raise PostNotFound(post_id)
         return {
             "post_id": row.source_id,
             "author": row.author,
@@ -116,12 +127,11 @@ class TaggingStore:
     ) -> dict[str, int]:
         """All of a day's decisions in one transaction. Only posts still waiting for a tag are
         changed; posts already tagged in the window were there as anchors."""
-        counts = {"attached": 0, "minted": 0, "noise_deleted": 0}
-        minted: dict[str, int] = {}  # cluster name -> new topic id
         with self.engine.begin() as connection:
+            applier = _DecisionApplier(connection, day, keywords)
             for item in settled:
-                _apply_one(connection, day, item, keywords, minted, counts)
-        return counts
+                applier.apply(item)
+        return applier.counts
 
     def delete_expired_pending(self, before: date) -> int:
         """Posts that joined no cluster in their three days are noise (atlas OPEN-14)."""
@@ -139,48 +149,68 @@ class TaggingStore:
             connection.execute(text(COUNT_ENGAGEMENT), days)
 
 
-def _apply_one(
-    connection: Connection,
-    day: date,
-    item: DecidedCluster,
-    keywords: dict[str, list[str]],
-    minted: dict[str, int],
-    counts: dict,
-) -> None:
-    action = item.decision.action
-    topic_id = _topic_for(connection, day, item, keywords, minted)
-    decision_id = _record_decision(connection, day, item, topic_id)
-    pending = [Post.source_id.in_(item.brief.member_ids), Post.status == "pending"]
-    if action == "noise" or topic_id is None:
-        counts["noise_deleted"] += connection.execute(delete(Post).where(*pending)).rowcount
-        return
-    tagged = connection.execute(_tag_posts(pending, topic_id, decision_id, item)).rowcount
-    connection.execute(_refresh_topic(topic_id, day))
-    counts["attached"] += tagged
-    counts["minted"] += action == "mint" and not item.merged_into
+class _DecisionApplier:
+    """Applies one day's decisions inside one transaction, remembering the topics it mints so
+    a merged mint can join them."""
+
+    def __init__(self, connection: Connection, day: date, keywords: dict[str, list[str]]):
+        self.connection = connection
+        self.day = day
+        self.keywords = keywords
+        self.minted_topic_ids: dict[str, int] = {}  # cluster name -> its new topic
+        self.counts = {"attached": 0, "minted": 0, "noise_deleted": 0, "left_waiting": 0}
+
+    def apply(self, item: DecidedCluster) -> None:
+        action = item.decision.action
+        if action == "noise":
+            self.discard_as_noise(item)
+        elif action == "attach":
+            self.attach(item, self._existing_topic(item.decision.topic_id))
+        elif item.merged_into:
+            self.attach(item, self.minted_topic_ids.get(item.merged_into))
+        else:
+            self.attach(item, self.mint_topic(item))
+
+    def discard_as_noise(self, item: DecidedCluster) -> None:
+        self._record(item, topic_id=None)
+        deleted = self.connection.execute(delete(Post).where(*_waiting(item))).rowcount
+        self.counts["noise_deleted"] += deleted
+
+    def attach(self, item: DecidedCluster, topic_id: int | None) -> None:
+        """Tags the cluster's waiting posts with the topic. With no topic (the agent named one
+        that doesn't exist) the posts keep waiting for another day's decision."""
+        decision_id = self._record(item, topic_id)
+        if topic_id is None:
+            self.counts["left_waiting"] += len(item.brief.member_ids)
+            return
+        statement = _tag_posts(_waiting(item), topic_id, decision_id, item)
+        self.counts["attached"] += self.connection.execute(statement).rowcount
+        self.connection.execute(_refresh_topic(topic_id, self.day))
+
+    def mint_topic(self, item: DecidedCluster) -> int:
+        """Creates the new topic and remembers it for any later cluster merged into it."""
+        topic_id = self.connection.scalar(_new_topic(self.day, item, self.keywords))
+        self.minted_topic_ids[item.brief.name] = topic_id
+        self.counts["minted"] += 1
+        return topic_id
+
+    def _existing_topic(self, topic_id: int | None) -> int | None:
+        return self.connection.scalar(select(Topic.id).where(Topic.id == topic_id))
+
+    def _record(self, item: DecidedCluster, topic_id: int | None) -> int:
+        return self.connection.scalar(_new_decision(self.day, item, topic_id))
 
 
-def _topic_for(
-    connection: Connection,
-    day: date,
-    item: DecidedCluster,
-    keywords: dict[str, list[str]],
-    minted: dict[str, int],
-) -> int | None:
-    """The topic this cluster's posts join: an existing one, one minted now, or none."""
-    decision = item.decision
-    if decision.action == "attach":
-        exists = connection.scalar(select(Topic.id).where(Topic.id == decision.topic_id))
-        return exists  # None for an id the agent invented; _apply_one then deletes the posts
-    if decision.action == "mint" and item.merged_into:
-        return minted.get(item.merged_into)
-    if decision.action == "mint":
-        minted[item.brief.name] = connection.scalar(_new_topic(day, item, keywords))
-        return minted[item.brief.name]
-    return None
+class PostNotFound(Exception):
+    pass
 
 
-def _new_topic(day: date, item: DecidedCluster, keywords: dict[str, list[str]]):
+def _waiting(item: DecidedCluster) -> list:
+    """The cluster's posts still waiting for a tag; posts already tagged were only anchors."""
+    return [Post.source_id.in_(item.brief.member_ids), Post.status == "pending"]
+
+
+def _new_topic(day: date, item: DecidedCluster, keywords: dict[str, list[str]]) -> Insert:
     return (
         insert(Topic)
         .values(
@@ -195,31 +225,27 @@ def _new_topic(day: date, item: DecidedCluster, keywords: dict[str, list[str]]):
     )
 
 
-def _record_decision(
-    connection: Connection, day: date, item: DecidedCluster, topic_id: int | None
-) -> int:
-    candidates = [vars(c) for c in item.brief.candidates]
-    statement = (
+def _new_decision(day: date, item: DecidedCluster, topic_id: int | None) -> Insert:
+    return (
         insert(ClusterDecision)
         .values(
             day=day,
             decision=item.decision.action,
             topic_id=topic_id,
             reason=item.decision.reason,
-            candidate_tags=json.loads(json.dumps(candidates)),
+            candidate_tags=[vars(candidate) for candidate in item.brief.candidates],
             prompt=item.prompt,
             model=item.model,
         )
         .returning(ClusterDecision.id)
     )
-    return connection.scalar(statement)
 
 
-def _tag_posts(pending: list, topic_id: int, decision_id: int, item: DecidedCluster):
+def _tag_posts(waiting: list, topic_id: int, decision_id: int, item: DecidedCluster) -> Update:
     closeness = 1 - Post.embedding.cosine_distance(list(item.brief.centroid))
     return (
         update(Post)
-        .where(*pending)
+        .where(*waiting)
         .values(
             status="tagged",
             topic_id=topic_id,
@@ -229,7 +255,7 @@ def _tag_posts(pending: list, topic_id: int, decision_id: int, item: DecidedClus
     )
 
 
-def _refresh_topic(topic_id: int, day: date):
+def _refresh_topic(topic_id: int, day: date) -> Update:
     """The topic's centre moves to the average of its posts; it was last seen today."""
     average = select(func.avg(Post.embedding)).where(Post.topic_id == topic_id).scalar_subquery()
     return (
@@ -279,7 +305,7 @@ CLEAR_ENGAGEMENT = "DELETE FROM topic_daily_engagement WHERE day BETWEEN :first 
 COUNT_ENGAGEMENT = """
 WITH items AS (
     SELECT p.topic_id, (p.created_at AT TIME ZONE 'UTC')::date AS day, p.kind, p.author,
-           p.kind = 'post' AND p.body LIKE '%%?%%'
+           p.kind = 'post' AND strpos(p.body, '?') > 0
              AND NOT EXISTS (SELECT 1 FROM posts r WHERE r.parent_source_id = p.source_id)
              AS unanswered
     FROM posts p

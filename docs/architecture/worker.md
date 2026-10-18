@@ -35,10 +35,10 @@ catch-up that fills the database from the archive and sorts each day into topics
   created again, which `docker compose up` does when `.env` has changed;
   `docker compose restart` keeps the old settings.
 - **A failed catch-up tries again by itself** ten minutes later (`RETRY_FAILED_CATCH_UP_SECONDS`),
-  and keeps doing so with no limit, so a brief archive outage doesn't hold a first start
-  until the next 06:00 run. A catch-up that did nothing because another holds the lock is
-  not a failure and is not retried. Without an OpenRouter key every try fetches the first
-  missing day again and stops there, with the reason shown on the page.
+  and keeps doing so, so a brief archive outage doesn't hold a first start until the next
+  06:00 run. A catch-up that did nothing because another holds the lock is not a failure
+  and is not retried. A missing OpenRouter key is not retried either: retrying can't help
+  until the key is added and the worker re-created; the reason shows on the page.
 
 Redis is both the queue and the result store. Celery's own logging is replaced with the
 JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go to

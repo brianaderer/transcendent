@@ -11,12 +11,17 @@ both have happened.
 ## Public interface
 - `day_tagging.DayTagging(store, decide_all, emit).tag(day)` — tags one day and returns
   counts: `clusters` (how many were decided), `attached` (posts given a topic, by attach or
-  by mint), `minted` (new topics), `noise_deleted` and `expired` (posts deleted). `decide_all`
-  is any function from a day and its briefs to their decisions; the worker binds it to the
-  real agent.
+  by mint), `minted` (new topics), `noise_deleted` and `expired` (posts deleted), and
+  `left_waiting` (posts kept waiting because the agent named a topic that doesn't exist).
+  `decide_all` is any function from a day and its briefs to their decisions; the worker
+  passes `agent.TaggingAgent(...).decide`, which connects the model and decides the day's
+  clusters.
 - `clustering.find_clusters(posts, min_cluster_size)` — groups `WindowPost`s by meaning
-  (HDBSCAN on unit-length embeddings); stragglers join no group.
-- `decider.ToolLoopDecider(model, tools).decide(brief)` — the agent's decision for one
+  (HDBSCAN on unit-length embeddings); stragglers join no group. A window about a single
+  subject still forms one group (`allow_single_cluster`).
+- `window.window_start(day)` — the first day of the three-day window ending on `day`; the
+  one place the window is defined.
+- `decider.ToolLoopDecider(model, model_name, tools).decide(brief)` — the agent's decision for one
   cluster, as a `DecidedCluster` with the exact prompt it saw and the model's name. Raises
   `RuntimeError` if the agent never gives a valid decision, which stops the day.
 - `graph.decide_all(decider, briefs)` — every cluster decided in parallel (a LangGraph
@@ -34,7 +39,7 @@ both have happened.
   typical posts, nearest topics, the tools' searches and lookups (`search_posts`,
   `lookup_post`, `search_topics`), `record_retrievals`, `apply_decisions`,
   `delete_expired_pending`, `rebuild_engagement`. `DayTagging` and `TaggingTools` each
-  depend only on a small interface (`TaggingStore`, `ToolStore`) so tests pass stand-ins.
+  depend only on a small interface (`DayTaggingStore`, `ToolStore`) so tests pass stand-ins.
 
 ## How it works
 For day D:
@@ -49,9 +54,12 @@ For day D:
    full) or `search_tags` (existing topics by meaning, 10 at most), and answers by calling
    `Decision`. It gets six turns to look around (a turn may call several tools); then it is
    made to call `Decision`, and if that answer still isn't a valid decision the day fails.
-   All clusters of a day are decided in parallel. Search and lookup hits are recorded in
-   `retrieval_events` as the tagging agent's (run `tagging-YYYY-MM-DD`). Every turn is
-   logged in full (`tagging.turn`, `tagging.decided`). Each decision is announced live as
+   All clusters of a day are decided in parallel, at most eight at a time
+   (`MAX_PARALLEL_DECISIONS`). A lookup of an id that isn't stored, a missing tool
+   argument or an unknown tool is answered with an explanation, not an error. Search and lookup hits are recorded in
+   `retrieval_events` as the tagging agent's (run `tagging-YYYY-MM-DD`). Every model turn
+   and every tool result is logged in full (`tagging.turn`, `tagging.tool_result`,
+   `tagging.decided`). Each decision is announced live as
    `decision.made`.
 5. **Settling.** If two clusters mint topics whose centres are 0.90 alike or closer, the
    second joins the first's new topic.
@@ -60,7 +68,8 @@ For day D:
    its posts; mint creates the topic (label, description, keywords picked by code, centre)
    and tags the posts; noise deletes the waiting posts. Posts already tagged are never
    changed. An attach to a topic id that doesn't exist is recorded with no topic, and the
-   cluster's waiting posts are then deleted as noise (counted in `noise_deleted`). Deleting a
+   cluster's waiting posts are left waiting for another day's decision (counted in
+   `left_waiting`); they are deleted only if they never join a topic within three days. Deleting a
    post also removes its upvote and retrieval rows.
 7. **Expiry.** Posts from before D−2 still waiting are deleted as noise (atlas OPEN-14).
 8. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D from tagged posts:
@@ -85,15 +94,14 @@ read by the worker and passed in), OpenRouter (through `langchain-openai`), Lang
 LangChain, scikit-learn (HDBSCAN), numpy, Postgres with pgvector.
 
 ## Used by
-[worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `DayTagging`,
-`ToolLoopDecider`, `TaggingTools` and the model, and tags each day of the catch-up right after
+[worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `TaggingAgent` and `DayTagging`, and tags each day of the catch-up right after
 loading it).
 
 ## Configuration and data
 `OPENROUTER_API_KEY` (required for tagging), `MODEL_NAME` (default
-`anthropic/claude-sonnet-5.5`). Fixed in code: `LOOKAHEAD_DAYS = 3`,
+`anthropic/claude-sonnet-5.5`). Fixed in code: `LOOKAHEAD_DAYS = 3` (`window.py`),
 `MIN_CLUSTER_SIZE = 5`, `TYPICAL_POSTS_SHOWN = 6`, `CANDIDATE_TOPICS_SHOWN = 5`,
-`MAX_TOOL_CALLS = 6` (turns before a decision is required), `SEARCH_RESULTS = 20`,
+`MAX_TURNS_BEFORE_DECIDING = 6`, `MAX_PARALLEL_DECISIONS = 8`, `SEARCH_RESULTS = 20`,
 `TAG_RESULTS = 10`, `SAME_NEW_TOPIC_SIMILARITY = 0.90`, `KEYWORDS_PER_TOPIC = 8`,
 `MIN_WORD_LENGTH = 4`, `RECENT_DAYS = 7`, `EXCERPT_CHARACTERS = 300`,
 `TYPICAL_POST_CHARACTERS = 600`; the model call uses temperature 0, a 120-second timeout

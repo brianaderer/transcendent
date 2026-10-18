@@ -1,8 +1,8 @@
 """The tagging agent's decision for one cluster: attach, mint or noise (atlas plate 60).
 
 The agent may look things up with its tools before answering; it answers by calling the
-`Decision` tool, so its answer always has the fixed shape. Every turn is logged in full
-(atlas plate 05).
+`Decision` tool, so its answer always has the fixed shape. Every model turn and every tool
+result is logged in full (atlas plate 05).
 """
 
 import json
@@ -15,7 +15,7 @@ from pydantic import ValidationError
 from voices.log import log_event
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
-MAX_TOOL_CALLS = 6  # enough to read around a cluster; past this the agent must decide
+MAX_TURNS_BEFORE_DECIDING = 6  # enough to read around a cluster; then it must decide
 DECIDE = "Decision"
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.
@@ -85,30 +85,42 @@ class Tools(Protocol):
 
 
 class ToolLoopDecider:
-    def __init__(self, model: ChatModel, tools: Tools, max_tool_calls: int = MAX_TOOL_CALLS):
+    def __init__(
+        self,
+        model: ChatModel,
+        model_name: str,
+        tools: Tools,
+        max_turns: int = MAX_TURNS_BEFORE_DECIDING,
+    ):
         self.model = model
+        self.model_name = model_name
         self.tools = tools
-        self.max_tool_calls = max_tool_calls
+        self.max_turns = max_turns
 
     def decide(self, brief: ClusterBrief) -> DecidedCluster:
         prompt = render_brief(brief)
         messages: list[BaseMessage] = [SystemMessage(INSTRUCTIONS), HumanMessage(prompt)]
-        for _ in range(self.max_tool_calls):
-            decision = self._turn(brief, messages, tool_choice=None)
+        for _ in range(self.max_turns):
+            decision = self._decision_after_turn(brief, messages, tool_choice=None)
             if decision:
                 return self._decided(brief, decision, prompt)
-        decision = self._turn(brief, messages, tool_choice=DECIDE)
+        decision = self._decision_after_turn(brief, messages, tool_choice=DECIDE)
         if not decision:
-            raise RuntimeError(
-                f"cluster {brief.name}: no decision after {self.max_tool_calls} tools"
-            )
+            raise NoDecision(f"cluster {brief.name}: no decision after {self.max_turns} turns")
         return self._decided(brief, decision, prompt)
+
+    def _decision_after_turn(
+        self, brief: ClusterBrief, messages: list[BaseMessage], tool_choice: str | None
+    ) -> Decision | None:
+        reply = self._turn(brief, messages, tool_choice)
+        decision = self._decision_in(reply, messages)
+        if decision is None:
+            self._answer_tool_calls(brief, reply, messages)
+        return decision
 
     def _turn(
         self, brief: ClusterBrief, messages: list[BaseMessage], tool_choice: str | None
-    ) -> Decision | None:
-        """One model turn. Returns the decision if the model gave one; otherwise answers its
-        tool calls (or reminds it to decide) and returns None."""
+    ) -> AIMessage:
         reply = self.model.bind_tools(TOOLS, tool_choice=tool_choice).invoke(messages)
         log_event(
             logger,
@@ -118,29 +130,57 @@ class ToolLoopDecider:
             tool_calls=reply.tool_calls,
         )
         messages.append(reply)
-        if not reply.tool_calls:
-            messages.append(HumanMessage(f"Decide now by calling {DECIDE}."))
-            return None
-        return self._answer_calls(reply, messages)
+        return reply
 
-    def _answer_calls(self, reply: AIMessage, messages: list[BaseMessage]) -> Decision | None:
+    def _decision_in(self, reply: AIMessage, messages: list[BaseMessage]) -> Decision | None:
+        """The decision, if the reply made one. A malformed one is answered so the model can
+        try again."""
         for call in reply.tool_calls:
             if call["name"] == DECIDE:
                 try:
-                    return Decision.model_validate(call["args"])
-                except ValidationError as error:
-                    result = f"That decision was malformed: {error}. Call {DECIDE} again."
-            else:
-                result = self.tools.run(call["name"], call["args"])
-            messages.append(ToolMessage(result, tool_call_id=call["id"]))
+                    return _parse_decision(call["args"])
+                except MalformedDecision as error:
+                    messages.append(ToolMessage(str(error), tool_call_id=call["id"]))
         return None
+
+    def _answer_tool_calls(
+        self, brief: ClusterBrief, reply: AIMessage, messages: list[BaseMessage]
+    ) -> None:
+        if not reply.tool_calls:
+            messages.append(HumanMessage(f"Decide now by calling {DECIDE}."))
+        for call in reply.tool_calls:
+            if call["name"] != DECIDE:
+                result = self.tools.run(call["name"], call["args"])
+                log_event(
+                    logger,
+                    "tagging.tool_result",
+                    cluster=brief.name,
+                    tool=call["name"],
+                    arguments=call["args"],
+                    result=result,
+                )
+                messages.append(ToolMessage(result, tool_call_id=call["id"]))
 
     def _decided(self, brief: ClusterBrief, decision: Decision, prompt: str) -> DecidedCluster:
         log_event(logger, "tagging.decided", cluster=brief.name, decision=decision.model_dump())
-        model_name = getattr(self.model, "model_name", "unknown")
-        return DecidedCluster(
-            brief, decision, prompt=f"{INSTRUCTIONS}\n\n{prompt}", model=model_name
-        )
+        return DecidedCluster(brief, decision, f"{INSTRUCTIONS}\n\n{prompt}", self.model_name)
+
+
+class NoDecision(Exception):
+    pass
+
+
+class MalformedDecision(Exception):
+    pass
+
+
+def _parse_decision(arguments: dict) -> Decision:
+    try:
+        return Decision.model_validate(arguments)
+    except ValidationError as error:
+        raise MalformedDecision(
+            f"That decision was malformed: {error}. Call {DECIDE} again."
+        ) from error
 
 
 def render_brief(brief: ClusterBrief) -> str:

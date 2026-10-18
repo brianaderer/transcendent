@@ -64,7 +64,7 @@ def test_only_clusters_with_posts_still_waiting_for_a_tag_are_decided():
     store = FakeStore()
     run([cluster("new"), cluster("settled", pending=False)], store, [])
 
-    [(_, settled, _)] = [store.applied]
+    _, settled, _ = store.applied
     assert [d.brief.name for d in settled] == ["cluster-1"]
 
 
@@ -81,3 +81,25 @@ def test_each_decision_is_announced_live():
     run([cluster("a"), cluster("b")], FakeStore(), emitted)
 
     assert emitted.count("decision.made") == 2
+
+
+def decide_mints(day, briefs):
+    return [
+        DecidedCluster(b, Decision(action="mint", label="x", reason="r"), "p", "m") for b in briefs
+    ]
+
+
+def test_keywords_are_picked_only_for_new_topics_not_merged_into_another():
+    store = FakeStore()
+    tagging = DayTagging(
+        store,
+        decide_mints,
+        lambda event_type, **body: None,
+        clusters_of=lambda posts: [cluster("a"), cluster("b")],  # same centre: b merges into a
+    )
+
+    counts = tagging.tag(DAY)
+
+    _, _, keywords = store.applied
+    assert keywords == {"cluster-1": ["impeller", "failed", "spare"]}
+    assert counts["clusters"] == 2

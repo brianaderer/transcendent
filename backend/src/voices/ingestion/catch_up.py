@@ -49,7 +49,7 @@ class CatchUp:
         try:
             counts = self.process(day)
         except Exception as error:
-            reason = f"{type(error).__name__}: {error}"
+            reason = str(error) or type(error).__name__
             self.ledger.mark_failed(day, reason)
             self.emit("day.failed", day=day.isoformat(), error=reason)
             raise

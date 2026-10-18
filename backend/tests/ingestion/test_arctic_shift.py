@@ -172,3 +172,17 @@ def test_a_slow_down_waits_as_long_as_the_archive_says():
     archive(lambda request: next(replies), waits).posts_by_id(["p1"])
 
     assert waits == [1, 28]
+
+
+def test_a_stated_wait_is_never_longer_than_five_minutes():
+    waits = []
+    replies = iter(
+        [
+            httpx.Response(429, headers={"x-ratelimit-reset": "999999"}),
+            answer([]),
+        ]
+    )
+
+    archive(lambda request: next(replies), waits).posts_by_id(["p1"])
+
+    assert waits == [1, 300]

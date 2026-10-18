@@ -21,14 +21,10 @@ from voices.ingestion.agreement import AgreementDetector
 from voices.ingestion.arctic_shift import connect_to_archive
 from voices.ingestion.catch_up import CatchUp
 from voices.ingestion.day import DayIngestion
-from voices.ingestion.embedder import NomicEmbedder, load_embedder
+from voices.ingestion.embedder import load_embedder
 from voices.log import log_event, tracing
+from voices.tagging.agent import TaggingAgent
 from voices.tagging.day_tagging import DayTagging
-from voices.tagging.decider import ToolLoopDecider
-from voices.tagging.decisions import ClusterBrief, DecidedCluster
-from voices.tagging.graph import decide_all
-from voices.tagging.model import connect_model
-from voices.tagging.tools import TaggingTools
 
 CATCH_UP_LOCK = "lock:catch-up"
 LOCK_SECONDS = 12 * 60 * 60  # longer than any first start; freed sooner when the run ends
@@ -86,29 +82,11 @@ def _catch_up_runner() -> Callable[[datetime], None]:
     ingestion = DayIngestion(connect_to_archive(), embedder, AgreementDetector(embedder), store)
     emit = partial(RedisEvents(redis.Redis.from_url(settings.redis_url)).emit, INGESTION_STREAM)
     tagging_store = TaggingStore(store.engine)
-    decide = partial(
-        _decide_day, tagging_store, embedder, settings.openrouter_api_key, settings.model_name
-    )
-    tagging = DayTagging(tagging_store, decide, emit)
+    agent = TaggingAgent(tagging_store, embedder, settings.openrouter_api_key, settings.model_name)
+    tagging = DayTagging(tagging_store, agent.decide, emit)
     return CatchUp(store, partial(_load_and_tag, ingestion, tagging), emit).run
 
 
 def _load_and_tag(ingestion: DayIngestion, tagging: DayTagging, day: date) -> dict[str, int]:
     with tracing(f"day-{day.isoformat()}"):
         return {**ingestion.process(day), **tagging.tag(day)}
-
-
-def _decide_day(
-    store: TaggingStore,
-    embedder: NomicEmbedder,
-    api_key: str,
-    model_name: str,
-    day: date,
-    briefs: list[ClusterBrief],
-) -> list[DecidedCluster]:
-    """The tagging agent's decisions for one day's clusters. Without a key this stops the day
-    with a message saying where the key goes."""
-    decider = ToolLoopDecider(
-        connect_model(api_key, model_name), TaggingTools(store, embedder, day)
-    )
-    return decide_all(decider, briefs)

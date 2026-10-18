@@ -6,10 +6,11 @@ report agent's retrievals can be shown apart (atlas OPEN-12).
 
 import json
 from collections.abc import Sequence
-from datetime import date, timedelta
+from datetime import date
 from typing import Protocol
 
-from voices.tagging.day_tagging import LOOKAHEAD_DAYS
+from voices.db.tagging_store import PostNotFound
+from voices.tagging.window import window_start
 
 SEARCH_RESULTS = 20
 TAG_RESULTS = 10
@@ -42,18 +43,24 @@ class TaggingTools:
         tool = {"search": self._search, "lookup": self._lookup, "search_tags": self._search_tags}
         if name not in tool:
             return f"There is no tool named {name}; use search, lookup or search_tags."
-        return json.dumps(tool[name](arguments), default=str)
+        try:
+            return json.dumps(tool[name](arguments), default=str)
+        except KeyError as missing:
+            return f"Tool {name} needs the argument {missing}."
 
     def _search(self, arguments: dict) -> list[dict]:
-        first_day = self.day - timedelta(days=LOOKAHEAD_DAYS - 1)
         embedding = self.embedder.embed_query(arguments["term"])
-        hits = self.store.search_posts(embedding, first_day, self.day, SEARCH_RESULTS)
+        hits = self.store.search_posts(embedding, window_start(self.day), self.day, SEARCH_RESULTS)
         self._count([hit["post_id"] for hit in hits], "search")
         return hits
 
-    def _lookup(self, arguments: dict) -> dict:
-        post = self.store.lookup_post(arguments["post_id"])
-        self._count([arguments["post_id"]], "lookup")
+    def _lookup(self, arguments: dict) -> dict | str:
+        post_id = arguments["post_id"]
+        try:
+            post = self.store.lookup_post(post_id)
+        except PostNotFound:
+            return f"There is no post with id {post_id}; ids come from search results."
+        self._count([post_id], "lookup")
         return post
 
     def _search_tags(self, arguments: dict) -> list[dict]:

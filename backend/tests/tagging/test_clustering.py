@@ -63,3 +63,11 @@ def test_a_cluster_says_which_of_its_members_still_need_a_tag():
 
     assert sorted(p.source_id for p in cluster.pending) == ["a2", "a3"]
     assert cluster.has_pending
+
+
+def test_a_quiet_window_about_one_subject_is_still_one_cluster():
+    posts = [post(f"a{n}", ANCHORS) for n in range(6)]
+
+    clusters = find_clusters(posts, min_cluster_size=3)
+
+    assert len(clusters) == 1

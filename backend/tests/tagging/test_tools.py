@@ -1,6 +1,7 @@
 import json
 from datetime import date
 
+from voices.db.tagging_store import PostNotFound
 from voices.tagging.tools import TaggingTools
 
 DAY = date(2026, 10, 15)
@@ -21,6 +22,8 @@ class FakeStore:
         return [{"post_id": "p1", "excerpt": "Impeller died"}]
 
     def lookup_post(self, post_id):
+        if post_id == "invented":
+            raise PostNotFound(post_id)
         return {"post_id": post_id, "text": "full text"}
 
     def search_topics(self, embedding, limit):
@@ -59,3 +62,18 @@ def test_an_unknown_tool_is_answered_with_an_explanation_not_an_error():
     result = TaggingTools(FakeStore(), FakeEmbedder(), DAY).run("delete_everything", {})
 
     assert "no tool named delete_everything" in result
+
+
+def test_looking_up_an_unknown_post_answers_the_agent_and_counts_nothing():
+    store = FakeStore()
+
+    result = TaggingTools(store, FakeEmbedder(), DAY).run("lookup", {"post_id": "invented"})
+
+    assert "no post with id invented" in result
+    assert store.recorded == []
+
+
+def test_a_missing_argument_is_answered_not_raised():
+    result = TaggingTools(FakeStore(), FakeEmbedder(), DAY).run("search", {})
+
+    assert "needs the argument 'term'" in result

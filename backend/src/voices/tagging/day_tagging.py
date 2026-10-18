@@ -2,7 +2,7 @@
 delete what stayed unclustered for three days, rebuild daily engagement (atlas plate 21)."""
 
 from collections.abc import Callable, Sequence
-from datetime import date, timedelta
+from datetime import date
 from typing import Protocol
 
 from voices.ingestion.catch_up import Emit
@@ -15,14 +15,14 @@ from voices.tagging.decisions import (
     settle_mints,
 )
 from voices.tagging.keywords import distinctive_keywords
+from voices.tagging.window import window_start
 
-LOOKAHEAD_DAYS = 3  # a post has this many days to fall into a cluster (atlas OPEN-14)
 TYPICAL_POSTS_SHOWN = 6
 CANDIDATE_TOPICS_SHOWN = 5
 KEYWORDS_PER_TOPIC = 8
 
 
-class TaggingStore(Protocol):
+class DayTaggingStore(Protocol):
     def window_posts(self, first_day: date, last_day: date) -> list[WindowPost]: ...
     def typical_posts(
         self, ids: Sequence[str], centroid: Sequence[float], limit: int
@@ -46,7 +46,7 @@ def _clusters_at_standard_size(posts: list[WindowPost]) -> list[Cluster]:
 class DayTagging:
     def __init__(
         self,
-        store: TaggingStore,
+        store: DayTaggingStore,
         decide_all: DecideAll,
         emit: Emit,
         clusters_of: Callable[[list[WindowPost]], list[Cluster]] = _clusters_at_standard_size,
@@ -57,7 +57,7 @@ class DayTagging:
         self.clusters_of = clusters_of
 
     def tag(self, day: date) -> dict[str, int]:
-        first_day = day - timedelta(days=LOOKAHEAD_DAYS - 1)
+        first_day = window_start(day)
         window = self.store.window_posts(first_day, day)
         waiting = [c for c in self.clusters_of(window) if c.has_pending]
         briefs = [self._brief(day, f"cluster-{n}", c) for n, c in enumerate(waiting, start=1)]

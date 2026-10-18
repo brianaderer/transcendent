@@ -1,5 +1,6 @@
 """Needs a real database: docker compose run --rm api pytest -m database"""
 
+from dataclasses import replace
 from datetime import UTC, date, datetime
 
 import pytest
@@ -17,7 +18,7 @@ from voices.db.models import (
     TopicDailyEngagement,
 )
 from voices.db.store import connect_store
-from voices.db.tagging_store import TaggingStore
+from voices.db.tagging_store import PostNotFound, TaggingStore
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
 pytestmark = pytest.mark.database
@@ -107,7 +108,7 @@ def test_minting_creates_a_topic_and_tags_the_clusters_posts(store):
 
     topic_id = topic_of(store, "test-1")
     assert topic_id and topic_of(store, "test-2") == topic_id
-    assert counts == {"attached": 2, "minted": 1, "noise_deleted": 0}
+    assert counts == {"attached": 2, "minted": 1, "noise_deleted": 0, "left_waiting": 0}
 
 
 def test_attaching_joins_an_existing_topic_and_noise_is_deleted(store):
@@ -124,7 +125,8 @@ def test_attaching_joins_an_existing_topic_and_noise_is_deleted(store):
     )
 
     assert topic_of(store, "test-2") == topic_id
-    assert store.lookup_post("test-3") == {"error": "no post with id test-3"}
+    with pytest.raises(PostNotFound):
+        store.lookup_post("test-3")
     assert counts["noise_deleted"] == 1
 
 
@@ -158,3 +160,56 @@ def test_search_finds_posts_by_meaning_and_retrievals_are_recorded(store):
             connection.scalar(select(RetrievalEvent.tool).where(RetrievalEvent.run == "test-run"))
             == "search"
         )
+
+
+def test_attaching_to_a_topic_that_does_not_exist_leaves_the_posts_waiting(store):
+    counts = store.apply_decisions(DAY, [decided("attach", ["test-2"], topic_id=-1)], {})
+
+    assert topic_of(store, "test-2") is None
+    assert store.lookup_post("test-2")["post_id"] == "test-2"
+    assert counts["left_waiting"] == 1 and counts["noise_deleted"] == 0
+
+
+def test_a_merged_mint_joins_the_topic_minted_earlier_in_the_run(store):
+    first = decided("mint", ["test-1"], name="c1")
+    twin = replace(decided("mint", ["test-2"], name="c2"), merged_into="c1")
+
+    counts = store.apply_decisions(DAY, [first, twin], {})
+
+    assert topic_of(store, "test-2") == topic_of(store, "test-1")
+    assert counts["minted"] == 1
+
+
+def test_attaching_moves_the_topics_centre_and_last_seen(store):
+    store.apply_decisions(date(1999, 1, 1), [decided("mint", ["test-1"])], {})
+    topic_id = topic_of(store, "test-1")
+
+    store.apply_decisions(DAY, [decided("attach", ["test-2"], topic_id=topic_id, name="c2")], {})
+
+    with store.engine.connect() as connection:
+        last_seen = connection.scalar(select(Topic.last_seen).where(Topic.id == topic_id))
+    assert last_seen == DAY
+    [candidate] = [c for c in store.nearest_topics(vector(1.0), 50) if c.topic_id == topic_id]
+    assert candidate.similarity == 1.0
+    assert candidate.posts_last_week == 2
+
+
+def test_upvotes_count_on_a_day_with_no_new_posts(store):
+    store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
+    topic_id = topic_of(store, "test-1")
+    later = date(1999, 1, 5)
+    with store.engine.begin() as connection:
+        connection.execute(
+            PostUpvotesDaily.__table__.insert(),
+            [{"post_source_id": "test-1", "day": later, "count": 4}],
+        )
+
+    store.rebuild_engagement(later, later)
+
+    with store.engine.connect() as connection:
+        row = connection.execute(
+            select(TopicDailyEngagement).where(
+                TopicDailyEngagement.topic_id == topic_id, TopicDailyEngagement.day == later
+            )
+        ).one()
+    assert (row.posts, row.comments, row.upvotes) == (0, 0, 4)

@@ -11,7 +11,7 @@ The web API the frontend calls. Every route lives under `/api`.
 - `GET /api/ingestion` — how far the catch-up has got: `days_done`, `days_wanted` (56, added
   by the route), `posts`,
   `latest_day`, `running_day`, `failed_day`, `failed_reason` (the error recorded for the
-  latest failed day, as `ErrorName: message`; `null` when no day has failed).
+  latest failed day, as the error's message; `null` when no day has failed).
 - `GET /api/streams/{stream}/events` — live events as server-sent events ([events](events.md));
   404 for a stream that doesn't exist.
 - `GET /api/openapi.json` — the API description the frontend's typed client will be

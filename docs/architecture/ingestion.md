@@ -12,8 +12,7 @@ Reddit. Plans: [atlas plate 40](../atlas/40-backend.md) (the catch-up) and
 - `catch_up.CatchUp(ledger, process, emit).run(now, history_days=56)` — processes every
   complete day not yet done, oldest first, at most `history_days` back. Marks each day in
   the ledger and emits its events; stops at the first day that fails, re-raising its error.
-  The failure is recorded as `ErrorName: message` (for example `MissingModelKey:
-  OPENROUTER_API_KEY is not set…`), which the API returns as `failed_reason` and the page
+  The failure is recorded as the error's message (for example `OPENROUTER_API_KEY is not set…`), which the API returns as `failed_reason` and the page
   shows.
   `ledger` is anything with `done_days`, `mark_running`, `mark_done` and `mark_failed`
   (the `Ledger` interface); `process` takes a day and returns its counts; `emit(event_type,
@@ -57,7 +56,7 @@ minutes), and saving it again adds nothing.
   an item repeated across a page boundary is kept once, and a page that never advances is
   stepped past. Each try waits first: a one-second pause, then twice as long after each
   failure (about two minutes over seven tries), or as long as the archive's
-  `x-ratelimit-reset` header says, whichever is longer. The archive answers "slow down" when
+  `x-ratelimit-reset` header says (never more than five minutes), whichever is longer. The archive answers "slow down" when
   pushed, especially when two copies of the app fetch at once.
 - **Agreeing replies** (atlas OPEN-19): eight words or fewer, no question mark or link, and
   close in meaning (≥ 0.80) to examples such as "+1", "same here", "good point". They are

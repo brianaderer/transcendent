@@ -1,6 +1,7 @@
+import pytest
 from langchain_core.messages import AIMessage
 
-from voices.tagging.decider import ToolLoopDecider
+from voices.tagging.decider import NoDecision, ToolLoopDecider
 from voices.tagging.decisions import ClusterBrief, TypicalPost
 
 
@@ -43,7 +44,7 @@ BRIEF = ClusterBrief("c1", "2026-10-15", [1.0], [TypicalPost("p1", "u", "Impelle
 def test_the_decision_is_taken_from_the_decide_tool():
     model = ScriptedModel([call("Decision", DECIDE)])
 
-    decided = ToolLoopDecider(model, FakeTools(), max_tool_calls=5).decide(BRIEF)
+    decided = ToolLoopDecider(model, "scripted", FakeTools(), max_turns=5).decide(BRIEF)
 
     assert decided.decision.action == "attach"
     assert decided.decision.topic_id == 3
@@ -54,16 +55,50 @@ def test_the_agent_may_look_things_up_before_deciding():
     tools = FakeTools()
     model = ScriptedModel([call("search", {"term": "impeller"}), call("Decision", DECIDE, "2")])
 
-    ToolLoopDecider(model, tools, max_tool_calls=5).decide(BRIEF)
+    ToolLoopDecider(model, "scripted", tools, max_turns=5).decide(BRIEF)
 
     assert tools.calls == [("search", {"term": "impeller"})]
     assert "result of search" in str(model.seen[-1][-1].content)
 
 
-def test_at_the_tool_call_limit_the_agent_must_decide():
+def test_at_the_turn_limit_the_agent_must_decide():
     tools = FakeTools()
     model = ScriptedModel([call("search", {"term": "x"}), call("Decision", DECIDE, "2")])
 
-    ToolLoopDecider(model, tools, max_tool_calls=1).decide(BRIEF)
+    ToolLoopDecider(model, "scripted", tools, max_turns=1).decide(BRIEF)
 
     assert model.tool_choice == "Decision"
+
+
+def test_a_malformed_decision_is_answered_and_the_agent_tries_again():
+    model = ScriptedModel(
+        [call("Decision", {"action": "maybe", "reason": "?"}), call("Decision", DECIDE, "2")]
+    )
+
+    decided = ToolLoopDecider(model, "scripted", FakeTools(), max_turns=5).decide(BRIEF)
+
+    assert decided.decision.topic_id == 3
+    assert "malformed" in str(model.seen[-1][-1].content)
+
+
+def test_a_reply_in_plain_text_gets_a_reminder_to_decide():
+    model = ScriptedModel([AIMessage(content="Hmm, these look related."), call("Decision", DECIDE)])
+
+    ToolLoopDecider(model, "scripted", FakeTools(), max_turns=5).decide(BRIEF)
+
+    assert "Decide now" in str(model.seen[-1][-1].content)
+
+
+def test_no_decision_even_when_forced_stops_with_an_error():
+    model = ScriptedModel([AIMessage(content="thinking"), AIMessage(content="still thinking")])
+
+    with pytest.raises(NoDecision):
+        ToolLoopDecider(model, "scripted", FakeTools(), max_turns=1).decide(BRIEF)
+
+
+def test_the_model_name_given_is_recorded_with_the_decision():
+    model = ScriptedModel([call("Decision", DECIDE)])
+
+    decided = ToolLoopDecider(model, "anthropic/claude-sonnet-5.5", FakeTools()).decide(BRIEF)
+
+    assert decided.model == "anthropic/claude-sonnet-5.5"

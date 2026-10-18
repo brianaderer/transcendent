@@ -20,7 +20,7 @@ are the permanent record.
 Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.finished`
 (with the day's counts, from loading and tagging together), `day.failed` (with the error,
-as `ErrorName: message`), and `decision.made` (one per cluster the tagging agent decides:
+as the error's message), and `decision.made` (one per cluster the tagging agent decides:
 `cluster`, `posts`, `action`, `topic_id`, `label`, `merged_into`, `reason`).
 
 ## Uses

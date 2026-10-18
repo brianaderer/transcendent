@@ -21,6 +21,7 @@ ERROR_TEXT_CHARACTERS = 200
 # The archive asks callers to back off with this message, sometimes with status 422.
 SLOW_DOWN = "slow down"
 RATE_LIMIT_RESET = "x-ratelimit-reset"  # seconds until the archive's limit resets
+LONGEST_STATED_WAIT_SECONDS = 300  # a nonsense header can't put the worker to sleep for hours
 ATTEMPTS = 7  # waits of about 1, 2, 4, 8, 16, 32 and 64 seconds: two minutes in all
 USER_AGENT = "community-voices/0.1 (coding challenge; github.com/brianaderer/transcendent)"
 
@@ -113,7 +114,8 @@ class _TryAgain(Exception):
 def _stated_wait(response: httpx.Response) -> float:
     """How long the archive says to wait before its limit resets, if it says."""
     try:
-        return float(response.headers.get(RATE_LIMIT_RESET, 0))
+        stated = float(response.headers.get(RATE_LIMIT_RESET, 0))
+        return min(stated, LONGEST_STATED_WAIT_SECONDS)
     except ValueError:
         return 0
 

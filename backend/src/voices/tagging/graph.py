@@ -8,6 +8,8 @@ from langgraph.types import Send
 
 from voices.tagging.decisions import ClusterBrief, DecidedCluster
 
+MAX_PARALLEL_DECISIONS = 8  # model calls in flight at once, so a busy day can't flood them
+
 
 class Decider(Protocol):
     def decide(self, brief: ClusterBrief) -> DecidedCluster: ...
@@ -21,7 +23,8 @@ class TaggingState(TypedDict):
 def decide_all(decider: Decider, briefs: list[ClusterBrief]) -> list[DecidedCluster]:
     if not briefs:
         return []
-    final = _build_graph(decider).invoke({"briefs": briefs, "decided": []})
+    config = {"max_concurrency": MAX_PARALLEL_DECISIONS}
+    final = _build_graph(decider).invoke({"briefs": briefs, "decided": []}, config=config)
     order = {brief.name: n for n, brief in enumerate(briefs)}
     return sorted(final["decided"], key=lambda item: order[item.brief.name])
 

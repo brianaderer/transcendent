@@ -39,7 +39,9 @@ def find_clusters(posts: Sequence[WindowPost], min_cluster_size: int) -> list[Cl
     if len(posts) < min_cluster_size:
         return []
     directions = _unit_length(np.array([post.embedding for post in posts], dtype=float))
-    labels = HDBSCAN(min_cluster_size=min_cluster_size).fit_predict(directions)
+    # A quiet three days about one subject is still one conversation, not all noise.
+    clusterer = HDBSCAN(min_cluster_size=min_cluster_size, allow_single_cluster=True)
+    labels = clusterer.fit_predict(directions)
     return [
         _cluster(posts, directions, labels == label)
         for label in sorted(set(labels) - {NOT_IN_ANY_CLUSTER})

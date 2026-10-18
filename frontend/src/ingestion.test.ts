@@ -27,7 +27,7 @@ test("says where loading stopped, and why, when a day failed", () => {
     ...base,
     days_done: 3,
     failed_day: "2026-08-26",
-    failed_reason: "MissingModelKey: OPENROUTER_API_KEY is not set in .env (README step 3)",
+    failed_reason: "OPENROUTER_API_KEY is not set in .env (README step 3)",
   };
 
   expect(describeIngestion(status)).toBe(
