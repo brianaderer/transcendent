@@ -4,16 +4,16 @@
 
 How the "next week" half of the Community Voices Document is produced.
 
-**Specified by Brian:** topics are assigned period by period (plate
-[21](20-data-model/21-topics.md)). Trend periods are cut from any requested time range,
-because clustering runs on demand. Lining those periods up gives each tag a **trend
+**Specified by Brian:** posts are tagged day by day on intake (plate
+[21](20-data-model/21-topics.md)), so any period is a range of days. Lining those
+periods up gives each tag a **trend
 vector**, and next week is predicted by **extrapolating** each tag's trend.
 **Everything else is *proposed*.**
 
 ```mermaid
 flowchart LR
     ENG[("topic_daily_engagement<br/>see 21")]
-    VEC["Trend vector per tag<br/>one entry per period: posts, comments,<br/>distinct people, new threads, unanswered questions"]
+    VEC["Trend vector per tag<br/>one entry per period: posts, comments, reactions,<br/>distinct people, new threads, unanswered questions"]
     FIT["Extrapolate one period ahead<br/>(damped trend: growth slows rather than running away)"]
     RANK["Rank tags<br/>rising · steady · fading · new"]
     CTX["Signals the numbers can't see<br/>(dates mentioned in posts, threads still open)"]
@@ -30,6 +30,7 @@ flowchart LR
 ## The trend vector *(proposed)*
 
 For each tag, one row per period with the period's engagement: posts, comments,
+reactions (short replies),
 distinct people, new threads, unanswered questions, all summed from plate 21's daily
 table. A tag minted recently has a short vector. That's the "new" case, and the most
 interesting one to call out.
@@ -50,7 +51,7 @@ interesting one to call out.
 - **A topic with no history** can't be extrapolated. New tags are flagged by their
   `first_seen` date and growth within the week.
 - **Scheduled things:** a contest deadline or a software release mentioned in posts.
-  These are pulled from the period's passages and handed to the LLM alongside the
+  These are pulled from the period's posts and handed to the LLM alongside the
   numbers.
 - **Brand-new conversations next week** can't be predicted by any method. The
   document says so rather than inventing them.
@@ -58,7 +59,7 @@ interesting one to call out.
 ## The written prediction *(proposed)*
 
 The LLM receives the ranked tags with their trend numbers, the scheduled-event
-signals, and the most typical passages for each tag. It writes the prediction, and
+signals, and the most typical posts for each tag. It writes the prediction, and
 every claim names its evidence ("up from 3 to 11 threads over three weeks").
 Version A of the comparison (`CLAUDE.md` §7) receives none of this, only the
 community and the dates.

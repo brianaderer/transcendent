@@ -26,12 +26,15 @@ proposed. The screens below are still a proposal.
 
 ## Screens the brief implies *(proposed)*
 
+The full set of six screens, with a design brief for mockups, is on
+[31 Screens](30-frontend/31-screens.md).
+
 ```mermaid
 flowchart LR
     DOC["Community Voices Document<br/>past week + next week's prediction"]
     AB["Comparison<br/>without vs with retrieval, side by side, with measurements"]
     MAP["Embedding map<br/>2D scatter, colored by topic"]
-    STATS["Retrieval statistics<br/>most-retrieved passages"]
+    STATS["Retrieval statistics<br/>most-retrieved posts"]
     DOC --> AB
     classDef open stroke-dasharray: 5 5
     class DOC,AB,MAP,STATS open
@@ -42,4 +45,4 @@ not from Brian; the layout and navigation between them haven't been discussed.
 
 ## Open in this draft
 
-- `?` The screens, their layout, and how a reviewer moves between them.
+- `?` The screens' layout — mockups from the brief on [31](30-frontend/31-screens.md).

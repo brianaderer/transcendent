@@ -10,8 +10,8 @@ its database id. Everything else on this plate is *proposed*.
 
 ```mermaid
 flowchart LR
-    subgraph TAG["Tagging agent — on demand, over a requested period"]
-        C["Clusters from 21"]
+    subgraph TAG["Tagging agent — daily, during intake"]
+        C["The day's clusters, from 21"]
         FAN["One decision per cluster, in parallel"]
         DEC["LLM: attach · mint · noise<br/>structured answer + reason<br/>tools: search · lookup · search tags"]
         APPLY["Apply the decision<br/>tags, centroids, cluster_decisions"]
@@ -33,10 +33,10 @@ flowchart LR
 Specified by Brian; the details are *proposed*.
 
 - **search(term)** — **semantic** (specified): the term is embedded and pgvector finds
-  the passages closest to it in meaning, so "heavy weather" also finds posts about
-  reefing in a gale that never use those words. Limited to the period being worked on
+  the posts and comments closest to it in meaning, so "heavy weather" also finds posts
+  about reefing in a gale that never use those words. Limited to the period being worked on
   unless the agent asks wider; returns at most 20 hits, each with its post id, author,
-  date, thread title, the matching passage, and how close it was *(proposed)*.
+  date, thread title, an excerpt, and how close it was *(proposed)*.
 - **lookup(id)** — returns one post or comment in full: its text, author, date, thread
   title, and the id of what it replies to, so the agent can climb a conversation one
   lookup at a time.
@@ -46,7 +46,7 @@ Specified by Brian; the details are *proposed*.
 
 ## Tagging agent *(proposed details)*
 
-- **One graph run per requested period.** Clustering happens first in plain code
+- **One graph run per day, during intake.** Clustering happens first in plain code
   (plate [21](20-data-model/21-topics.md)); the graph then sends every cluster to its
   own decision step, all in parallel (LangGraph's fan-out).
 - **Each decision is one LLM call with a structured answer:** attach (which tag),
@@ -68,9 +68,9 @@ Specified by Brian; the details are *proposed*.
   - **search** and **lookup** (above) — search is the retrieval: every hit is counted
     for the retrieval statistics;
   - **topic trends** — the ranked, extrapolated tags from plate [50](50-prediction.md);
-  - **upcoming events** — passages mentioning dates after the period (regattas, boat
+  - **upcoming events** — posts mentioning dates after the period (regattas, boat
     shows, weather windows).
-- **The tools are the retrieval.** Giving the agent tools rather than pasting passages
+- **The tools are the retrieval.** Giving the agent tools rather than pasting posts
   into the prompt lets it look up what it needs as it writes, and the tool calls are
   saved, so the comparison can show exactly what version B looked at.
 - **Same model, same settings, same prompt wording** for both versions; only the tools

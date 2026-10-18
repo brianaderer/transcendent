@@ -31,9 +31,9 @@ arrows are who calls whom.
 ```mermaid
 flowchart LR
     WEB["web<br/>FastAPI routes"]
-    ING["ingestion<br/>fetch a week · split · embed · store"]
-    STORE[("storage<br/>passages, embeddings, runs, retrieval counts")]
-    RET["retrieval<br/>nearest passages + count each hit"]
+    ING["ingestion<br/>daily: fetch · filter · embed · cluster · tag<br/>see 21"]
+    STORE[("storage<br/>posts with embeddings, tags, runs, retrieval events")]
+    RET["retrieval<br/>nearest posts + count each hit"]
     GEN["generation<br/>writes the document · retrieval on or off"]
     CMP["comparison<br/>runs both versions · measures · saves the run"]
     MAP["projection<br/>embeddings squashed to 2D"]
@@ -65,7 +65,7 @@ flowchart LR
     REDIS[("Redis<br/>job queue")]
     WORK["Celery worker"]
     PULL["Archive pull<br/>daily, 06:00 UTC"]
-    TAGJ["Tagging run<br/>on demand, see 60"]
+    TAGJ["Tagging<br/>part of the daily intake, see 21"]
     REPJ["Report run<br/>on demand, see 60"]
     WEB["web (FastAPI)"]
     AS["Arctic Shift"]
