@@ -8,7 +8,12 @@ topic's engagement has been moving, not guessed from one week of text.
 
 **Specified by Brian:** Postgres holds a table of topic tags. Each topic carries
 semantic information, and its engagement over time is easy to graph. Prediction is
-made from measured signals rather than by asking the model to guess.
+made from measured signals rather than by asking the model to guess. Topics are
+assigned on a schedule (every `[time_period]`, OPEN-6): that period's embeddings are
+clustered, each cluster's posts are compared with the topic tags' embeddings to
+place the cluster in the domain space, and an LLM, given all of that, makes the final
+call for each cluster: **add it to an existing tag, mint a new tag, or ignore it as
+noise** (see *How topics stay the same topic*).
 **Everything else on this plate is *proposed*** — the table layout below is the
 answer to "how should that be structured".
 
@@ -18,8 +23,10 @@ answer to "how should that be structured".
 erDiagram
     THREADS ||--o{ POSTS : contains
     POSTS ||--o{ PASSAGES : "split into"
-    PASSAGES }o--|| TOPICS : "tagged with"
+    PASSAGES }o--o| TOPICS : "tagged with"
     TOPICS ||--o{ TOPIC_DAILY_ENGAGEMENT : "measured by"
+    CLUSTER_DECISIONS }o--o| TOPICS : "attached to or minted"
+    CLUSTER_DECISIONS ||--o{ PASSAGES : "covers"
 
     THREADS {
         text source_id "the site's own id, unique"
@@ -56,6 +63,14 @@ erDiagram
         int new_threads
         int unanswered_questions
     }
+    CLUSTER_DECISIONS {
+        date period_start
+        text decision "attach, mint or noise"
+        text reason "the LLM's explanation"
+        jsonb candidate_tags "the nearest tags and how close each was"
+        text prompt "exactly what the LLM was shown"
+        text model
+    }
 ```
 
 ### What each table is for
@@ -63,62 +78,84 @@ erDiagram
 - **threads, posts** — the raw community data, exactly as fetched. The site's own id is
   unique, so fetching the same week twice changes nothing (`CLAUDE.md` §7).
 - **passages** — each post cut into pieces small enough to embed and to hand the
-  model. Each passage has its embedding and **one topic**. One topic per passage keeps
-  the counts honest: a passage is never counted twice.
+  model. Each passage has its embedding and **at most one topic**: the topic its
+  cluster was attached to, or none if its cluster was judged noise. One topic at most
+  keeps the counts honest: a passage is never counted twice.
 - **topics** — the topic tags. The *semantic information* is four things together:
   - a **label** and **description** a person can read, written by the model from the
     topic's most typical passages;
   - **keywords**, the words that most distinguish it from other topics, computed by
     code;
   - the **centroid**: the average of its passages' embeddings, which is the topic's
-    position in meaning-space. New passages are tagged by finding the nearest
-    centroid, and it's what lets a topic be recognized again next week.
+    position in meaning-space. A new cluster is compared against the centroids to
+    find the tags it might belong to, and the centroid is updated whenever a cluster
+    is added.
 - **topic_daily_engagement** — one row per topic per day: how many posts, comments,
   distinct people, upvotes, new threads and unanswered questions. **This is the
   graph.** Engagement over time for any topic is one query, and weekly totals are sums
   of seven rows. It's a summary rebuilt from the posts after each ingestion, never
   edited by hand, so it can always be recreated from the raw data. Five weeks of about
   thirty topics is roughly a thousand rows.
+- **cluster_decisions** — one row per cluster per period: what the LLM decided, why,
+  which tags it was choosing between and how close each was, and the exact prompt it
+  saw. *(proposed)* It makes every tag traceable to the decisions that built it,
+  and it means a period that has already been processed is never re-decided, so
+  re-running ingestion gives the same tags.
 
 ## How topics stay the same topic from week to week
 
-This is the hard part, and why the centroid exists. Grouping posts by meaning from
-scratch every week would invent fresh groups each time, with no link to last week's.
-Instead, after each week is fetched:
+Grouping posts from scratch every period would invent fresh groups each time, with no
+link to the last period's. So clusters are matched to the existing tags, and an LLM
+makes the final call. **This flow is specified by Brian;** the details in brackets are
+*proposed*.
 
 ```mermaid
 flowchart TB
-    NEW["New week's passages, embedded"]
-    NEAR{"Close enough to an existing topic's centroid?"}
-    TAG["Tag it with that topic; nudge the centroid toward it"]
-    POOL["Hold it as unassigned"]
-    CLUSTER["Group the unassigned passages by meaning"]
-    BORN["Each group big enough becomes a new topic; the model names it"]
+    EMB["The period's passages, embedded"]
+    CL["Cluster the embeddings<br/>(HDBSCAN: finds groups of any number, leaves stragglers out)"]
+    CMP["Compare each cluster's posts with the tags' embeddings<br/>places the cluster in the domain space<br/>(the nearest few tags and how close each is)"]
+    LLM["LLM decides, per cluster<br/>(shown: typical posts, cluster size, nearest tags with<br/>their descriptions and recent engagement)"]
+    ADD["Add to an existing tag<br/>tag its passages · update the centroid"]
+    MINT["Mint a new tag<br/>LLM writes label + description"]
+    NOISE["Ignore as noise<br/>passages stay untagged"]
+    LOG[("cluster_decisions<br/>decision, reason, prompt")]
     ROLL["Rebuild topic_daily_engagement"]
 
-    NEW --> NEAR
-    NEAR -->|yes| TAG
-    NEAR -->|no| POOL
-    POOL --> CLUSTER
-    CLUSTER --> BORN
-    TAG --> ROLL
-    BORN --> ROLL
+    EMB --> CL --> CMP --> LLM
+    LLM --> ADD
+    LLM --> MINT
+    LLM --> NOISE
+    LLM --> LOG
+    ADD --> ROLL
+    MINT --> ROLL
 ```
 
-So a topic that keeps getting talked about keeps its identity and its history, and a
-genuinely new conversation shows up as a new topic with a `first_seen` date, which is
-itself a prediction signal ("this started three days ago and is growing fast").
+- **Why the LLM decides rather than a threshold:** closeness in meaning-space alone
+  can't tell "the same conversation continuing" from "a new conversation next door to
+  an old one" or from chatter. The LLM reads the posts and the candidate tags'
+  descriptions, which the numbers can't do.
+- **Its answer is structured:** one of attach (naming the tag), mint (with a label and
+  description) or noise, plus a one-sentence reason. *(proposed)*
+- **Cost:** one LLM call per cluster per period; a week of a busy subreddit is a few
+  dozen clusters. *(proposed estimate)*
+- **Tests** replace the LLM with a stand-in that returns fixed decisions
+  (`CLAUDE.md` §7). *(proposed)*
+
+A topic that keeps being discussed keeps its identity and its history, and a newly
+minted tag carries a `first_seen` date, which is itself a prediction signal ("this
+started three days ago and is growing fast").
 
 ## Where similarity search is used
 
-The nearest-centroid step and the passage retrieval for the document are both "find
+Comparing a cluster with the tags and the passage retrieval for the document are both "find
 the closest vectors" questions, which is what the pgvector extension does inside
 Postgres. That's a second use beyond retrieval, so the recommendation in OPEN-4 now
 covers both.
 
 ## Open in this draft
 
-- `?` The closeness threshold for "same topic", and the smallest group that counts as a
-  new topic — to be tuned against the real snapshot.
+- `?` How often clustering runs — the `[time_period]` — OPEN-6.
+- `?` The smallest group the clustering counts as a cluster, and how many nearest tags
+  the LLM is shown — to be tuned against the real snapshot.
 - `?` How a passage is cut from a post (length, overlap) — a later plate on ingestion.
 - `?` Whether topics that go quiet are ever merged or retired.
