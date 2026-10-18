@@ -14,7 +14,7 @@ flowchart LR
         API["api<br/>FastAPI"]
         WORK["worker<br/>Celery"]
         BEAT["beat<br/>Celery Beat, one copy"]
-        SETUP["prewarm<br/>runs once: create tables, fetch 8 weeks,<br/>embed, place, tag day by day"]
+        SETUP["setup<br/>runs once: create tables,<br/>then asks the worker to catch up"]
         PG[("postgres + pgvector")]
         RD[("redis")]
     end
@@ -43,9 +43,10 @@ flowchart LR
   and the model isn't downloaded twice. Redis is set to write to disk (append-only
   file) so queued jobs survive a restart *(proposed)*.
 - **First start prewarms from live data** (specified for now, OPEN-13): no snapshot is
-  committed. On first `docker compose up`, `prewarm` creates the tables, fetches eight
-  weeks of r/sailing from Arctic Shift, and runs the daily intake for each day in order
-  (embed, place on the dot plot, cluster, tag). The reviewer waits it out. *Proposed:*
+  committed. On first `docker compose up`, `setup` creates the tables and triggers the
+  same catch-up the daily pull uses ([40](40-backend.md)): with an empty database, the
+  missing range is the full eight weeks, processed day by day in order. There is no
+  separate prewarm code. The reviewer waits it out. *Proposed:*
   the frontend opens at once and shows prewarm progress ("Day 23 of 56 · 9,412
   posts · tagging…") instead of a blank page, and the README says roughly how long it
   takes. A second start finds the data and skips it. How long it takes is to be

@@ -59,51 +59,61 @@ flowchart LR
   ever reads stored positions. *(Proposed detail: the flattening (UMAP) is learned once
   from the full history, and each day's new posts are placed into that same layout.)*
 
-## Background jobs *(proposed details)*
+## Background jobs
+
+**Specified by Brian:** there is **one ingestion operation: process a range of days,
+through Celery**. First start, the daily pull, and waking up after downtime to find ten
+days missing are all the same operation over different ranges. Details are
+*proposed*.
 
 ```mermaid
 flowchart LR
-    BEAT["Celery Beat<br/>exactly one copy"]
-    REDIS[("Redis<br/>job queue")]
-    WORK["Celery worker"]
-    PULL["Archive pull<br/>daily, 06:00 UTC"]
-    TAGJ["Tagging<br/>part of the daily intake, see 21"]
+    TRIG["Something asks: catch up<br/>first start · Beat at 06:00 UTC ·<br/>worker restart · by hand"]
+    GAP["Find the missing days<br/>every complete day after the last processed one,<br/>at most eight weeks back"]
+    CHAIN["Queue one job per day,<br/>chained oldest first"]
+    DAY["Process one day<br/>fetch · filter · upvotes · embed · place ·<br/>cluster · tag · expire noise · roll up<br/>see 21"]
+    MARK[("ingested_days<br/>day · status · counts · timings")]
     REPJ["Report run<br/>on demand, see 60"]
     WEB["web (FastAPI)"]
+    REDIS[("Redis")]
     AS["Arctic Shift"]
     PG[("Postgres + pgvector")]
 
-    BEAT -->|"schedules"| REDIS
+    TRIG --> GAP --> CHAIN --> REDIS
     WEB -->|"queues on request"| REDIS
-    REDIS --> WORK
-    WORK --> PULL
-    WORK --> TAGJ
-    WORK --> REPJ
-    PULL --> AS
-    PULL --> PG
-    TAGJ --> PG
+    REDIS --> DAY
+    REDIS --> REPJ
+    DAY --> AS
+    DAY --> PG
+    DAY --> MARK
     REPJ --> PG
 ```
 
-- **Only what's new** (Brian's call). Arctic Shift searches posts *and comments* by
-  subreddit and creation time, so each pull asks for everything created since the
-  newest item already stored — new comments on old threads included. Nothing already
-  stored is fetched again. The start point is moved back an hour as a small overlap,
-  because the archive can lag a little behind Reddit; the few repeats it brings are
-  dropped on insert, since every post and comment is keyed by Reddit's own id
-  (`CLAUDE.md` §7).
-- **What that gives up: upvote counts.** A post's score keeps changing after it's
-  fetched, and an only-what's-new pull never sees the change. So trends are built from
-  counts that never change once something exists — posts, comments, distinct people,
-  new threads — and score is stored but not used for trends.
-- **Why daily is enough.** The document is weekly and trends are computed by the day;
-  pulling more often adds load on a volunteer-run archive without changing any result.
-- **Tagging and report runs are Celery jobs too.** A report run makes many LLM calls and
-  can take a minute; the web request queues the job and returns at once, and the
-  frontend checks its status through TanStack Query until it's done.
-- **Beat runs as exactly one copy**, or every pull would happen twice.
-- **The demo never waits on Beat.** The committed eight-week snapshot is loaded by a
-  command; Beat only keeps the data fresh afterwards.
+- **The unit of work is one day.** A day job fetches every post and comment *created
+  that day* (Arctic Shift searches both by subreddit and creation time), then runs the
+  whole daily intake for it ([21](20-data-model/21-topics.md)). New comments on old
+  threads come in with the day they were written. Nothing is fetched twice; a repeat is
+  dropped on insert, since every item is keyed by Reddit's own id (`CLAUDE.md` §7).
+- **Days run strictly in order, one at a time.** Tagging moves forward in time and the
+  three-day lookahead needs the days before it done (OPEN-11), so the jobs form a chain:
+  each day starts only when the one before has finished.
+- **Only complete days.** A day is processed once it's over and the archive has had a
+  few hours to catch up, so the 06:00 UTC run takes yesterday.
+- **`ingested_days` is the record of what's done** — one row per day with its status,
+  item counts and timings. "Catch up" just means "every complete day not marked done".
+  A day that fails stays not-done, the chain stops there, and the next catch-up retries
+  it. The same table drives the progress shown during first start, and gives the
+  measured prewarm time (OPEN-13).
+- **Catch-up is safe to trigger twice.** A lock means a second request while a chain is
+  running does nothing, so Beat, a restart and a click can't start parallel chains.
+- **What only-new fetching gives up: upvote counts.** Reddit's score keeps changing
+  after a post is fetched and is never re-fetched, so trends use counts that never
+  change once something exists, and `reddit_score` is stored but not used for trends.
+- **Why daily is enough.** Trends are counted by the day; pulling more often adds load
+  on a volunteer-run archive without changing any result.
+- **Report runs are Celery jobs too.** A report makes many LLM calls; the web request
+  queues it and returns at once, and the frontend checks its status until it's done.
+- **Beat runs as exactly one copy.**
 
 ## Open in this draft
 
