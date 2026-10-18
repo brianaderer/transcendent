@@ -54,6 +54,8 @@ def tracing(trace_id: str) -> Iterator[None]:
 
 def configure_logging(service: str, log_dir: str) -> None:
     """Send every log line to standard output and to `<log_dir>/<service>.jsonl`."""
+    if not service:
+        raise ValueError("a service must name itself (SERVICE_NAME) before it logs")
     formatter = JsonFormatter(service)
     Path(log_dir).mkdir(parents=True, exist_ok=True)
     handlers = [

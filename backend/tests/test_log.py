@@ -2,6 +2,8 @@ import io
 import json
 import logging
 
+import pytest
+
 from voices.log import JsonFormatter, configure_logging, log_event, tracing
 
 
@@ -58,12 +60,20 @@ def test_an_exception_is_logged_with_its_full_error():
     assert "ValueError: bad day" in line["error"]
 
 
-def test_configure_logging_writes_json_lines_to_the_service_file(tmp_path):
+@pytest.fixture
+def restore_root_logging():
+    saved_handlers, saved_level = logging.root.handlers[:], logging.root.level
+    yield
+    for handler in logging.root.handlers:
+        handler.close()
+    logging.root.handlers, logging.root.level = saved_handlers, saved_level
+
+
+def test_configure_logging_writes_json_lines_to_the_service_file(tmp_path, restore_root_logging):
     log_dir = tmp_path / "not-yet-created"
 
     configure_logging("api", str(log_dir))
     log_event(logging.getLogger("test.file"), "api.started")
-    logging.shutdown()
 
     [line] = [json.loads(text) for text in (log_dir / "api.jsonl").read_text().splitlines()]
     assert line["event"] == "api.started"
@@ -78,3 +88,8 @@ def test_extra_fields_cannot_overwrite_the_standard_ones():
     [line] = lines(stream)
     assert line["service"] == "api"
     assert line["trace_id"] == "run-1"
+
+
+def test_a_service_must_name_itself_before_logging(tmp_path):
+    with pytest.raises(ValueError):
+        configure_logging("", str(tmp_path))

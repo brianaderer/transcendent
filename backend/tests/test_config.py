@@ -17,3 +17,9 @@ def test_the_model_key_may_be_missing_until_a_model_is_called(monkeypatch):
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
 
     assert load_settings().openrouter_api_key == ""
+
+
+def test_service_name_comes_from_the_environment(monkeypatch):
+    monkeypatch.setenv("SERVICE_NAME", "beat")
+
+    assert load_settings().service_name == "beat"

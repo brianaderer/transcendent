@@ -123,16 +123,18 @@ when the log stops scrolling and shows lines from `api`, `worker` and `frontend`
 
 Open **http://localhost:5173** in your browser. You should see **Community Voices**
 and **Backend running**. If it says **Backend unreachable**, the API is still starting;
-if it says **Not answering:** followed by a name, that part of the app hasn't started
-yet. Either way, wait a few seconds and it updates by itself.
+if it says **Not answering:** followed by `database` or `queue`, that part of the app
+hasn't started yet. Either way, wait a few seconds and it updates by itself. To check
+the back end directly, open http://localhost:5173/api/health; it should show
+`"status":"ok"`.
 
 To stop the app, press `Ctrl+C` in that terminal. Everything it has stored is kept
 for next time. To erase all stored data and start fresh, run
 `docker compose down --volumes`.
 
 Only port 5173 is used. If something else on your machine already uses it, `docker
-compose up` stops with an error naming the port; stop that other program and run the
-command again.
+compose up` stops with an error naming the port. Set `PORT=5174` (or any free port) in
+`.env`, run the command again, and open http://localhost:5174 instead.
 
 ### 5. Run the tests (optional)
 

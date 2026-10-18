@@ -19,7 +19,8 @@ Uvicorn runs `create_production_app` (a factory), which reads settings, configur
 logging as the `api` service, and checks Postgres and Redis on each health request. A
 health check that fails logs why (`health.database_unreachable`, `health.queue_unreachable`).
 Every request is logged as `api.request` with its method, path, status and time taken,
-under a trace id of its own.
+under a trace id of its own; a request that raises is logged as `api.request_failed` with
+the full error, then re-raised.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings), Postgres, Redis.

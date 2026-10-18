@@ -29,3 +29,16 @@ def test_every_request_is_logged_with_its_outcome(caplog):
 
     [record] = [r for r in caplog.records if r.getMessage() == "api.request"]
     assert (record.method, record.path, record.status) == ("GET", "/api/health", 200)
+
+
+def test_a_request_that_fails_is_still_logged(caplog):
+    def broken_check():
+        raise RuntimeError("check crashed")
+
+    client = TestClient(create_app({"database": broken_check}), raise_server_exceptions=False)
+    caplog.set_level("INFO")
+
+    client.get("/api/health")
+
+    [record] = [r for r in caplog.records if r.getMessage() == "api.request_failed"]
+    assert record.path == "/api/health"

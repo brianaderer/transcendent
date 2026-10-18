@@ -3,17 +3,21 @@ import { render, screen } from "@testing-library/react";
 
 import { BackendStatus } from "./BackendStatus";
 
-function renderWithHealth(body: unknown, status = 200) {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => new Response(JSON.stringify(body), { status })),
-  );
+function renderBackendStatus() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
       <BackendStatus />
     </QueryClientProvider>,
   );
+}
+
+function renderWithHealth(body: unknown, status = 200) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => new Response(JSON.stringify(body), { status })),
+  );
+  renderBackendStatus();
 }
 
 afterEach(() => vi.unstubAllGlobals());
@@ -37,12 +41,7 @@ test("says the backend is unreachable when the request fails", async () => {
       throw new TypeError("network down");
     }),
   );
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
-    <QueryClientProvider client={client}>
-      <BackendStatus />
-    </QueryClientProvider>,
-  );
+  renderBackendStatus();
 
   expect(await screen.findByText("Backend unreachable")).toBeInTheDocument();
 });

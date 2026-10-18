@@ -28,7 +28,8 @@ in the command they run.
 - The README's install and run steps.
 
 ## Configuration and data
-- `.env` (copied from `.env.example`): `OPENROUTER_API_KEY`, needed once tagging and
+- `.env` (copied from `.env.example`): `PORT` (default 5173), the port the app is opened
+  on; `OPENROUTER_API_KEY`, needed once tagging and
   reports exist; the app starts without it.
 - Set by `compose.yaml` for the backend services: `DATABASE_URL`, `REDIS_URL`, `LOG_DIR`,
   and `SERVICE_NAME` (each container's own name, used in its log lines).

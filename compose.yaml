@@ -77,8 +77,9 @@ services:
 
   frontend:
     build: ./frontend
+    init: true  # stops cleanly on Ctrl+C
     ports:
-      - "5173:5173"
+      - "${PORT:-5173}:5173"
     depends_on:
       - api
 

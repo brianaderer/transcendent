@@ -51,7 +51,7 @@ def wait_for_database_then_create_tables(database_url: str) -> None:
 
 def main() -> None:
     settings = load_settings()
-    configure_logging("setup", settings.log_dir)
+    configure_logging(settings.service_name, settings.log_dir)
     wait_for_database_then_create_tables(settings.database_url)
 
 

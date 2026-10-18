@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     log_dir: str = "/var/log/voices"
     openrouter_api_key: str = ""
-    service_name: str = "worker"  # each container sets its own, so log lines say which one
+    service_name: str = ""  # each container sets its own, so log lines say which one
 
 
 def load_settings() -> Settings:

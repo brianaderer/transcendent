@@ -8,7 +8,7 @@ from voices.log import configure_logging
 
 settings = load_settings()
 celery_app = Celery("voices", broker=settings.redis_url, backend=settings.redis_url)
-celery_app.conf.update(timezone="UTC", beat_schedule={})
+celery_app.conf.update(timezone="UTC", beat_schedule={}, broker_connection_retry_on_startup=True)
 
 
 @setup_logging.connect
