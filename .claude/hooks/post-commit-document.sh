@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Claude Code PostToolUse hook (matcher: Bash).
 # After a successful `git commit` made inside a Claude Code session, tells Claude
-# to run /document-commit on the new commit. Skips the agent's own commits.
+# to run /document-commit on the new commit, then /uncle-bob when source code
+# changed. Skips the agent's own commits.
 set -euo pipefail
 input=$(cat)
 command=$(jq -r '.tool_input.command // ""' <<<"$input")
@@ -18,9 +19,14 @@ sha=$(git rev-parse --short HEAD 2>/dev/null) || exit 0
 
 "$repo/.claude/hooks/is-doc-sync-commit.sh" "$sha" && exit 0
 
-jq -n --arg sha "$sha" '{
+steps="run /document-commit $sha"
+if "$repo/.claude/hooks/has-source-changes.sh" "$sha"; then
+  steps="$steps, then /uncle-bob $sha (CLAUDE.md §8)"
+fi
+
+jq -n --arg sha "$sha" --arg steps "$steps" '{
   hookSpecificOutput: {
     hookEventName: "PostToolUse",
-    additionalContext: ("Commit " + $sha + " was just made. Per CLAUDE.md §6, run /document-commit " + $sha + " now, before any further code changes.")
+    additionalContext: ("Commit " + $sha + " was just made. Per CLAUDE.md §6, " + $steps + " now, before any further code changes.")
   }
 }'

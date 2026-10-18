@@ -164,6 +164,7 @@ Commit atlas changes on their own, with messages starting `Atlas:` — for examp
 | `/isolate-and-pin` | Any bug, regression, or "why is this failing". Gathers evidence, forms competing explanations, and tests each one in parallel in its own worktree to measure what each fix would actually do before anything is installed. |
 | `/tdd` | One explanation or one defect, taken from a failing test to a proven fix in an isolated worktree. Used by `/isolate-and-pin` for each explanation, or directly for a single known bug. |
 | `/document-commit [sha \| from..to]` | Documents a commit or range, then traces everything it touches or is referenced by and updates that documentation too, until nothing reachable is stale. Runs automatically after every commit (§6). Holds every change to the rules in §1, §3, §6 and §7 and the README's *Primary objective*; treats the README's boot steps as the most important document. |
+| `/uncle-bob [sha \| from..to]` | Clean Code review (§8) of the source changed by a commit or range, with ranked findings and a concrete fix for each. Runs automatically after every commit that changes source code; Must-fix findings are fixed before new work. |
 | `/test-boot [ref] [github]` | Plays the reviewer: fresh clone in a blank folder, README boot steps followed exactly, demo checked. Reports success or every friction point with the fix for each. Changes nothing. |
 
 ---
@@ -220,6 +221,9 @@ fan-out tracing in `/document-commit` reliable.
 4. `/document-commit` runs automatically on the new commit (below). It checks your
    documentation, follows every reference outward, fixes anything stale, and makes a
    separate documentation commit.
+5. If the commit changed source code or tests, `/uncle-bob` then reviews it against
+   the Clean Code guidelines (§8). Must-fix findings are fixed in the next commit,
+   before any new work.
 
 ### The automatic hook
 
@@ -325,24 +329,116 @@ core feature, not an afterthought:
 ### Code quality the reviewers asked for
 
 The brief names these explicitly: self-documenting code, unit tests, compact
-functions, and Robert C. Martin's *Clean Code* principles.
+functions, and Robert C. Martin's *Clean Code* principles. The full guidelines are
+§8, and `/uncle-bob` reviews every commit against them. Two project-specific points:
 
-- **Names say what things do.** If a function needs a comment to explain what it does,
-  rename or split it instead.
-- **Functions are small and do one thing.** As a working limit, a function longer
-  than about 20 lines, or taking more than three arguments, gets split unless there's
-  a stated reason.
-- **Every unit of logic has unit tests,** written first (`/tdd`). Tests never call a
-  real model or a real website; those are replaced with stand-ins, so the whole suite
-  runs offline in seconds. A separate, clearly labeled test may hit the real services.
+- **Tests never call a real model or a real website;** those are replaced with
+  stand-ins, so the whole suite runs offline in seconds. A separate, clearly labeled
+  test may hit the real services.
 - **Keep the pieces apart:** ingestion, storage, retrieval, generation, comparison,
   and the web app are separate modules that talk through small, documented interfaces.
   That separation is also what makes the comparison honest, because generation can't
   reach the store when retrieval is switched off.
-- No dead code, no commented-out code, no duplicated logic.
 
 ### Workflow notes for the submission
 
 The brief invites candidates to share how they work. This repo's `CLAUDE.md`, skills,
 hooks, and atlas *are* that workflow. Keep them tidy and accurate, because reviewers
 may read them.
+
+---
+
+## 8. Clean Code guidelines
+
+Condensed from Robert C. Martin, *Clean Code* (2008), and applied to every line of
+source and test code. `/uncle-bob` reviews each commit against this section
+automatically (§6 hooks). The book's central idea: **code is read far more often than
+it's written, so optimize for the reader.**
+
+### Names
+- A name says what a thing is or does, so it needs no comment. If it needs one, rename.
+- Pronounceable and searchable; no abbreviations, no type prefixes (`str_name`), no
+  numbered variants (`data2`).
+- Classes and data are nouns (`WeeklyDigest`); functions are verbs
+  (`fetch_week_of_posts`). One word per concept, used everywhere (not `fetch`, `get`,
+  and `retrieve` for the same idea).
+- Longer names for wider scope; a loop index can be `i`, a module-level value can't.
+- A name mentions side effects: `load_or_create_index`, not `load_index`, if it may
+  create.
+
+### Functions
+- **Small**: about 20 lines is this repo's working limit; most should be shorter.
+- **Do one thing.** If you can extract another function with a name that isn't just a
+  restatement of the code, it was doing more than one thing.
+- **One level of abstraction per function**, and the file reads top-down like a
+  newspaper: high-level functions first, the helpers they call below them (the
+  *stepdown rule*).
+- **Arguments**: zero to two; three needs a reason; more means group them into an
+  object. **No true/false flag arguments** — write two functions. No output arguments.
+- **No hidden side effects.** A function either does something or answers a question
+  — not both (*command–query separation*).
+- **Don't repeat yourself.** Duplication is the root problem the other rules attack.
+
+### Comments
+- A comment explaining *what* the code does is a failure to make the code say it.
+  Rename or extract instead.
+- Good comments: *why* (intent, a non-obvious decision), warnings of consequences,
+  `TODO` with an owner, docstrings on public interfaces (§6).
+- Never: redundant comments, misleading or stale comments, change logs in comments
+  (git has the history), commented-out code.
+
+### Formatting
+- Related code sits close together; a function sits just below the one that calls it.
+- One concept per paragraph of code, separated by a blank line.
+- One formatter and one linter per language, configured in the repo, run in CI.
+
+### Objects and data
+- Objects hide their data and expose behavior; plain data structures expose data and
+  have no behavior. Don't build hybrids that do half of each.
+- Talk to friends, not strangers: avoid chains like `a.b().c().d()` (the *Law of
+  Demeter*).
+
+### Errors
+- Raise exceptions; don't return error codes or `None` to mean failure.
+- Keep error handling apart from the main logic — a `try` block calls one function.
+- Never swallow an exception silently.
+- Don't return or pass `None` where a value is expected: return an empty list, a
+  special-case object, or raise.
+- Wrap third-party libraries (the model provider, the vector store, the crawler) behind
+  our own small interface, so the rest of the code doesn't depend on their quirks — and
+  so tests can swap them for stand-ins.
+
+### Tests
+- **Test first** (`/tdd`): write a failing test, make it pass, then clean up.
+- Tests are **F.I.R.S.T.**: Fast, Independent of each other, Repeatable anywhere
+  (offline), Self-checking (pass or fail, no reading output), Timely (written with the
+  code).
+- One idea per test, and the test name says what it proves.
+- Test the boundaries: empty input, one item, the maximum, the week edges.
+- Test code is held to the same standard as production code.
+
+### Classes and modules
+- Small, with **one reason to change** (*single responsibility*).
+- High-level logic depends on small interfaces, not on concrete details (*dependency
+  inversion*) — the generator depends on "something that retrieves passages", not on
+  Postgres.
+- Add behavior by adding code, not by editing a growing `if/else` (*open–closed*).
+
+### The rules of simple design (Kent Beck, quoted in the book), in priority order
+1. All the tests pass.
+2. No duplication.
+3. The code says what it means.
+4. As few classes and functions as possible, once the first three hold.
+
+### Smells to watch for (from the book's chapter 17)
+Dead code, commented-out code, duplication, magic numbers (use named constants),
+negative conditionals (`if not is_not_ready`), long argument lists, flag arguments,
+code at the wrong level of abstraction, a function more interested in another
+module's data than its own, calls that must happen in a hidden order, configuration
+buried deep instead of kept at the top, and building or testing that takes more than
+one command.
+
+### The Boy Scout rule
+Leave the code a little cleaner than you found it — in the code you're already
+touching, without wandering into unrelated refactors (§2 scope).
+
