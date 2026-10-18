@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Git post-commit hook for commits made OUTSIDE Claude Code (e.g. in a terminal).
+# Runs /document-commit headlessly on the new commit.
+# Inside Claude Code, the PostToolUse hook handles it instead (CLAUDECODE is set).
+# Enable once per clone:  git config core.hooksPath .githooks
+# Skip once:              SKIP_DOC_SYNC=1 git commit ...
+set -euo pipefail
+[ -n "${CLAUDECODE:-}" ] && exit 0
+[ -n "${SKIP_DOC_SYNC:-}" ] && exit 0
+[ -n "${DOC_SYNC_RUNNING:-}" ] && exit 0          # the agent's own commit, mid-run
+command -v claude >/dev/null || exit 0
+
+repo=$(git rev-parse --show-toplevel)
+sha=$(git rev-parse --short HEAD)
+"$repo/.claude/hooks/is-doc-sync-commit.sh" "$sha" && exit 0
+
+echo "post-commit: documenting $sha with /document-commit (SKIP_DOC_SYNC=1 to skip)…"
+DOC_SYNC_RUNNING=1 claude -p "/document-commit $sha" \
+  --permission-mode acceptEdits \
+  --allowedTools "Read" "Edit" "Write" "Grep" "Glob" "Agent" \
+    "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)" \
+    "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git add:*)" "Bash(git commit:*)" \
+    "Bash(git grep:*)" "Bash(.claude/hooks/is-doc-sync-commit.sh:*)"

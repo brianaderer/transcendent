@@ -1,7 +1,10 @@
 # CLAUDE.md — transcendent
 
-> Project description, stack, and run/test commands go here once the code exists.
-> Until then, the rules below apply to everything.
+**What this is:** our solution to the Transcendent Endeavors "Community Voices" code
+challenge. The objective and requirements are in `README.md` → *Primary objective*.
+Everything built here serves that objective; §7 turns it into working rules.
+
+> Stack and run/test commands go here once the code exists.
 
 ---
 
@@ -160,3 +163,180 @@ Commit atlas changes on their own, with messages starting `Atlas:` — for examp
 |---|---|
 | `/isolate-and-pin` | Any bug, regression, or "why is this failing". Gathers evidence, forms competing explanations, and tests each one in parallel in its own worktree to measure what each fix would actually do before anything is installed. |
 | `/tdd` | One explanation or one defect, taken from a failing test to a proven fix in an isolated worktree. Used by `/isolate-and-pin` for each explanation, or directly for a single known bug. |
+| `/document-commit [sha \| from..to]` | Documents a commit or range, then traces everything it touches or is referenced by and updates that documentation too, until nothing reachable is stale. Runs automatically after every commit (§6). |
+
+---
+
+## 6. Documentation is part of every code step
+
+The reviewers are very big on documentation. **No code change is finished until its
+documentation is.** Documentation is written *with* the code, in the same commit —
+not saved for later.
+
+### Where documentation lives
+
+| Place | What it holds |
+|---|---|
+| The code itself | Self-documenting names and compact functions first (§7). Docstrings on public functions, classes, and modules where the name alone can't say what it promises. Comments only for *why*, never restating *what*. |
+| `docs/architecture/` | How the code is **actually built**, one file per module, plus `README.md` as the module index. |
+| `docs/atlas/` | The **plan** — what Brian has decided should be built (§3). Architecture docs describe what *is*; atlas plates describe what *should be*. |
+| `README.md` | The objective, and the exact steps to install, configure, run, and test from a fresh clone. |
+
+### Module doc template — `docs/architecture/<module>.md`
+
+```markdown
+# <module>
+
+**Source:** `path/to/module/`   ·   **Tests:** `path/to/tests/`
+
+## Purpose
+One paragraph: what this module is for and why it exists.
+
+## Public interface
+Each function, class, route, or command other code may use, and what it promises.
+
+## How it works
+The flow, in prose. A diagram if it helps.
+
+## Uses
+Modules, services, and data stores this module depends on — linked.
+
+## Used by
+Modules that depend on this one — linked.
+
+## Configuration and data
+Environment variables, config keys, tables, files it reads or writes.
+```
+
+"Uses" and "Used by" are mandatory and must match the code. They are what makes the
+fan-out tracing in `/document-commit` reliable.
+
+### Every commit, in order
+
+1. Write the code and its tests.
+2. Update the documentation for what you changed, in the same commit.
+3. Commit.
+4. `/document-commit` runs automatically on the new commit (below). It checks your
+   documentation, follows every reference outward, fixes anything stale, and makes a
+   separate documentation commit.
+
+### The automatic hook
+
+- **Inside Claude Code:** a `PostToolUse` hook (`.claude/settings.json` →
+  `.claude/hooks/post-commit-document.sh`) notices each successful `git commit` and
+  tells Claude to run `/document-commit <sha>`. When told, run it before making any
+  further code change.
+- **Outside Claude Code** (a commit from a terminal): the git hook
+  `.githooks/post-commit` runs `/document-commit` headlessly. Enable it once per clone
+  with `git config core.hooksPath .githooks`. Skip it for one commit with
+  `SKIP_DOC_SYNC=1 git commit …`.
+
+### The loop guard — never weaken it
+
+`/document-commit` produces a commit, so without a guard it would trigger itself
+forever. Three layers stop that:
+
+1. **Every documentation-sync commit carries a `Docs-Sync: <range>` trailer.** Never
+   make a commit with that trailer by hand, and never remove it from one.
+2. **`.claude/hooks/is-doc-sync-commit.sh` is the single check** used by both hooks
+   and by the skill. It skips any commit carrying the trailer, and any commit that
+   changes only `docs/` and `README.md`.
+3. **The git hook also skips** when running inside Claude Code or while a sync is
+   already running (`DOC_SYNC_RUNNING`).
+
+Any change to the hooks or the skill must keep all three layers working.
+
+---
+
+## 7. Rules for the challenge
+
+These come straight from the challenge brief and what the reviewers have said they
+value. The brief is summarized in `README.md` → *Primary objective*.
+
+### The README is the demo
+
+- Reviewers will `git clone`, follow the README **exactly**, and demo the app
+  locally. **Every step in the README must work, in order, from a fresh clone on a
+  clean machine.** If a change adds a dependency, an environment variable, a service,
+  a port, or a setup step, the README changes in the same commit.
+- One command to start everything is the goal (for example `docker compose up`, or a
+  single `make` target). Every extra manual step is a chance for the demo to fail.
+- Secrets never go in the repo. Provide `.env.example` with every variable named and
+  explained, and say in the README exactly which keys the reviewer must supply.
+- **The demo must work without live crawling.** Ship a small, committed snapshot of
+  one week of community data and a command that loads it, so the app runs even if
+  the source site is slow, rate-limits, or blocks the crawler. Live ingestion is a
+  separate, optional command.
+- Before calling anything finished, re-run the README from a fresh clone in a scratch
+  folder and say whether it worked.
+- **Submission needs a public repo.** The GitHub repo is private today; making it
+  public is Brian's call, and happens only when he says so.
+
+### Comparing with and without retrieval (the A/B test)
+
+The brief asks how a model does at writing the Community Voices Document **without**
+retrieval from our own data store, versus **with** it. Treat that comparison as a
+core feature, not an afterthought:
+
+- **Both versions are produced by one code path.** A single document generator takes
+  a switch: retrieval off (version A, the model on its own) or retrieval on (version
+  B, the model given passages pulled from our store). Everything else — model,
+  settings, prompt wording, the week covered, output format — is identical, so the
+  only difference between the two documents is the retrieval.
+- **Every comparison run is saved** with its inputs: the week and data snapshot, the
+  model name and settings, the full prompt sent for each version, the passages
+  retrieved for version B, and both outputs. A run can be re-opened and re-read
+  later.
+- **The app shows the comparison side by side**, with measurements, not just two
+  blocks of text. Measurements worth showing:
+  - how many specific claims each version makes that can be traced back to a real post
+    from the week, and how many cannot (the second number is invented content);
+  - which real topics from the week each version covered, and which it missed;
+  - how specific each version is: named people, events, dates, and threads, versus
+    generic statements that would fit any week;
+  - time taken and tokens used.
+- **Measurements are computed by code where possible**, and, where a model is used to
+  judge, the judging prompt is saved with the result and is the same for both
+  versions.
+- The README links to a saved example comparison, so reviewers can see the result
+  even before running anything.
+
+### Retrieval, ingestion, and visualization
+
+- **Ingestion is automated and repeatable:** one command fetches a week of community
+  data, splits it into passages, turns each into a numeric fingerprint for similarity
+  search (an *embedding*), and stores it. Running it twice on the same week must not
+  create duplicates.
+- **Plan for too much data:** filter to the week, remove duplicates, cap the number
+  of posts per thread, and summarize long threads before storing. Document the limits
+  chosen and why.
+- **Record retrieval statistics:** every time a stored passage is retrieved, count
+  it. The app shows which passages are retrieved most.
+- **Show a flattened picture of the embeddings:** squash them down to two dimensions
+  and plot them, colored by topic or thread, so a reviewer can see how the week's
+  conversation clusters.
+
+### Code quality the reviewers asked for
+
+The brief names these explicitly: self-documenting code, unit tests, compact
+functions, and Robert C. Martin's *Clean Code* principles.
+
+- **Names say what things do.** If a function needs a comment to explain what it does,
+  rename or split it instead.
+- **Functions are small and do one thing.** As a working limit, a function longer
+  than about 20 lines, or taking more than three arguments, gets split unless there's
+  a stated reason.
+- **Every unit of logic has unit tests,** written first (`/tdd`). Tests never call a
+  real model or a real website; those are replaced with stand-ins, so the whole suite
+  runs offline in seconds. A separate, clearly labeled test may hit the real services.
+- **Keep the pieces apart:** ingestion, storage, retrieval, generation, comparison,
+  and the web app are separate modules that talk through small, documented interfaces.
+  That separation is also what makes the comparison honest, because generation can't
+  reach the store when retrieval is switched off.
+- No dead code, no commented-out code, no duplicated logic.
+
+### Workflow notes for the submission
+
+The brief invites candidates to share how they work. This repo's `CLAUDE.md`, skills,
+hooks, and atlas *are* that workflow. Keep them tidy and accurate, because reviewers
+may read them.

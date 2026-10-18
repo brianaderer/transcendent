@@ -1,6 +1,55 @@
-# transcendent
+# transcendent — Community Voices
 
-> A description of the project goes here once there is code.
+Our solution to the Transcendent Endeavors 2026 engineering code challenge.
+
+## Primary objective
+
+**Build a web or mobile app that produces a *Community Voices Document* for one
+active online community. The document covers what the community talked about in the
+past week and predicts what it will talk about in the coming week. It's written with
+help from our own searchable store of the community's posts. The app also shows, side
+by side, how the same document turns out when a language model writes it without that
+store.**
+
+### What the brief requires
+
+1. **Pick a community** with an online presence active enough to have frequent
+   discussion every week. The brief's examples are the Argentine tango community, indie
+   game makers on Discord, and Redditors who make fantasy maps; any active community is
+   allowed.
+2. **Generate the Community Voices Document**: last week's discussion and next week's
+   predicted discussion, as a web page, Word document, slide deck, or any text and
+   visual format.
+3. **Use retrieval to power the document.** Retrieval-augmented generation means the
+   model is handed relevant passages pulled from our own data before it writes. The
+   brief suggests:
+   - storing the passages in a vector database, or a table with vector search in a
+     relational database such as Postgres;
+   - showing a flattened, two-dimensional picture of the stored embeddings (the
+     numeric fingerprints used for similarity search);
+   - keeping statistics on which passages get retrieved most.
+4. **Fill the data store automatically** with the community's posts, for example with
+   web crawlers or agent-driven workflows that collect each week's data. Have a plan
+   for handling too much data.
+5. **Compare with and without retrieval.** Show how a model writes the document on
+   its own, how our retrieval-powered system writes it, and present the comparison
+   inside the app.
+
+### How it will be judged
+
+- Reviewers will `git clone` this repo, **follow this README's install and run
+  instructions exactly**, and demo the app running locally to their engineering team.
+  The instructions below must work from a fresh clone.
+- Any front-end and back-end technology and any tools are allowed. The brief says
+  there are no tricks, and suggests a couple of hours of work.
+- The reviewers value **self-documenting code, unit tests, compact functions, and
+  Robert C. Martin's *Clean Code***.
+- Optional: share the output of Claude Code's `/insights` command and other parts of
+  our coding workflow. This repo's `CLAUDE.md`, skills, hooks, and atlas are that
+  workflow.
+- Submission is a link to the **public** GitHub repo, emailed to jobs@t19s.com.
+
+> Install and run instructions go here once there is code.
 
 **Atlas presentation page:** not published yet. The link goes here once the first plan
 is drawn.
@@ -134,3 +183,9 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
 - [`.claude/skills/`](.claude/skills/) holds the Claude Code skills for this project:
   - `/isolate-and-pin` investigates a bug by testing every likely explanation in parallel.
   - `/tdd` takes a single defect from a failing test to a proven fix.
+  - `/document-commit` documents each commit and follows every reference outward,
+    updating anything the change made stale. It runs automatically after every
+    commit. To enable it for commits made outside Claude Code, run
+    `git config core.hooksPath .githooks` once after cloning.
+- [`docs/architecture/`](docs/architecture/README.md) describes how the code is
+  actually built, one document per module.
