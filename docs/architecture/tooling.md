@@ -43,7 +43,10 @@ commit, once enabled with `git config core.hooksPath .githooks`. It exits quietl
 when `SKIP_DOC_SYNC` is set, when `DOC_SYNC_RUNNING` is set (a sync is already running),
 or when the `claude` command is not installed. Otherwise it asks the loop guard and, if
 needed, runs `claude -p "/document-commit <sha>"` headlessly with `DOC_SYNC_RUNNING=1`,
-edits accepted automatically, and a short list of allowed tools and git commands.
+edits accepted automatically, and a short list of allowed tools: file reading, editing,
+and searching; read-only git commands (`log`, `diff`, `show`, `diff-tree`, `rev-parse`,
+`rev-list`, `grep`, `status`) plus `git add` and `git commit`; `ls`; and the loop guard
+script. It cannot push.
 
 **The loop guard.** The documentation commit would itself trigger both hooks. Three
 layers stop that: the `Docs-Sync` trailer on every sync commit, the guard skipping
