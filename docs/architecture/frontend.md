@@ -18,8 +18,7 @@ build step 4 ([atlas plates 30](../atlas/30-frontend.md) and [31](../atlas/30-fr
   loading r/sailing history" before the first day begins; when a day failed, "Loading
   stopped at 26 Aug" followed by the reason the API gives as `failed_reason`, shown as it
   comes (the backend already stores only the error's message) — for example "Loading stopped at 26 Aug: OPENROUTER_API_KEY is
-  not set in .env (README step 3); tagging needs it. It will try again at the next
-  catch-up"), fetched again whenever a live `ingestion` event arrives. `describeIngestion(status)` in `src/ingestion.ts` writes
+  not set in .env. Add it (README step 3), then run docker compose up --build again"), fetched again whenever a live `ingestion` event arrives. `describeIngestion(status)` in `src/ingestion.ts` writes
   the sentence.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 

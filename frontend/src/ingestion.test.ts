@@ -27,12 +27,11 @@ test("says where loading stopped, and why, when a day failed", () => {
     ...base,
     days_done: 3,
     failed_day: "2026-08-26",
-    failed_reason: "OPENROUTER_API_KEY is not set in .env (README step 3)",
+    failed_reason: "OPENROUTER_API_KEY is not set in .env. Add it (README step 3), then run …",
   };
 
   expect(describeIngestion(status)).toBe(
-    "Loading stopped at 26 Aug: OPENROUTER_API_KEY is not set in .env (README step 3). " +
-      "It will try again at the next catch-up",
+    "Loading stopped at 26 Aug: OPENROUTER_API_KEY is not set in .env. Add it (README step 3), then run …",
   );
 });
 

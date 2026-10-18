@@ -98,72 +98,67 @@ class ToolLoopDecider:
         self.max_turns = max_turns
 
     def decide(self, brief: ClusterBrief) -> DecidedCluster:
-        prompt = render_brief(brief)
-        messages: list[BaseMessage] = [SystemMessage(INSTRUCTIONS), HumanMessage(prompt)]
+        """Lets the agent look around for up to max_turns turns, then makes it decide."""
+        conversation = _Conversation(self.model, self.tools, brief)
         for _ in range(self.max_turns):
-            decision = self._decision_after_turn(brief, messages, tool_choice=None)
+            reply = conversation.take_turn(tool_choice=None)
+            decision = _decision_in(reply)
             if decision:
-                return self._decided(brief, decision, prompt)
-        decision = self._decision_after_turn(brief, messages, tool_choice=DECIDE)
+                return self._decided(conversation, decision)
+            conversation.answer(reply)
+        decision = _decision_in(conversation.take_turn(tool_choice=DECIDE))
         if not decision:
             raise NoDecision(f"cluster {brief.name}: no decision after {self.max_turns} turns")
-        return self._decided(brief, decision, prompt)
+        return self._decided(conversation, decision)
 
-    def _decision_after_turn(
-        self, brief: ClusterBrief, messages: list[BaseMessage], tool_choice: str | None
-    ) -> Decision | None:
-        reply = self._turn(brief, messages, tool_choice)
-        decision = self._decision_in(reply, messages)
-        if decision is None:
-            self._answer_tool_calls(brief, reply, messages)
-        return decision
+    def _decided(self, conversation: "_Conversation", decision: Decision) -> DecidedCluster:
+        brief = conversation.brief
+        log_event(logger, "tagging.decided", cluster=brief.name, decision=decision.model_dump())
+        prompt = f"{INSTRUCTIONS}\n\n{conversation.prompt}"
+        return DecidedCluster(brief, decision, prompt, self.model_name)
 
-    def _turn(
-        self, brief: ClusterBrief, messages: list[BaseMessage], tool_choice: str | None
-    ) -> AIMessage:
-        reply = self.model.bind_tools(TOOLS, tool_choice=tool_choice).invoke(messages)
-        log_event(
-            logger,
-            "tagging.turn",
-            cluster=brief.name,
-            reply=reply.content,
-            tool_calls=reply.tool_calls,
-        )
-        messages.append(reply)
+
+class _Conversation:
+    """One cluster's exchange with the model: every message, and every one of them logged."""
+
+    def __init__(self, model: ChatModel, tools: Tools, brief: ClusterBrief):
+        self.model = model
+        self.tools = tools
+        self.brief = brief
+        self.prompt = render_brief(brief)
+        self.messages: list[BaseMessage] = [SystemMessage(INSTRUCTIONS), HumanMessage(self.prompt)]
+
+    def take_turn(self, tool_choice: str | None) -> AIMessage:
+        reply = self.model.bind_tools(TOOLS, tool_choice=tool_choice).invoke(self.messages)
+        self._log("tagging.turn", reply=reply.content, tool_calls=reply.tool_calls)
+        self.messages.append(reply)
         return reply
 
-    def _decision_in(self, reply: AIMessage, messages: list[BaseMessage]) -> Decision | None:
-        """The decision, if the reply made one. A malformed one is answered so the model can
-        try again."""
-        for call in reply.tool_calls:
-            if call["name"] == DECIDE:
-                try:
-                    return _parse_decision(call["args"])
-                except MalformedDecision as error:
-                    messages.append(ToolMessage(str(error), tool_call_id=call["id"]))
-        return None
-
-    def _answer_tool_calls(
-        self, brief: ClusterBrief, reply: AIMessage, messages: list[BaseMessage]
-    ) -> None:
+    def answer(self, reply: AIMessage) -> None:
+        """Answers every call in a reply that made no valid decision: tool calls get their
+        results, a malformed decision gets the reason; a reply with no calls gets a reminder."""
         if not reply.tool_calls:
-            messages.append(HumanMessage(f"Decide now by calling {DECIDE}."))
+            self._say(HumanMessage(f"Decide now by calling {DECIDE}."))
         for call in reply.tool_calls:
-            if call["name"] != DECIDE:
-                result = self.tools.run(call["name"], call["args"])
-                log_event(
-                    logger,
-                    "tagging.tool_result",
-                    cluster=brief.name,
-                    tool=call["name"],
-                    arguments=call["args"],
-                    result=result,
-                )
-                messages.append(ToolMessage(result, tool_call_id=call["id"]))
+            self._say(
+                ToolMessage(self._result_of(call), tool_call_id=call["id"]), tool=call["name"]
+            )
 
-    def _decided(self, brief: ClusterBrief, decision: Decision, prompt: str) -> DecidedCluster:
-        log_event(logger, "tagging.decided", cluster=brief.name, decision=decision.model_dump())
-        return DecidedCluster(brief, decision, f"{INSTRUCTIONS}\n\n{prompt}", self.model_name)
+    def _result_of(self, call: dict) -> str:
+        if call["name"] != DECIDE:
+            return self.tools.run(call["name"], call["args"])
+        try:
+            _parse_decision(call["args"])
+        except MalformedDecision as error:
+            return str(error)
+        return f"Only one {DECIDE} call is read per turn; call it once."
+
+    def _say(self, message: BaseMessage, tool: str | None = None) -> None:
+        self._log("tagging.answer", tool=tool, content=message.content)
+        self.messages.append(message)
+
+    def _log(self, event: str, **fields: object) -> None:
+        log_event(logger, event, cluster=self.brief.name, **fields)
 
 
 class NoDecision(Exception):
@@ -172,6 +167,17 @@ class NoDecision(Exception):
 
 class MalformedDecision(Exception):
     pass
+
+
+def _decision_in(reply: AIMessage) -> Decision | None:
+    """The reply's decision, if it made a valid one."""
+    for call in reply.tool_calls:
+        if call["name"] == DECIDE:
+            try:
+                return _parse_decision(call["args"])
+            except MalformedDecision:
+                return None
+    return None
 
 
 def _parse_decision(arguments: dict) -> Decision:

@@ -13,6 +13,7 @@ from voices.db.tagging_store import PostNotFound
 from voices.tagging.window import window_start
 
 SEARCH_RESULTS = 20
+REQUIRED_ARGUMENT = {"search": "term", "lookup": "post_id", "search_tags": "term"}
 TAG_RESULTS = 10
 
 
@@ -43,10 +44,9 @@ class TaggingTools:
         tool = {"search": self._search, "lookup": self._lookup, "search_tags": self._search_tags}
         if name not in tool:
             return f"There is no tool named {name}; use search, lookup or search_tags."
-        try:
-            return json.dumps(tool[name](arguments), default=str)
-        except KeyError as missing:
-            return f"Tool {name} needs the argument {missing}."
+        if REQUIRED_ARGUMENT[name] not in arguments:
+            return f"Tool {name} needs the argument '{REQUIRED_ARGUMENT[name]}'."
+        return json.dumps(tool[name](arguments), default=str)
 
     def _search(self, arguments: dict) -> list[dict]:
         embedding = self.embedder.embed_query(arguments["term"])

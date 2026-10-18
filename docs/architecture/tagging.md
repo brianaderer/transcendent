@@ -58,18 +58,19 @@ For day D:
    (`MAX_PARALLEL_DECISIONS`). A lookup of an id that isn't stored, a missing tool
    argument or an unknown tool is answered with an explanation, not an error. Search and lookup hits are recorded in
    `retrieval_events` as the tagging agent's (run `tagging-YYYY-MM-DD`). Every model turn
-   and every tool result is logged in full (`tagging.turn`, `tagging.tool_result`,
+   and everything sent back to the model is logged in full (`tagging.turn`, `tagging.answer`,
    `tagging.decided`). Each decision is announced live as
    `decision.made`.
 5. **Settling.** If two clusters mint topics whose centres are 0.90 alike or closer, the
-   second joins the first's new topic.
+   second joins the first's new topic. Applying relies on this order; a merged mint whose
+   twin wasn't minted first is an error, not a silent skip.
 6. **Applying** (one transaction): every decision is recorded in `cluster_decisions`;
    attach tags the cluster's waiting posts and moves the topic's centre to the average of
    its posts; mint creates the topic (label, description, keywords picked by code, centre)
    and tags the posts; noise deletes the waiting posts. Posts already tagged are never
    changed. An attach to a topic id that doesn't exist is recorded with no topic, and the
    cluster's waiting posts are left waiting for another day's decision (counted in
-   `left_waiting`); they are deleted only if they never join a topic within three days. Deleting a
+   `left_waiting`, which counts only posts that were still waiting); they are deleted only if they never join a topic within three days. Deleting a
    post also removes its upvote and retrieval rows.
 7. **Expiry.** Posts from before D−2 still waiting are deleted as noise (atlas OPEN-14).
 8. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D from tagged posts:

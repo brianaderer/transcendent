@@ -2,18 +2,13 @@
 
 from collections.abc import Sequence
 from datetime import date
-from typing import Protocol
 
 from voices.db.tagging_store import TaggingStore
 from voices.tagging.decider import ToolLoopDecider
 from voices.tagging.decisions import ClusterBrief, DecidedCluster
 from voices.tagging.graph import decide_all
 from voices.tagging.model import connect_model
-from voices.tagging.tools import TaggingTools
-
-
-class QueryEmbedder(Protocol):
-    def embed_query(self, text: str) -> list[float]: ...
+from voices.tagging.tools import QueryEmbedder, TaggingTools
 
 
 class TaggingAgent:

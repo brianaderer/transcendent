@@ -41,7 +41,8 @@ def catch_up_on_start(**_: object) -> None:
 
 @celery_app.task(name="voices.catch_up", bind=True, max_retries=None)
 def catch_up(self: Task) -> bool:
-    """Process every complete day not yet done. Says whether it ran (another may be running).
+    """Process every complete day not yet done. Returns False when it didn't run (another
+    catch-up is running) or stopped for lack of a model key; True when it finished.
 
     A failed catch-up (the archive down, say) tries again by itself ten minutes later, so a
     reviewer's first start doesn't wait for the next daily run."""

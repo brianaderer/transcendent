@@ -180,18 +180,48 @@ def test_a_merged_mint_joins_the_topic_minted_earlier_in_the_run(store):
     assert counts["minted"] == 1
 
 
-def test_attaching_moves_the_topics_centre_and_last_seen(store):
+def other_axis():
+    return [0.0, 1.0] + [0.0] * (EMBEDDING_DIMENSIONS - 2)
+
+
+def test_attaching_moves_last_seen_to_the_day(store):
     store.apply_decisions(date(1999, 1, 1), [decided("mint", ["test-1"])], {})
     topic_id = topic_of(store, "test-1")
 
     store.apply_decisions(DAY, [decided("attach", ["test-2"], topic_id=topic_id, name="c2")], {})
 
     with store.engine.connect() as connection:
-        last_seen = connection.scalar(select(Topic.last_seen).where(Topic.id == topic_id))
-    assert last_seen == DAY
+        assert connection.scalar(select(Topic.last_seen).where(Topic.id == topic_id)) == DAY
+
+
+def test_attaching_moves_the_topics_centre_to_the_average_of_its_posts(store):
+    minted_off_axis = replace(
+        decided("mint", ["test-1"]),
+        brief=ClusterBrief("c1", DAY.isoformat(), other_axis(), [], [], ["test-1"]),
+    )
+    store.apply_decisions(DAY, [minted_off_axis], {})
+    topic_id = topic_of(store, "test-1")
+
     [candidate] = [c for c in store.nearest_topics(vector(1.0), 50) if c.topic_id == topic_id]
-    assert candidate.similarity == 1.0
+
+    assert candidate.similarity == 1.0  # moved from the other axis onto its post's direction
+
+
+def test_candidate_topics_count_posts_from_the_last_week(store):
+    store.apply_decisions(DAY, [decided("mint", ["test-1", "test-2"])], {})
+    topic_id = topic_of(store, "test-1")
+
+    [candidate] = [c for c in store.nearest_topics(vector(1.0), 50) if c.topic_id == topic_id]
+
     assert candidate.posts_last_week == 2
+
+
+def test_left_waiting_counts_only_posts_that_were_waiting(store):
+    store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
+
+    counts = store.apply_decisions(DAY, [decided("attach", ["test-1", "test-2"], topic_id=-1)], {})
+
+    assert counts["left_waiting"] == 1  # test-1 already had a topic
 
 
 def test_upvotes_count_on_a_day_with_no_new_posts(store):

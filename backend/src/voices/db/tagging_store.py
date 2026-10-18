@@ -161,13 +161,14 @@ class _DecisionApplier:
         self.counts = {"attached": 0, "minted": 0, "noise_deleted": 0, "left_waiting": 0}
 
     def apply(self, item: DecidedCluster) -> None:
+        """Relies on settle_mints' order: a merged mint comes after the mint it joins."""
         action = item.decision.action
         if action == "noise":
             self.discard_as_noise(item)
         elif action == "attach":
             self.attach(item, self._existing_topic(item.decision.topic_id))
         elif item.merged_into:
-            self.attach(item, self.minted_topic_ids.get(item.merged_into))
+            self.attach(item, self._twin_topic(item))
         else:
             self.attach(item, self.mint_topic(item))
 
@@ -181,7 +182,8 @@ class _DecisionApplier:
         that doesn't exist) the posts keep waiting for another day's decision."""
         decision_id = self._record(item, topic_id)
         if topic_id is None:
-            self.counts["left_waiting"] += len(item.brief.member_ids)
+            still_waiting = select(func.count()).select_from(Post).where(*_waiting(item))
+            self.counts["left_waiting"] += self.connection.scalar(still_waiting)
             return
         statement = _tag_posts(_waiting(item), topic_id, decision_id, item)
         self.counts["attached"] += self.connection.execute(statement).rowcount
@@ -193,6 +195,11 @@ class _DecisionApplier:
         self.minted_topic_ids[item.brief.name] = topic_id
         self.counts["minted"] += 1
         return topic_id
+
+    def _twin_topic(self, item: DecidedCluster) -> int:
+        if item.merged_into not in self.minted_topic_ids:
+            raise RuntimeError(f"{item.brief.name} merges into {item.merged_into}, not minted yet")
+        return self.minted_topic_ids[item.merged_into]
 
     def _existing_topic(self, topic_id: int | None) -> int | None:
         return self.connection.scalar(select(Topic.id).where(Topic.id == topic_id))

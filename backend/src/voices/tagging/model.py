@@ -14,7 +14,8 @@ class MissingModelKey(Exception):
 def connect_model(api_key: str, model_name: str) -> ChatOpenAI:
     if not api_key:
         raise MissingModelKey(
-            "OPENROUTER_API_KEY is not set in .env (README step 3); tagging needs it"
+            "OPENROUTER_API_KEY is not set in .env. Add it (README step 3), then run "
+            "docker compose up --build again"
         )
     return ChatOpenAI(
         model=model_name,

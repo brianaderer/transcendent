@@ -50,7 +50,7 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the sixteen tests that need a running
+`docker compose run --rm api pytest -m database` runs the nineteen tests that need a running
 database: one checks that the models and the applied migrations agree; five check that
 the store saves a day (twice without duplicates), never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
