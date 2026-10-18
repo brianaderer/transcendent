@@ -560,7 +560,7 @@ const PLATES={
  sum:"FastAPI, the stack, the modules, and the one catch-up operation that does all ingestion",
  links:["01","30","90"],
  lead:"The server side: the API the frontend calls, and the modules behind it that ingest, store, retrieve, write and compare. Brian specified **FastAPI** and **Postgres**. Everything else on this plate is *proposed*.",
- facts:[["web","FastAPI, publishes OpenAPI (OPEN-1)"],["language","Python 3.12 (proposed)",1],["data shapes","Pydantic (proposed)",1],["dependencies","uv + lockfile (proposed)",1],["tests","pytest with stand-ins (proposed)",1],["lint","Ruff (proposed)",1],["store","Postgres + pgvector (OPEN-4)"],["model","Claude Sonnet 5.5 via OpenRouter (OPEN-5)"],["embedding","small open long-input model in the container, e.g. nomic-embed-text"],["jobs","Celery + Celery Beat; broker Redis (proposed)"],["schedule","Beat at 06:00 UTC, yesterday"],["record","ingested_days"],["live","server-sent events, plate 41"],["agents","LangGraph / LangChain, plate 60"]],
+ facts:[["web","FastAPI, publishes OpenAPI (OPEN-1)"],["language","Python 3.12 (proposed)",1],["data shapes","Pydantic (proposed)",1],["dependencies","uv + lockfile (proposed)",1],["tests","pytest with stand-ins (proposed)",1],["lint","Ruff (proposed)",1],["store","Postgres + pgvector (OPEN-4)"],["migrations","Alembic, from SQLAlchemy models (OPEN-28)"],["model","Claude Sonnet 5.5 via OpenRouter (OPEN-5)"],["embedding","small open long-input model in the container, e.g. nomic-embed-text"],["jobs","Celery + Celery Beat; broker Redis (proposed)"],["schedule","Beat at 06:00 UTC, yesterday"],["record","ingested_days"],["live","server-sent events, plate 41"],["agents","LangGraph / LangChain, plate 60"]],
  figs:[
   {h:"Modules (proposed) — the arrows are who calls whom",cw:200,gx:60,gy:56,
    boxes:[
@@ -810,7 +810,8 @@ const PLATES={
   ["OPEN-24","Runs are not referred back to: no run history, no LangGraph checkpoints, no stored event log, no Runs screen. Results are shown when a run finishes.","2026-10-18"],
   ["OPEN-25","The report agent returns one answer in two parts: the prose report, and a fixed list of its topics with rank and direction plus its predicted topics. The page shows the prose with the list as a small table beside it; the app scores the list.","2026-10-18"],
   ["OPEN-26","Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range.","2026-10-18"],
-  ["OPEN-27","Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers.","2026-10-18"]]}
+  ["OPEN-27","Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers.","2026-10-18"],
+  ["OPEN-28","Database changes are made with Alembic. Tables are described once as SQLAlchemy models; migrations are generated from them and applied by setup on every start. The earlier schema file and local data were wiped.","2026-10-18"]]}
 };
 
 /* ===================================================================== RENDERER */

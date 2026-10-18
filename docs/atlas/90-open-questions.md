@@ -5,7 +5,6 @@
 | ID | Question | Raised on |
 |---|---|---|
 | OPEN-13 | For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) If prewarm proves slow or fragile, the fallback is committing the computed database. | [04](04-environment.md) |
-| OPEN-28 | How are database changes made once the tables exist? Today setup runs one schema file of `CREATE TABLE IF NOT EXISTS` statements on every start, which creates missing tables but never changes existing ones: adding a column to an existing table only takes effect after erasing the database. The recommendation: numbered plain-SQL migration files (`001_initial.sql`, `002_…`) applied in order by setup, with a small table recording which have run, each applied in its own transaction. The alternative is Alembic, the standard Python migration tool, which reviewers may recognize but which brings in SQLAlchemy, a library the rest of the code doesn't use. | [40](40-backend.md) |
 
 ## Resolved
 
@@ -37,3 +36,4 @@
 | OPEN-25 | The report agent returns one answer in two parts: the prose report, and a fixed list of its topics with rank and direction plus its predicted topics. The page shows the prose with the list as a small table beside it; the app scores the list. | 2026-10-18 |
 | OPEN-26 | Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range. | 2026-10-18 |
 | OPEN-27 | Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers. | 2026-10-18 |
+| OPEN-28 | Database changes are made with Alembic. Tables are described once as SQLAlchemy models; migrations are generated from them and applied by setup on every start. The earlier schema file and local data were wiped. | 2026-10-18 |
