@@ -6,6 +6,7 @@
 | Plate | What it shows |
 |---|---|
 | [01 System Map (DRAFT)](01-system-map.md) | The whole app: frontend and backend framework specified, store and ingestion still open |
+| [04 Environment (DRAFT)](04-environment.md) | Docker Compose services, mounted volumes, first-start setup, and the one OpenRouter key |
 | [21 Topics and engagement (DRAFT)](20-data-model/21-topics.md) | The posts (with their agreeing-reply upvotes) and topic tags tables, the daily engagement table that graphs each tag over time, and the daily intake that clusters with a three-day lookahead and lets an LLM attach, mint or drop |
 | [30 Frontend (DRAFT)](30-frontend.md) | The web app's stack (agreed) and the screens the brief implies (proposed) |
 | [31 Screens (DRAFT)](30-frontend/31-screens.md) | The six screens, led by the date-slider Explore page with its dot plot and Generate report button, written as a design brief ready to paste into Claude Design |

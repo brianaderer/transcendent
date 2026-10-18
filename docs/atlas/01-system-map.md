@@ -27,9 +27,8 @@ flowchart LR
 - **Backend** — FastAPI, specified. Its modules are on [40 Backend](40-backend.md).
 - **Passage store** — Postgres with pgvector, specified.
 - **Ingestion** — fetches posts daily, specified; from r/sailing (OPEN-3, resolved); fetched from the Arctic Shift archive (OPEN-8, resolved).
-- Everything runs under Docker Compose (the README's install steps already assume
-  Docker).
+- Everything runs under Docker Compose, with every data store on a mounted volume —
+  see [04 Environment](04-environment.md).
 
 ## Open in this draft
 
-- `?` The models (OPEN-5). The agents are on [60](60-agents.md).

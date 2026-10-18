@@ -83,7 +83,30 @@ You should see `Hello from Docker!` followed by a short explanation. If you see
 `Cannot connect to the Docker daemon` instead, Docker isn't running yet: open Docker
 Desktop (or on Linux run `sudo systemctl start docker`) and try again.
 
-### 3. Start the app
+### 3. Add the API key
+
+The app's AI models are reached through [OpenRouter](https://openrouter.ai), which
+needs one key. **The key is in the email that submitted this repo.** You don't need
+to create an OpenRouter account.
+
+From the folder you cloned this repo into, copy the example settings file and paste
+the key into it:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` in any text editor and set the key on the `OPENROUTER_API_KEY=` line,
+with no spaces or quotes:
+
+```
+OPENROUTER_API_KEY=sk-or-v1-...
+```
+
+The `.env` file stays on your machine. Git is set to ignore it, so the key can't be
+committed by accident.
+
+### 4. Start the app
 
 > The app isn't built yet. When it is, this step will be a single command, run from
 > the folder you cloned this repo into.

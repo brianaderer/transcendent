@@ -17,8 +17,8 @@ Everything else on this plate is *proposed*.
 | Tests | pytest, with stand-ins for the model, the embedder and the website (`CLAUDE.md` §7) *(proposed)* |
 | Lint and format | Ruff for both *(proposed)* |
 | Data store | **Postgres with pgvector** — specified (OPEN-4, resolved) |
-| Writing model | Claude, through Anthropic's API *(proposed, OPEN-5)* |
-| Embedding model | A small open model run inside the container *(proposed, OPEN-5)* |
+| Writing and decision model | **Claude Sonnet 5.5, through OpenRouter** — specified (OPEN-5). One OpenRouter key, sent to reviewers in the submission email |
+| Embedding model | **A small open model that takes long inputs (for example nomic-embed-text), run inside the container** — specified (OPEN-5); no key needed |
 | Background jobs | **Celery** workers, with **Celery Beat** scheduling the archive pulls — specified. Broker: Redis, its own container *(proposed)* |
 | Agents | **LangGraph / LangChain** — specified. Two agents, see [60](60-agents.md) |
 | Running it | Its own service in Docker Compose *(proposed)* |
@@ -54,8 +54,10 @@ flowchart LR
   never receives a retriever, so it cannot reach the store.
 - **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs as a command (`docker compose run …`), not inside the web server,
   and is never needed for the demo: a committed one-week snapshot is loaded instead.
-- **projection** squashes embeddings to two dimensions for the dot plot, with UMAP, and
-  stores each post's position once (OPEN-20).
+- **projection** (specified, OPEN-20): a post is embedded once, and its position on the
+  dot plot is computed once, in the daily intake, and stored with it. The dot plot only
+  ever reads stored positions. *(Proposed detail: the flattening (UMAP) is learned once
+  from the full history, and each day's new posts are placed into that same layout.)*
 
 ## Background jobs *(proposed details)*
 
@@ -105,6 +107,4 @@ flowchart LR
 
 ## Open in this draft
 
-- `?` The models — OPEN-5.
-- `?` Keeping each post's position on the dot plot fixed — OPEN-20.
 - `?` Everything marked *proposed* above.

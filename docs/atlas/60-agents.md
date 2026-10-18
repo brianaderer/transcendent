@@ -92,4 +92,3 @@ Specified by Brian; the details are *proposed*.
 
 ## Open in this draft
 
-- `?` The models — OPEN-5.

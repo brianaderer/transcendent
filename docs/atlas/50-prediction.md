@@ -76,4 +76,3 @@ prediction half of the comparison.
 
 ## Open in this draft
 
-- `?` The models — OPEN-5. The agents that run this are on [60](60-agents.md).
