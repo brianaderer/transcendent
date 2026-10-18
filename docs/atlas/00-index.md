@@ -5,4 +5,6 @@
 
 | Plate | What it shows |
 |---|---|
+| [01 System Map (DRAFT)](01-system-map.md) | The whole app: frontend specified, the other parts still placeholders |
+| [30 Frontend (DRAFT)](30-frontend.md) | The web app's stack and the screens the brief implies |
 | [90 Open Questions](90-open-questions.md) | Decisions still waiting on the owner, and the log of decisions made |
