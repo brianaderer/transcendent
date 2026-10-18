@@ -1,6 +1,6 @@
 # 90 — Open Questions
 
-[← Index](00-index.md)
+[← Atlas](atlas.html) — the "Raised on" column names the plate each question affects.
 
 | ID | Question | Raised on |
 |---|---|---|

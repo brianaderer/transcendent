@@ -46,37 +46,58 @@ about something that has an obvious answer is also a decision gate.
 
 ## 3. Plans live in the atlas
 
-**All plans are written as atlas plates in `docs/atlas/`.** No plan exists only in
-chat, in plan mode, or in a loose markdown file somewhere else. If it isn't in the
-atlas, it isn't the plan.
+**All plans are made in the atlas.** No plan exists only in chat, in plan mode, or in
+a loose markdown file. If it isn't in the atlas, it isn't the plan. The model to
+follow is the Vintly Flow Atlas (https://claude.ai/artifact/PPfWjhKfmb6zXUoA6H5xSJ).
 
-How the atlas is laid out:
+**What the atlas is.** One self-contained, interactive HTML page,
+`docs/atlas/atlas.html`, which renders in a browser like an exploded-view diagram:
 
-- **One plate per subject.** A plate is a single markdown file covering one area:
-  the system map, a module, a pipeline, a data model, an environment.
-- **Numbered by area, in tens.** `00` is the index, `01`–`09` are the system-wide
-  plates, each later group of ten is one area (for example `20`–`29` is the data
-  model, `30`–`39` the frontend), and `90` is open questions. An area with several
-  plates gets a subfolder: `20-data-model/21-<name>.md`, `22-<name>.md`.
-- **Every plate starts the same way:** `# NN — Title`, then a link back to the index
-  (and to open questions where relevant), then a short paragraph saying what the plate
-  covers.
-- **Diagrams in Mermaid**, with prose underneath that explains them. The diagram shows
-  the shape; the prose says why.
-- **A plate still being worked out is marked `(DRAFT)`** in its title and in the
-  index. Anything unresolved inside a plate is marked `?` and listed in a short
-  "Open in this draft" section on that plate.
-- **`00-index.md`** lists every plate in a table: plate number and link, then one
-  line saying what it shows. Add a row whenever a plate is added.
-- **`90-open-questions.md` is where decisions wait for Brian, and where they're
-  recorded once made.** Each open question gets an ID (`OPEN-1`, `OPEN-2`, …),
-  is written in full sentences (§1), and links to the plate that raised it. When
-  Brian decides, the row moves to the Resolved table with the decision and the date,
-  and the affected plates are updated to match.
-- **Plates record what was specified, not what was guessed.** Where a plate states
-  something Brian hasn't decided, mark it as a proposal.
-- Commit atlas changes on their own, with messages starting `Atlas:` — for example
-  `Atlas: 21 (draft): job table and status values`.
+- **The system map** is the page's front view: every major part of the system as a
+  box, arranged in labeled lanes, with arrows for how they talk to each other.
+- **Every box is clickable.** Clicking it opens that box's **plate**: a breakout
+  showing what's inside it, with its own diagram, a one-paragraph explanation, and
+  fact chips (source files, limits, models, queues — whatever bears weight).
+- **Boxes inside a plate drill further.** A box that has a plate of its own is drawn
+  with a highlighted outline and opens that plate when clicked. A back button retraces
+  the trail. You can go from the whole system down to a single function and back.
+- **Plates also have their own buttons in the header**, so any plate can be opened
+  directly, and a plate's name in the address (`atlas.html#ratify`) opens it on load.
+- **One visual language everywhere.** Box color says what a thing *is* (model call,
+  tool, service or queue, data store, app screen, result). Line style says how
+  control moves (a plain call, a conditional step, a bounded loop, recursion). Every
+  plate shows the key.
+- **Paths can be lit up.** Where the system behaves differently in different modes,
+  a toggle highlights the boxes and arrows each mode uses, numbered in the order a
+  request travels.
+
+**How it's built.**
+
+- **The diagrams are data, not drawings.** The page holds tables — boxes (position,
+  title, sub-lines, kind, the source file it lives in), arrows (from, to, label,
+  style), plates, and the drill table that says which box opens which plate — and a
+  small renderer draws SVG from them. Changing the plan means changing rows, never
+  hand-placing shapes.
+- **Every box that has a plate must be in the drill table.** A box that should drill
+  and doesn't is a bug in the atlas.
+- **Light and dark themes**, readable at phone width, no external scripts beyond
+  fonts. It must open straight from disk and as a published page.
+- **It is published as a private claude.ai artifact**, always to the same URL, so the
+  link never changes. The URL is recorded at the top of `README.md`. After each
+  change: commit, then republish.
+
+**Plates record what Brian has specified, not what was guessed.** Anything proposed
+but not decided is drawn as pending (dashed outline) and has an entry in
+`docs/atlas/90-open-questions.md`.
+
+**Open questions.** `90-open-questions.md` is where decisions wait for Brian and
+where they're recorded once made. Each open question gets an ID (`OPEN-1`,
+`OPEN-2`, …), is written in full sentences (§1), and names the plate it affects. When
+Brian decides, the row moves to the Resolved table with the decision and the date,
+and the affected plates are updated to match.
+
+Commit atlas changes on their own, with messages starting `Atlas:` — for example
+`Atlas: ratify plate — add the escalation loop`.
 
 ## 4. Git
 
