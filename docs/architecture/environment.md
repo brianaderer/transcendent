@@ -48,8 +48,10 @@ which the `setup` service needs.
 
 ## Configuration and data
 - `.env` (copied from `.env.example`): `PORT` (default 5173), the port the app is opened
-  on; `OPENROUTER_API_KEY`, needed once tagging and
-  reports exist; the app starts without it.
+  on; `OPENROUTER_API_KEY`, needed from the first start (tagging each loaded day calls the
+  model; without it loading stops at the first day with the reason on the page).
+  `MODEL_NAME` (default `anthropic/claude-sonnet-5.5`) can be set to use another
+  OpenRouter model.
 - Set by `compose.yaml` for the backend services: `DATABASE_URL`, `REDIS_URL`, `LOG_DIR`,
   and `SERVICE_NAME` (each container's own name, used in its log lines).
 - `MODEL_DIR` is set nowhere; its default in `voices/config.py`,

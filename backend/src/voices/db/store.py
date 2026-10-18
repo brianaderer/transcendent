@@ -76,6 +76,7 @@ class Store:
                 "latest_day": _iso(connection.scalar(_latest_day("done"))),
                 "running_day": _iso(connection.scalar(_latest_day("running"))),
                 "failed_day": _iso(connection.scalar(_latest_day("failed"))),
+                "failed_reason": connection.scalar(_latest_failure_reason()),
             }
 
     def _existing(self, column: InstrumentedAttribute[str], ids: Sequence[str]) -> set[str]:
@@ -147,6 +148,11 @@ def _count_days(status: str) -> Select:
 
 def _latest_day(status: str) -> Select:
     return select(func.max(IngestedDay.day)).where(IngestedDay.status == status)
+
+
+def _latest_failure_reason() -> Select:
+    failed = IngestedDay.status == "failed"
+    return select(IngestedDay.error).where(failed).order_by(IngestedDay.day.desc()).limit(1)
 
 
 def _iso(day: date | None) -> str | None:

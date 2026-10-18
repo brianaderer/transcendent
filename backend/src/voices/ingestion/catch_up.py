@@ -49,8 +49,9 @@ class CatchUp:
         try:
             counts = self.process(day)
         except Exception as error:
-            self.ledger.mark_failed(day, repr(error))
-            self.emit("day.failed", day=day.isoformat(), error=repr(error))
+            reason = f"{type(error).__name__}: {error}"
+            self.ledger.mark_failed(day, reason)
+            self.emit("day.failed", day=day.isoformat(), error=reason)
             raise
         self.ledger.mark_done(day, counts)
         self.emit("day.finished", day=day.isoformat(), progress=progress, counts=counts)

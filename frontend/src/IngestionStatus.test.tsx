@@ -28,6 +28,7 @@ function serveStatus(daysDone: () => number) {
             latest_day: null,
             running_day: "2026-08-25",
             failed_day: null,
+            failed_reason: null,
           }),
         ),
     ),

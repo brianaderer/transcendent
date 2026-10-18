@@ -5,6 +5,7 @@ export type IngestionStatus = {
   latest_day: string | null;
   running_day: string | null;
   failed_day: string | null;
+  failed_reason: string | null;
 };
 
 export async function fetchIngestionStatus(): Promise<IngestionStatus> {
@@ -15,7 +16,8 @@ export async function fetchIngestionStatus(): Promise<IngestionStatus> {
 /** One sentence on how far the history has loaded (atlas plate 04: first start shows progress). */
 export function describeIngestion(status: IngestionStatus): string {
   if (status.failed_day) {
-    return `Loading stopped at ${shortDate(status.failed_day)}; it will try again at the next catch-up`;
+    const why = status.failed_reason ? `: ${withoutErrorName(status.failed_reason)}` : "";
+    return `Loading stopped at ${shortDate(status.failed_day)}${why}. It will try again at the next catch-up`;
   }
   if (status.days_done >= status.days_wanted && status.latest_day) {
     return `History up to date through ${shortDate(status.latest_day)} · ${count(status.posts)} posts`;
@@ -34,4 +36,9 @@ function shortDate(isoDay: string): string {
 
 function count(n: number): string {
   return n.toLocaleString("en-US");
+}
+
+/** "MissingModelKey: OPENROUTER_API_KEY is not set…" reads better without the error's name. */
+function withoutErrorName(reason: string): string {
+  return reason.replace(/^[A-Za-z]+: /, "");
 }

@@ -1,13 +1,15 @@
 """The Celery worker and its Beat schedule (atlas plate 40)."""
 
 import redis
-from celery import Celery
+from celery import Celery, Task
 from celery.schedules import crontab
 from celery.signals import setup_logging, worker_ready
 
 from voices.config import load_settings
 from voices.log import configure_logging
 from voices.worker.catch_up_task import catch_up_now, forget_stale_catch_up
+
+RETRY_FAILED_CATCH_UP_SECONDS = 10 * 60
 
 settings = load_settings()
 celery_app = Celery("voices", broker=settings.redis_url, backend=settings.redis_url)
@@ -32,10 +34,16 @@ def catch_up_on_start(**_: object) -> None:
     catch_up.delay()
 
 
-@celery_app.task(name="voices.catch_up")
-def catch_up() -> bool:
-    """Process every complete day not yet done. Says whether it ran (another may be running)."""
-    return catch_up_now()
+@celery_app.task(name="voices.catch_up", bind=True, max_retries=None)
+def catch_up(self: Task) -> bool:
+    """Process every complete day not yet done. Says whether it ran (another may be running).
+
+    A failed catch-up (the archive down, say) tries again by itself ten minutes later, so a
+    reviewer's first start doesn't wait for the next daily run."""
+    try:
+        return catch_up_now()
+    except Exception as error:
+        raise self.retry(exc=error, countdown=RETRY_FAILED_CATCH_UP_SECONDS) from error
 
 
 @celery_app.task(name="voices.ping")

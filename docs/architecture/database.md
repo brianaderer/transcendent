@@ -8,6 +8,8 @@ Describes the tables and keeps the database in step with them. The tables follow
 [plate 40](../atlas/40-backend.md). Changes are made with Alembic migrations (atlas OPEN-28).
 
 ## Public interface
+- `voices.db.tagging_store.TaggingStore` — the reads and writes for tagging; described in
+  [tagging](tagging.md).
 - `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
   for ingestion: `known_post_ids`, `known_thread_ids`, `save_day(batch)` (threads, posts
   and upvotes in one transaction; saving a day again adds nothing — the day's upvote rows

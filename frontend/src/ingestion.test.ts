@@ -7,6 +7,7 @@ const base: IngestionStatus = {
   latest_day: null,
   running_day: null,
   failed_day: null,
+  failed_reason: null,
 };
 
 test("says history is loading, with progress, while days remain", () => {
@@ -21,11 +22,17 @@ test("says the history is up to date once every day is in", () => {
   expect(describeIngestion(status)).toBe("History up to date through 17 Oct · 21,480 posts");
 });
 
-test("says where loading stopped when a day failed", () => {
-  const status = { ...base, days_done: 3, failed_day: "2026-08-26" };
+test("says where loading stopped, and why, when a day failed", () => {
+  const status = {
+    ...base,
+    days_done: 3,
+    failed_day: "2026-08-26",
+    failed_reason: "MissingModelKey: OPENROUTER_API_KEY is not set in .env (README step 3)",
+  };
 
   expect(describeIngestion(status)).toBe(
-    "Loading stopped at 26 Aug; it will try again at the next catch-up",
+    "Loading stopped at 26 Aug: OPENROUTER_API_KEY is not set in .env (README step 3). " +
+      "It will try again at the next catch-up",
   );
 });
 

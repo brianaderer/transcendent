@@ -103,9 +103,12 @@ with no spaces or quotes:
 OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
-For now the app starts and runs without the key; it's needed once the app starts
-tagging posts and writing reports. The `.env` file must exist, though, so don't skip
-the `cp` command.
+The app needs the key from its first start: as it loads the r/sailing history it sorts
+each day's posts into topics, and that uses the AI model. Without the key the app still
+starts, but loading stops at the first day and the page says
+**Loading stopped at … OPENROUTER_API_KEY is not set**. If that happens, add the key,
+then restart with `docker compose restart worker`. Sorting the eight weeks of history on
+first start costs roughly $5 of model use on that key.
 
 The `.env` file stays on your machine. Git is set to ignore it, so the key can't be
 committed by accident.

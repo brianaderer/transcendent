@@ -22,9 +22,10 @@ def comment(n, created):
     }
 
 
-def archive(handler):
+def archive(handler, waits=None):
     client = httpx.Client(transport=httpx.MockTransport(handler), base_url="https://archive")
-    return ArcticShift(client, pause_seconds=0, attempts=3)
+    sleep = waits.append if waits is not None else (lambda seconds: None)
+    return ArcticShift(client, pause_seconds=1, attempts=3, sleep=sleep)
 
 
 def answer(data=None, error=None, status=200):
@@ -144,3 +145,30 @@ def test_a_success_page_that_is_not_json_is_reported_as_unavailable():
 def test_an_error_answer_without_a_message_still_names_its_status():
     with pytest.raises(ArchiveUnavailable, match="404: no reason given"):
         archive(lambda request: httpx.Response(404, json={"data": None})).posts_by_id(["p1"])
+
+
+def test_each_retry_waits_twice_as_long_as_the_one_before():
+    waits = []
+
+    with pytest.raises(ArchiveUnavailable):
+        archive(lambda request: answer(status=503), waits).posts_by_id(["p1"])
+
+    assert waits == [1, 2, 4]
+
+
+def test_a_slow_down_waits_as_long_as_the_archive_says():
+    waits = []
+    replies = iter(
+        [
+            httpx.Response(
+                422,
+                json={"data": None, "error": "Timeout. Maybe slow down a bit"},
+                headers={"x-ratelimit-reset": "28"},
+            ),
+            answer([]),
+        ]
+    )
+
+    archive(lambda request: next(replies), waits).posts_by_id(["p1"])
+
+    assert waits == [1, 28]

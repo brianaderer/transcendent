@@ -27,7 +27,7 @@ in build step 3; posts are stored as `pending` until then.
   save together.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,
   `posts_by_id`; `connect_to_archive()` builds the real one. Raises `ArchiveUnavailable`
-  when a request still fails after five tries, naming the last reason (a status, the
+  when a request still fails after seven tries, naming the last reason (a status, the
   archive's "slow down" message, a network error, the start of an answer that isn't the
   archive's usual JSON, "an empty answer" when nothing came back, or "no reason given" when
   the archive's error carries no message). A success status whose answer isn't readable
@@ -48,8 +48,10 @@ nothing behind and is retried at the next catch-up.
 
 - **The archive** returns at most 100 items a request, so reads are paged by creation time;
   an item repeated across a page boundary is kept once, and a page that never advances is
-  stepped past. Requests are paced and retried, since the archive answers "slow down" when
-  pushed.
+  stepped past. Each try waits first: a one-second pause, then twice as long after each
+  failure (about two minutes over seven tries), or as long as the archive's
+  `x-ratelimit-reset` header says, whichever is longer. The archive answers "slow down" when
+  pushed, especially when two copies of the app fetch at once.
 - **Agreeing replies** (atlas OPEN-19): eight words or fewer, no question mark or link, and
   close in meaning (≥ 0.80) to examples such as "+1", "same here", "good point". They are
   not stored; each adds one to the parent's `upvotes` and to that day's
@@ -78,4 +80,4 @@ the store and the `emit` function, which match the small interfaces above.
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`
 comes from `voices.config`, shared with the API. Fixed in code: `ARCHIVE_CATCH_UP_HOURS = 6`, `PAGE_SIZE = 100`, `ERROR_TEXT_CHARACTERS = 200`,
-`MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `EMBED_BATCH_SIZE = 8`.
+`ATTEMPTS = 7`, `MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `EMBED_BATCH_SIZE = 8`.

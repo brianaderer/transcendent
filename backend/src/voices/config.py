@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     log_dir: str = "/var/log/voices"
     openrouter_api_key: str = ""
+    model_name: str = "anthropic/claude-sonnet-5.5"  # through OpenRouter (atlas OPEN-5)
     service_name: str = ""  # each container sets its own, so log lines say which one
     model_dir: str = "/home/voices/.cache/models"  # on the model-cache volume
 

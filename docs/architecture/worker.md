@@ -9,8 +9,9 @@ catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-
 
 ## Public interface
 - `celery_app` — the Celery application.
-- Task `voices.catch_up` — processes every complete day not yet done; returns whether it
-  ran (it does nothing while another catch-up is running).
+- Task `voices.catch_up` — loads and tags every complete day not yet done; returns whether
+  it ran (it does nothing while another catch-up is running); on failure, retries itself
+  ten minutes later.
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
 - `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` in
   `catch_up_task.py`.
@@ -24,8 +25,15 @@ catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-
   running yet, so a held lock belongs to a run that died with its worker. That holds while there is exactly one worker
   container; with several, a starting worker could clear another's lock.
 - **One job, days in order:** the catch-up is one job that walks the missing days oldest
-  first, each day in its own transaction and under its own trace id (`day-YYYY-MM-DD`). The
-  embedding model, database and archive connections are built once per worker process.
+  first, under one trace id per day (`day-YYYY-MM-DD`). Each day is loaded
+  ([ingestion](ingestion.md)) and then tagged ([tagging](tagging.md)); it is marked done only
+  when both have happened. The embedding model, database and archive connections are built
+  once per worker process; the chat model is connected per day, so a key added to `.env`
+  is picked up after a restart.
+- **A failed catch-up tries again by itself** ten minutes later (`RETRY_FAILED_CATCH_UP_SECONDS`),
+  and keeps doing so, so a brief archive outage doesn't hold a first start until the next
+  06:00 run. Without an OpenRouter key every try stops at the first day, with the reason
+  shown on the page.
 
 Redis is both the queue and the result store. Celery's own logging is replaced with the
 JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go to
@@ -33,7 +41,7 @@ JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go 
 startup (`broker_connection_retry_on_startup`), which also silences its startup warning.
 
 ## Uses
-[ingestion](ingestion.md), [database](database.md) (`voices.db.store`), [events](events.md),
+[ingestion](ingestion.md), [tagging](tagging.md), [database](database.md) (`voices.db.store`), [events](events.md),
 [logging](logging.md), [environment](environment.md) (settings), Redis.
 
 ## Used by

@@ -19,7 +19,8 @@ are the permanent record.
 ## How it works
 Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.finished`
-(with the day's counts) and `day.failed` (with the error).
+(with the day's counts) and `day.failed` (with the error), and `decision.made` (one per cluster the tagging agent
+decides: action, topic, label, reason, posts).
 
 ## Uses
 Redis, [logging](logging.md).

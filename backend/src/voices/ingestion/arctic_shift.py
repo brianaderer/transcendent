@@ -20,6 +20,8 @@ PAGE_SIZE = 100  # the archive's maximum
 ERROR_TEXT_CHARACTERS = 200
 # The archive asks callers to back off with this message, sometimes with status 422.
 SLOW_DOWN = "slow down"
+RATE_LIMIT_RESET = "x-ratelimit-reset"  # seconds until the archive's limit resets
+ATTEMPTS = 7  # waits of about 1, 2, 4, 8, 16, 32 and 64 seconds: two minutes in all
 USER_AGENT = "community-voices/0.1 (coding challenge; github.com/brianaderer/transcendent)"
 
 logger = logging.getLogger(__name__)
@@ -30,10 +32,17 @@ class ArchiveUnavailable(Exception):
 
 
 class ArcticShift:
-    def __init__(self, client: httpx.Client, pause_seconds: float, attempts: int):
+    def __init__(
+        self,
+        client: httpx.Client,
+        pause_seconds: float,
+        attempts: int,
+        sleep: Callable[[float], None] = time.sleep,
+    ):
         self.client = client
         self.pause_seconds = pause_seconds
         self.attempts = attempts
+        self.sleep = sleep
 
     def posts_created_between(self, start: datetime, end: datetime) -> list[Item]:
         return self._all_pages("/api/posts/search", start, end, post_from_archive)
@@ -61,14 +70,18 @@ class ArcticShift:
             after = _next_page_start(after, page[-1]["created_utc"])
 
     def _get(self, path: str, query: dict) -> list[dict]:
+        """Each try waits first: a short pause, then twice as long after every failure, or as
+        long as the archive says when it says."""
         last_error: _TryAgain | None = None
+        wait = self.pause_seconds
         for attempt in range(1, self.attempts + 1):
-            time.sleep(self.pause_seconds * attempt)
+            self.sleep(wait)
             try:
                 return self._try_get(path, query)
             except _TryAgain as error:
                 last_error = error
                 log_event(logger, "archive.retry", path=path, attempt=attempt, reason=str(error))
+                wait = max(self.pause_seconds * 2**attempt, error.wait_seconds)
         raise ArchiveUnavailable(
             f"{path} failed {self.attempts} times; last: {last_error}"
         ) from last_error
@@ -79,18 +92,30 @@ class ArcticShift:
         except httpx.TransportError as error:
             raise _TryAgain(repr(error)) from error
         if _worth_retrying(response.status_code):
-            raise _TryAgain(f"status {response.status_code}")
+            raise _TryAgain(f"status {response.status_code}", _stated_wait(response))
         body = _json_or_none(response)
         if response.status_code == httpx.codes.OK and body and not body.get("error"):
             return body["data"]
         reason = _reason(response, body)
         if SLOW_DOWN in reason:
-            raise _TryAgain(f"slow down: {reason}")
+            raise _TryAgain(f"slow down: {reason}", _stated_wait(response))
         raise ArchiveUnavailable(f"{path}: {response.status_code}: {reason}")
 
 
 class _TryAgain(Exception):
     """The archive is busy or briefly unreachable; the same request may work in a moment."""
+
+    def __init__(self, reason: str, wait_seconds: float = 0):
+        super().__init__(reason)
+        self.wait_seconds = wait_seconds
+
+
+def _stated_wait(response: httpx.Response) -> float:
+    """How long the archive says to wait before its limit resets, if it says."""
+    try:
+        return float(response.headers.get(RATE_LIMIT_RESET, 0))
+    except ValueError:
+        return 0
 
 
 def _json_or_none(response: httpx.Response) -> dict | None:
@@ -133,4 +158,4 @@ def _page_query(after: int, end: datetime) -> dict:
 
 def connect_to_archive() -> ArcticShift:
     client = httpx.Client(base_url=ARCHIVE_URL, headers={"User-Agent": USER_AGENT}, timeout=30)
-    return ArcticShift(client, pause_seconds=1.0, attempts=5)
+    return ArcticShift(client, pause_seconds=1.0, attempts=ATTEMPTS)
