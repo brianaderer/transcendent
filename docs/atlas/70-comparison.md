@@ -53,7 +53,7 @@ that same answer key *(proposed details below)*.
 | **Topics invented** | Topics the report names that the community didn't discuss in the range | Named topics that match no tag with real activity in the range |
 | **Order of importance** | Did it rank the topics the way the data does? | How closely the report's ranking agrees with the ranking by engagement |
 | **Direction** | For each topic it names, did it say rising, steady or fading correctly? | Compared with the measured trend for that tag |
-| **Prediction** | Did its "next period" topics actually rise or appear? | Scored against the period that followed (OPEN-22) |
+| **Prediction** | Did the topics it said would be prominent next actually become prominent, moving the way it said? | Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began; scored against what happened in the range (OPEN-22, plate [50](50-prediction.md)) |
 | **Cost and time** | What retrieval costs | Tokens, tool calls, seconds |
 
 - **The report states its conclusions in a fixed form** alongside its prose: a list of

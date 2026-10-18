@@ -64,15 +64,28 @@ every claim names its evidence ("up from 3 to 11 threads over three weeks").
 Version A of the comparison (`CLAUDE.md` §7) receives none of this, only the
 community and the dates.
 
-## Backtest *(proposed)*
+## Scoring the prediction
 
-The stored history covers **eight weeks** (specified, OPEN-7): seven to fit, one to
-score against.
+**Decided by Brian (OPEN-22), to try first:**
 
-Hold the most recent week back, predict it from the weeks before, and score both
-versions against what the community actually discussed: which tags each version
-expected to rise or appear, and which did. This puts a measured number on the
-prediction half of the comparison.
+- **The A/B test scores a committed list, not prose or numbers.** Alongside its prose,
+  each version (with and without our data) commits to a short fixed list: the topics
+  it expects to be prominent in the next period, and whether each is rising, steady or
+  fading. That list is checked against what actually happened: how many named topics
+  became prominent, how many never came up, how many directions were right. Version A
+  has no data to make numbers from, so comparing numbers would not be a fair contest.
+- **Scored straight away, on a period that has already happened.** When a report is
+  generated for a date range, both versions are also asked to predict that range using
+  only what was known the day before it began — posts, tags and centroids as they stood
+  then, nothing from inside the range (OPEN-11). The range has already happened, so both
+  predictions are scored at once, and every report shows a prediction score, including
+  the first one in a demo.
+- **The code's numerical projections are checked separately.** How close the projected
+  engagement for each topic came to the real figure is shown on its own, as a check on
+  the trend method, and is not part of the A/B scores.
+
+The stored history covers **eight weeks** (specified, OPEN-7), so the earliest ranges
+have little history before them; the score says how much history the prediction had.
 
 ## Open in this draft
 
