@@ -1,6 +1,8 @@
 # Every service for Community Voices (atlas plate 04). Start with: docker compose up --build
 # Everything that stores information keeps it on a named volume.
 
+name: community-voices
+
 x-backend-environment: &backend-environment
   DATABASE_URL: postgresql://voices:voices@postgres:5432/voices
   REDIS_URL: redis://redis:6379/0
@@ -11,7 +13,7 @@ x-backend: &backend
   env_file: .env
   volumes:
     - logs:/var/log/voices
-    - model-cache:/root/.cache
+    - model-cache:/home/voices/.cache
 
 services:
   postgres:
@@ -77,7 +79,7 @@ services:
 
   frontend:
     build: ./frontend
-    init: true  # stops cleanly on Ctrl+C
+    init: true
     ports:
       - "${PORT:-5173}:5173"
     depends_on:

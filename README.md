@@ -128,11 +128,14 @@ hasn't started yet. Either way, wait a few seconds and it updates by itself. To 
 the back end directly, open http://localhost:5173/api/health; it should show
 `"status":"ok"`.
 
+Ignore the `Network:` address the frontend prints in the log; it's internal to Docker.
+Use http://localhost:5173.
+
 To stop the app, press `Ctrl+C` in that terminal. Everything it has stored is kept
 for next time. To erase all stored data and start fresh, run
 `docker compose down --volumes`.
 
-Only one port is used, 5173 unless you change it. If something else on your machine already uses it, `docker
+The app uses one port, 5173. If something else on your machine already uses it, `docker
 compose up` stops with an error naming the port. Set `PORT=5174` (or any free port) in
 `.env`, run the command again, and open http://localhost:5174 instead.
 
@@ -145,7 +148,7 @@ docker compose run --rm --no-deps api pytest
 docker compose run --rm --no-deps frontend npm test
 ```
 
-Each should end with every test passed. The tests never call a real AI model or a
+Each should end with every test passed (a `warning` line from a library is fine). The tests never call a real AI model or a
 real website, so they run offline in seconds.
 
 **Atlas presentation page:** [https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ](https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ) (private; the clickable view of the plan).

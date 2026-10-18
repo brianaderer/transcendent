@@ -13,6 +13,10 @@ needs only Docker. Plan: [atlas plate 04](../atlas/04-environment.md).
 - `voices.config.load_settings()` — the backend's settings, read from the environment.
 
 ## How it works
+The Compose project is named `community-voices`, so containers and volumes get that prefix
+whichever folder the repo is cloned into. The backend runs as an ordinary user
+(`voices`), not root; the folders its volumes mount onto belong to that user. The
+frontend's container exits 0 when stopped.
 Seven services. `postgres` (with the pgvector extension) and `redis` start first and
 report healthy. `setup` then creates the tables and exits; `api` and `worker` wait for it
 to finish successfully. `beat` schedules jobs onto Redis. `frontend` serves the built web

@@ -14,3 +14,10 @@ RUN uv sync --frozen --no-install-project
 COPY src ./src
 COPY tests ./tests
 RUN uv sync --frozen
+
+# Run as an ordinary user, not root. The folders the volumes mount onto are created here,
+# owned by that user, so new volumes start out writable by it.
+RUN useradd --create-home voices \
+    && mkdir -p /var/log/voices /home/voices/.cache \
+    && chown -R voices /var/log/voices /home/voices/.cache
+USER voices

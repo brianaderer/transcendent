@@ -8,4 +8,5 @@ COPY . .
 RUN npm run build
 
 EXPOSE 5173
-CMD ["npm", "run", "preview"]
+# vite preview doesn't handle Docker's stop signal; exit 0 on it so Ctrl+C reads as a clean stop.
+CMD ["sh", "-c", "trap 'exit 0' TERM INT; npm run preview & wait"]
