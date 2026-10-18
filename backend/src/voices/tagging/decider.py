@@ -141,7 +141,7 @@ class _Conversation:
     def _result_of(self, call: dict) -> str:
         """A reply being answered made no valid decision, so a Decision call here is malformed."""
         if call["name"] == DECIDE:
-            return _decision_problem(call["args"])
+            return _why_malformed(call["args"])
         return self.tools.run(call["name"], call["args"])
 
     def decided(self, decision: Decision, model_name: str) -> DecidedCluster:
@@ -176,14 +176,13 @@ def _decision_in(reply: AIMessage) -> Decision | None:
     return None
 
 
-def _decision_problem(arguments: dict) -> str:
+def _why_malformed(arguments: dict) -> str:
+    """Why a Decision call can't be read. Only called for replies with no valid decision."""
     try:
         _parse_decision(arguments)
     except MalformedDecision as error:
         return str(error)
-    return (
-        f"That decision was valid but another call in the same reply was read; call {DECIDE} once."
-    )
+    raise RuntimeError("answer() was given a reply with a valid decision")
 
 
 def _parse_decision(arguments: dict) -> Decision:
