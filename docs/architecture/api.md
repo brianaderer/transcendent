@@ -16,7 +16,10 @@ The web API the frontend calls. Every route lives under `/api`.
 
 ## How it works
 Uvicorn runs `create_production_app` (a factory), which reads settings, configures
-logging as the `api` service, and checks Postgres and Redis on each health request.
+logging as the `api` service, and checks Postgres and Redis on each health request. A
+health check that fails logs why (`health.database_unreachable`, `health.queue_unreachable`).
+Every request is logged as `api.request` with its method, path, status and time taken,
+under a trace id of its own.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings), Postgres, Redis.

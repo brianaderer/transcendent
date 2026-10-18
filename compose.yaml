@@ -1,13 +1,14 @@
 # Every service for Community Voices (atlas plate 04). Start with: docker compose up --build
 # Everything that stores information keeps it on a named volume.
 
+x-backend-environment: &backend-environment
+  DATABASE_URL: postgresql://voices:voices@postgres:5432/voices
+  REDIS_URL: redis://redis:6379/0
+  LOG_DIR: /var/log/voices
+
 x-backend: &backend
   build: ./backend
   env_file: .env
-  environment:
-    DATABASE_URL: postgresql://voices:voices@postgres:5432/voices
-    REDIS_URL: redis://redis:6379/0
-    LOG_DIR: /var/log/voices
   volumes:
     - logs:/var/log/voices
     - model-cache:/root/.cache
@@ -38,6 +39,7 @@ services:
 
   setup:
     <<: *backend
+    environment: {<<: *backend-environment, SERVICE_NAME: setup}
     command: ["python", "-m", "voices.db.setup"]
     depends_on:
       postgres:
@@ -45,6 +47,7 @@ services:
 
   api:
     <<: *backend
+    environment: {<<: *backend-environment, SERVICE_NAME: api}
     command: ["uvicorn", "voices.api.main:create_production_app", "--factory",
               "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
@@ -55,6 +58,7 @@ services:
 
   worker:
     <<: *backend
+    environment: {<<: *backend-environment, SERVICE_NAME: worker}
     command: ["celery", "-A", "voices.worker.app", "worker", "--loglevel", "info"]
     depends_on:
       setup:
@@ -64,6 +68,7 @@ services:
 
   beat:
     <<: *backend
+    environment: {<<: *backend-environment, SERVICE_NAME: beat}
     command: ["celery", "-A", "voices.worker.app", "beat", "--loglevel", "info",
               "--schedule", "/tmp/celerybeat-schedule"]
     depends_on:

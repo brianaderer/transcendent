@@ -25,13 +25,14 @@ class JsonFormatter(logging.Formatter):
         self.service = service
 
     def format(self, record: logging.LogRecord) -> str:
+        # Extra fields go first so they can never overwrite the standard ones.
         line = {
+            **_extra_fields(record),
             "time": _utc_timestamp(record.created),
             "service": self.service,
             "level": record.levelname.lower(),
             "event": record.getMessage(),
             "trace_id": _trace_id.get(),
-            **_extra_fields(record),
         }
         if record.exc_info:
             line["error"] = self.formatException(record.exc_info)
@@ -65,7 +66,8 @@ def configure_logging(service: str, log_dir: str) -> None:
 
 
 def _utc_timestamp(created: float) -> str:
-    return datetime.fromtimestamp(created, UTC).isoformat(timespec="milliseconds")[:-6] + "Z"
+    moment = datetime.fromtimestamp(created, UTC).isoformat(timespec="milliseconds")
+    return moment.replace("+00:00", "Z")
 
 
 def _extra_fields(record: logging.LogRecord) -> dict[str, object]:

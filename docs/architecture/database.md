@@ -9,9 +9,9 @@ and the `ingested_days` record from [plate 40](../atlas/40-backend.md).
 ## Public interface
 - `python -m voices.db.setup` — waits for Postgres, then runs `schema.sql`. Run by the
   `setup` service on every start.
-- `wait_for(connect, tries, pause_seconds)` — retries a connection, raising
-  `DatabaseNotReady` after the last try.
-- `create_tables(database_url)`.
+- `retry_connecting(connect, tries, pause_seconds)` — retries a connection, raising
+  `DatabaseNotReady` after the last try (at once if `tries` is 0).
+- `wait_for_database_then_create_tables(database_url)`.
 
 ## How it works
 Every statement in `schema.sql` is `IF NOT EXISTS`, so running it again changes nothing.
@@ -20,7 +20,8 @@ Embeddings are `vector(768)`, the size nomic-embed-text produces (atlas OPEN-5).
 Tables: `threads`, `posts` (one embedding each; `pending` or `tagged`; `upvotes` from
 agreeing replies, apart from `reddit_score`), `post_upvotes_daily`, `topics` (label,
 description, keywords, centroid), `topic_daily_engagement`, `cluster_decisions`,
-`retrieval_events`, `ingested_days`.
+`retrieval_events`, `ingested_days`. Each post records the cluster decision that tagged
+it (`cluster_decision_id`).
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through

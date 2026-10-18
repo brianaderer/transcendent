@@ -3,8 +3,6 @@
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- 768 numbers per embedding: the size nomic-embed-text produces (atlas OPEN-5).
-
 CREATE TABLE IF NOT EXISTS threads (
     source_id   text PRIMARY KEY,
     title       text NOT NULL,
@@ -16,9 +14,20 @@ CREATE TABLE IF NOT EXISTS topics (
     label       text NOT NULL,
     description text NOT NULL,
     keywords    text[] NOT NULL DEFAULT '{}',
-    centroid    vector(768) NOT NULL,
+    centroid    vector(768) NOT NULL,  -- 768: the size nomic-embed-text produces (OPEN-5)
     first_seen  date NOT NULL,
     last_seen   date NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cluster_decisions (
+    id              bigserial PRIMARY KEY,
+    day             date NOT NULL,
+    decision        text NOT NULL CHECK (decision IN ('attach', 'mint', 'noise')),
+    topic_id        bigint REFERENCES topics (id),
+    reason          text NOT NULL,
+    candidate_tags  jsonb NOT NULL DEFAULT '[]',
+    prompt          text NOT NULL,
+    model           text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -34,7 +43,8 @@ CREATE TABLE IF NOT EXISTS posts (
     embedding         vector(768),
     status            text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'tagged')),
     topic_id          bigint REFERENCES topics (id),
-    topic_similarity  real
+    topic_similarity  real,
+    cluster_decision_id bigint REFERENCES cluster_decisions (id)
 );
 CREATE INDEX IF NOT EXISTS posts_created_at ON posts (created_at);
 CREATE INDEX IF NOT EXISTS posts_topic ON posts (topic_id);
@@ -56,17 +66,6 @@ CREATE TABLE IF NOT EXISTS topic_daily_engagement (
     new_threads           integer NOT NULL DEFAULT 0,
     unanswered_questions  integer NOT NULL DEFAULT 0,
     PRIMARY KEY (topic_id, day)
-);
-
-CREATE TABLE IF NOT EXISTS cluster_decisions (
-    id              bigserial PRIMARY KEY,
-    day             date NOT NULL,
-    decision        text NOT NULL CHECK (decision IN ('attach', 'mint', 'noise')),
-    topic_id        bigint REFERENCES topics (id),
-    reason          text NOT NULL,
-    candidate_tags  jsonb NOT NULL DEFAULT '[]',
-    prompt          text NOT NULL,
-    model           text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS retrieval_events (

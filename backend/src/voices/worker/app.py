@@ -13,7 +13,7 @@ celery_app.conf.update(timezone="UTC", beat_schedule={})
 
 @setup_logging.connect
 def use_json_logging(**_: object) -> None:
-    configure_logging("worker", settings.log_dir)
+    configure_logging(settings.service_name, settings.log_dir)
 
 
 @celery_app.task(name="voices.ping")

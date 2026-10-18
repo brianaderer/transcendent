@@ -2,7 +2,7 @@ import io
 import json
 import logging
 
-from voices.log import JsonFormatter, log_event, tracing
+from voices.log import JsonFormatter, configure_logging, log_event, tracing
 
 
 def capture(service="api"):
@@ -56,3 +56,25 @@ def test_an_exception_is_logged_with_its_full_error():
     [line] = lines(stream)
     assert line["level"] == "error"
     assert "ValueError: bad day" in line["error"]
+
+
+def test_configure_logging_writes_json_lines_to_the_service_file(tmp_path):
+    log_dir = tmp_path / "not-yet-created"
+
+    configure_logging("api", str(log_dir))
+    log_event(logging.getLogger("test.file"), "api.started")
+    logging.shutdown()
+
+    [line] = [json.loads(text) for text in (log_dir / "api.jsonl").read_text().splitlines()]
+    assert line["event"] == "api.started"
+
+
+def test_extra_fields_cannot_overwrite_the_standard_ones():
+    logger, stream = capture(service="api")
+
+    with tracing("run-1"):
+        log_event(logger, "x", service="other", trace_id="forged")
+
+    [line] = lines(stream)
+    assert line["service"] == "api"
+    assert line["trace_id"] == "run-1"

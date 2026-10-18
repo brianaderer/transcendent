@@ -26,7 +26,8 @@ class DatabaseNotReady(Exception):
     pass
 
 
-def wait_for(connect: Callable[[], T], tries: int, pause_seconds: float) -> T:
+def retry_connecting(connect: Callable[[], T], tries: int, pause_seconds: float) -> T:
+    last_error: Exception | None = None
     for attempt in range(1, tries + 1):
         try:
             return connect()
@@ -37,8 +38,8 @@ def wait_for(connect: Callable[[], T], tries: int, pause_seconds: float) -> T:
     raise DatabaseNotReady(f"no database after {tries} tries") from last_error
 
 
-def create_tables(database_url: str) -> None:
-    connection = wait_for(
+def wait_for_database_then_create_tables(database_url: str) -> None:
+    connection = retry_connecting(
         lambda: psycopg.connect(database_url),
         tries=CONNECT_TRIES,
         pause_seconds=PAUSE_BETWEEN_TRIES_SECONDS,
@@ -51,7 +52,7 @@ def create_tables(database_url: str) -> None:
 def main() -> None:
     settings = load_settings()
     configure_logging("setup", settings.log_dir)
-    create_tables(settings.database_url)
+    wait_for_database_then_create_tables(settings.database_url)
 
 
 if __name__ == "__main__":

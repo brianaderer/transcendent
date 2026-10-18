@@ -29,3 +29,20 @@ test("names each service that isn't answering", async () => {
 
   expect(await screen.findByText("Not answering: queue")).toBeInTheDocument();
 });
+
+test("says the backend is unreachable when the request fails", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => {
+      throw new TypeError("network down");
+    }),
+  );
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={client}>
+      <BackendStatus />
+    </QueryClientProvider>,
+  );
+
+  expect(await screen.findByText("Backend unreachable")).toBeInTheDocument();
+});

@@ -20,3 +20,12 @@ def test_health_names_the_dependency_that_is_down():
 
     assert response.status_code == 503
     assert response.json() == {"status": "degraded", "checks": {"database": True, "queue": False}}
+
+
+def test_every_request_is_logged_with_its_outcome(caplog):
+    caplog.set_level("INFO")
+
+    client_with(database_up=True, queue_up=True).get("/api/health")
+
+    [record] = [r for r in caplog.records if r.getMessage() == "api.request"]
+    assert (record.method, record.path, record.status) == ("GET", "/api/health", 200)

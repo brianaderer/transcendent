@@ -11,7 +11,7 @@ build step 4 ([atlas plates 30](../atlas/30-frontend.md) and [31](../atlas/30-fr
   running", or "Not answering:" with each service that isn't, or "Backend unreachable"
   when the API itself doesn't answer (for example while it is still starting). It
   rechecks every five seconds.
-- `fetchHealth()`, `servicesDown(health)` in `src/health.ts`.
+- `fetchHealth()` and `describeHealth(health)` (the sentence shown) in `src/health.ts`.
 
 ## How it works
 React with TanStack Query, built by Vite and served by `vite preview` on port 5173, which

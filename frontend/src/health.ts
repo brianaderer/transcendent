@@ -6,7 +6,12 @@ export async function fetchHealth(): Promise<Health> {
   return (await response.json()) as Health;
 }
 
-export function servicesDown(health: Health): string[] {
+export function describeHealth(health: Health): string {
+  const down = servicesDown(health);
+  return down.length ? `Not answering: ${down.join(", ")}` : "Backend running";
+}
+
+function servicesDown(health: Health): string[] {
   return Object.entries(health.checks)
     .filter(([, answering]) => !answering)
     .map(([service]) => service);
