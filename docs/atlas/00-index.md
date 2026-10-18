@@ -10,5 +10,5 @@
 | [30 Frontend (DRAFT)](30-frontend.md) | The web app's stack (agreed) and the screens the brief implies (proposed) |
 | [40 Backend (DRAFT)](40-backend.md) | FastAPI, the proposed modules behind it, and the choices still open |
 | [50 Prediction (DRAFT)](50-prediction.md) | Per-tag trend vectors across periods, extrapolated to predict next week, and the backtest that scores it |
-| [60 Agents (DRAFT)](60-agents.md) | The two LangGraph agents: one ratifies topic tags, one writes the report with retrieval on or off |
+| [60 Agents (DRAFT)](60-agents.md) | The two LangGraph agents (one ratifies topic tags, one writes the report with retrieval on or off) and their search and lookup tools |
 | [90 Open Questions](90-open-questions.md) | Decisions still waiting on the owner, and the log of decisions made |
