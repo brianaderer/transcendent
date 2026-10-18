@@ -55,10 +55,13 @@ flowchart LR
   never receives a retriever, so it cannot reach the store.
 - **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs in the Celery worker, not inside the web server; first start and the daily
   pull are the same catch-up over a range of days (see *Background jobs*, OPEN-13).
-- **projection** (specified, OPEN-20): a post is embedded once, and its position on the
-  dot plot is computed once, in the daily intake, and stored with it. The dot plot only
-  ever reads stored positions. *(Proposed detail: the flattening (UMAP) is learned once
-  from the full history, and each day's new posts are placed into that same layout.)*
+- **projection** (specified, OPEN-20): a post is embedded once, at intake. The squashing
+  to two dimensions is **recomputed from the posts in the selected date range** whenever
+  the range changes, so the dot plot always shows the clearest map of that range.
+  *(Proposed details: computed in the worker when the slider is released, not while it's
+  dragged; a fixed random seed so the same range always gives the same picture; each
+  result cached by range; progress and result sent over the live events
+  ([41](40-backend/41-live-events.md)).)*
 
 ## Background jobs
 
@@ -72,7 +75,7 @@ flowchart LR
     TRIG["Something asks: catch up<br/>first start · Beat at 06:00 UTC ·<br/>worker restart · by hand"]
     GAP["Find the missing days<br/>every complete day after the last processed one,<br/>at most eight weeks back"]
     CHAIN["Queue one job per day,<br/>chained oldest first"]
-    DAY["Process one day<br/>fetch · filter · upvotes · embed · place ·<br/>cluster · tag · expire noise · roll up<br/>see 21"]
+    DAY["Process one day<br/>fetch · filter · upvotes · embed ·<br/>cluster · tag · expire noise · roll up<br/>see 21"]
     MARK[("ingested_days<br/>day · status · counts · timings")]
     REPJ["Report run<br/>on demand, see 60"]
     WEB["web (FastAPI)"]

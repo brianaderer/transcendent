@@ -63,9 +63,10 @@ Everything on this page is governed by one control.
   busy days are visible). Presets: "Last 7 days", "Last 14 days", "All 8 weeks". The
   chosen range is shown in words: "5 Oct – 11 Oct 2026 · 2,614 posts".
 - **The dot plot** fills the center: a large 2D scatter of every post in the range,
-  each dot one post, colored by topic. As the slider moves, dots for days entering the
-  range **fade in** and dots leaving it **fade out** — the clusters visibly grow, shrink,
-  appear and disappear. Hovering a dot shows a card (username, date, excerpt, topic);
+  each dot one post, colored by topic. The map is recomputed for each range (OPEN-20):
+  when the slider is released, dots for posts leaving the range **fade out**, new ones
+  **fade in**, and the dots that stay **glide** to their new places, so the reshaping is
+  visible rather than a jump. A faint "Recomputing map…" note shows while it runs. Hovering a dot shows a card (username, date, excerpt, topic);
   clicking it opens the post. Caption: "Each dot is a post. Posts close together mean
   similar things."
 - **Topics panel** on the right: the topics active in the range, each row with its
