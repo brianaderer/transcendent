@@ -51,8 +51,9 @@ nothing behind and is retried at the next catch-up.
 - **Agreeing replies** (atlas OPEN-19): eight words or fewer, no question mark or link, and
   close in meaning (≥ 0.80) to examples such as "+1", "same here", "good point". They are
   not stored; each adds one to the parent's `upvotes` and to that day's
-  `post_upvotes_daily`. One whose parent we don't have is dropped. Re-saving a day sets
-  its upvote count again rather than adding to it, so a redone day never double-counts.
+  `post_upvotes_daily`. One whose parent we don't have is dropped. Re-saving a day replaces
+  that day's upvote rows as a whole and recounts every post they touched, so a redone day
+  never double-counts and can also take upvotes away.
 - **Embedding**: posts are embedded whole as `search_document:`; search terms will be
   embedded as `search_query:`; agreement checks use `classification:`, as nomic-embed-text
   expects. Texts go in batches of 8, shortest first: memory grows with batch size times the
@@ -63,7 +64,7 @@ for the full eight weeks; around 550–600 posts and comments kept a day; the wo
 about 2 GB.
 
 ## Uses
-[logging](logging.md); the Arctic Shift archive (through `httpx`); the embedding model
+[logging](logging.md); [environment](environment.md) (`HISTORY_DAYS` from `voices.config`); the Arctic Shift archive (through `httpx`); the embedding model
 (through `fastembed`), on the `model-cache` volume. It never imports the
 [database](database.md) or [events](events.md) modules: the [worker](worker.md) hands it
 the store and the `emit` function, which match the small interfaces above.

@@ -29,7 +29,7 @@ under a trace id of its own; a request that raises is logged as `api.request_fai
 the full error, then re-raised.
 
 ## Uses
-[logging](logging.md), [environment](environment.md) (settings), [database](database.md)
+[logging](logging.md), [environment](environment.md) (settings and `HISTORY_DAYS`), [database](database.md)
 (`voices.db.store` for the ingestion status), [events](events.md), Postgres, Redis.
 `HISTORY_DAYS` (the days wanted) comes from `voices.config`.
 

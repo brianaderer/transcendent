@@ -11,6 +11,8 @@ needs only Docker. Plan: [atlas plate 04](../atlas/04-environment.md).
   (or the port set as `PORT` in `.env`).
 - `docker compose down --volumes` — stops it and erases all stored data.
 - `voices.config.load_settings()` — the backend's settings, read from the environment.
+- `voices.config.HISTORY_DAYS` (56) — how many days back the app keeps r/sailing (eight
+  weeks, atlas OPEN-7); fixed in code, not read from the environment.
 
 ## How it works
 The Compose project is named `community-voices`, so containers and volumes get that prefix
@@ -40,6 +42,8 @@ which the `setup` service needs.
 ## Used by
 - [api](api.md), [worker](worker.md) and [database](database.md) (setup) read their
   settings through `voices.config.load_settings()`.
+- [ingestion](ingestion.md) (the catch-up) and [api](api.md) (`GET /api/ingestion`) read
+  `voices.config.HISTORY_DAYS`.
 - The README's install and run steps.
 
 ## Configuration and data
