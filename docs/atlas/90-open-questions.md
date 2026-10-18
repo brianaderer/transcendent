@@ -15,4 +15,4 @@
 | OPEN-4 | Similarity search is done in Postgres with the pgvector extension, for both jobs: comparing clusters with topic tags, and retrieving passages for the document. | 2026-10-18 |
 | OPEN-6 | Posts are fetched daily. Clustering is not on a fixed schedule: it runs on demand, over whatever time period is requested. | 2026-10-18 |
 | OPEN-7 | The committed snapshot holds eight weeks of history: seven to fit trends, one held back for the backtest. | 2026-10-18 |
-| OPEN-3 | The community is r/trawlers on Reddit, fetched through Reddit's official API with a registered app. Trawler Forum itself was ruled out: it blocks automated access and bans AI crawlers in its robots.txt. Still to check: whether r/trawlers is busy enough (roughly four or five new posts a day); if not, r/boating keeps the theme. | 2026-10-18 |
+| OPEN-3 | The community is r/sailing on Reddit, fetched through Reddit's official API with a registered app. Trawler Forum was ruled out because it blocks automated access and bans AI crawlers in its robots.txt; r/trawlers was ruled out because it isn't busy enough for eight weeks of clusters and trends. | 2026-10-18 |
