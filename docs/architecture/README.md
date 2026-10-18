@@ -15,5 +15,5 @@ configuration and data.
 | [logging](logging.md) | `backend/src/voices/log.py` | One JSON line per event, with a trace id, to standard output and the logs volume |
 | [api](api.md) | `backend/src/voices/api/`, `voices/health.py` | The web API under `/api`; health check |
 | [worker](worker.md) | `backend/src/voices/worker/` | Celery worker and Beat |
-| [database](database.md) | `backend/src/voices/db/` | Tables and first-start setup |
+| [database](database.md) | `backend/src/voices/db/`, `backend/migrations/` | The tables as SQLAlchemy models, Alembic migrations, and the setup step that applies them on every start |
 | [frontend](frontend.md) | `frontend/` | The web app; backend status for now |

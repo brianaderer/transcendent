@@ -19,7 +19,7 @@ whichever folder the repo is cloned into. The backend runs as an ordinary user
 frontend's container exits 0 when stopped.
 
 Seven services. `postgres` (with the pgvector extension) and `redis` start first and
-report healthy. `setup` then creates the tables and exits; `api` and `worker` wait for it
+report healthy. `setup` then runs any database migrations not yet applied (see [database](database.md)) and exits; `api` and `worker` wait for it
 to finish successfully. `beat` schedules jobs onto Redis. `frontend` serves the built web
 app on port 5173 inside its container, published on your computer as `PORT` (5173 unless
 `.env` says otherwise), and passes every `/api` request through to `api`, so only one port is
@@ -28,7 +28,10 @@ exits 0, because `vite preview` doesn't stop on that signal by itself; so `Ctrl+
 at once and cleanly. The four backend services are all built from the same `backend/` folder and differ only
 in the command they run. Backend tests run with pytest's cache turned off
 (`backend/pyproject.toml`), because the ordinary user can't write one inside the container
-and the containers are thrown away after each run anyway.
+and the containers are thrown away after each run anyway. For the same reason the backend
+image points Ruff's cache at `/tmp/ruff-cache` (`RUFF_CACHE_DIR` in `backend/Dockerfile`), so
+linting works inside the container. The image also carries `alembic.ini` and `migrations/`,
+which the `setup` service needs.
 
 ## Uses
 [database](database.md), [api](api.md), [worker](worker.md), [frontend](frontend.md), [logging](logging.md).
