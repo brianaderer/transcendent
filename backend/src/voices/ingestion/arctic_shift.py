@@ -17,6 +17,9 @@ from voices.log import log_event
 ARCHIVE_URL = "https://arctic-shift.photon-reddit.com"
 SUBREDDIT = "sailing"
 PAGE_SIZE = 100  # the archive's maximum
+ERROR_TEXT_CHARACTERS = 200
+# The archive asks callers to back off with this message, sometimes with status 422.
+SLOW_DOWN = "slow down"
 USER_AGENT = "community-voices/0.1 (coding challenge; github.com/brianaderer/transcendent)"
 
 logger = logging.getLogger(__name__)
@@ -77,16 +80,24 @@ class ArcticShift:
             raise _TryAgain(repr(error)) from error
         if _worth_retrying(response.status_code):
             raise _TryAgain(f"status {response.status_code}")
-        body = response.json()
-        if response.status_code != httpx.codes.OK:
-            raise ArchiveUnavailable(f"{path}: status {response.status_code}: {body.get('error')}")
-        if body.get("error"):
-            raise _TryAgain(f"slow down: {body['error']}")
-        return body["data"]
+        if response.status_code == httpx.codes.OK and not response.json().get("error"):
+            return response.json()["data"]
+        error = _error_text(response)
+        if SLOW_DOWN in error:
+            raise _TryAgain(f"slow down: {error}")
+        raise ArchiveUnavailable(f"{path}: {response.status_code}: {error}")
 
 
 class _TryAgain(Exception):
     """The archive is busy or briefly unreachable; the same request may work in a moment."""
+
+
+def _error_text(response: httpx.Response) -> str:
+    """The archive's own error message, or the start of whatever page came back instead."""
+    try:
+        return str(response.json().get("error"))
+    except ValueError:
+        return response.text[:ERROR_TEXT_CHARACTERS]
 
 
 def _worth_retrying(status: int) -> bool:

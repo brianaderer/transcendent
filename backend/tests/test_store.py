@@ -16,6 +16,7 @@ pytestmark = pytest.mark.database
 DAY = date(1999, 1, 2)  # far outside any real history, so the test can't touch real rows
 AT = datetime(1999, 1, 2, 12, tzinfo=UTC)
 VECTOR = [0.0] * EMBEDDING_DIMENSIONS
+OTHER_DAY = date(1999, 1, 3)
 
 
 @pytest.fixture
@@ -38,17 +39,6 @@ def batch(upvotes):
     )
 
 
-def test_a_saved_day_can_be_found_again_and_saving_it_twice_adds_nothing(store):
-    store.save_day(batch({}))
-    store.save_day(batch({}))
-
-    assert store.known_post_ids(["test-p", "test-missing"]) == {"test-p"}
-    assert store.known_thread_ids(["test-p"]) == {"test-p"}
-
-
-OTHER_DAY = date(1999, 1, 3)
-
-
 def upvotes_of(store, post_id):
     with store.engine.connect() as connection:
         total = connection.scalar(select(Post.upvotes).where(Post.source_id == post_id))
@@ -60,6 +50,14 @@ def upvotes_of(store, post_id):
             ).all()
         )
     return total, daily
+
+
+def test_a_saved_day_can_be_found_again_and_saving_it_twice_adds_nothing(store):
+    store.save_day(batch({}))
+    store.save_day(batch({}))
+
+    assert store.known_post_ids(["test-p", "test-missing"]) == {"test-p"}
+    assert store.known_thread_ids(["test-p"]) == {"test-p"}
 
 
 def test_saving_the_same_day_twice_does_not_double_its_upvotes(store):
@@ -84,3 +82,10 @@ def test_the_ledger_remembers_done_days_and_why_a_day_failed(store):
     store.mark_running(DAY)
     store.mark_done(DAY, {"stored": 1})
     assert DAY in store.done_days()
+
+
+def test_redoing_a_day_that_no_longer_upvotes_a_post_takes_that_days_upvotes_away(store):
+    store.save_day(batch({"test-p": 2}))
+    store.save_day(DayBatch(DAY, [], [], {}))
+
+    assert upvotes_of(store, "test-p") == (0, {})

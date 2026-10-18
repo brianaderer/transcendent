@@ -69,6 +69,20 @@ def test_a_full_page_from_a_single_second_cannot_trap_the_reader():
     assert asked_after == ["1792022400", "1792022401", "1792022402"]
 
 
+def test_a_slow_down_answer_sent_as_unprocessable_is_retried():
+    # The real archive says "slow down" with status 422, which normally means a bad request.
+    replies = iter(
+        [
+            answer(error="Timeout. Maybe slow down a bit", status=422),
+            answer([comment(1, 1792022401)]),
+        ]
+    )
+
+    comments = archive(lambda request: next(replies)).comments_created_between(DAY_START, DAY_END)
+
+    assert [c.source_id for c in comments] == ["c1"]
+
+
 def test_a_slow_down_answer_is_retried():
     replies = iter(
         [answer(error="Timeout. Maybe slow down a bit"), answer([comment(1, 1792022401)])]
@@ -112,3 +126,11 @@ def test_a_bad_request_is_not_retried():
     with pytest.raises(ArchiveUnavailable, match="limit"):
         archive(handler).comments_created_between(DAY_START, DAY_END)
     assert len(calls) == 1
+
+
+def test_an_error_page_that_is_not_json_keeps_its_status_and_text():
+    def handler(request):
+        return httpx.Response(403, text="Forbidden")
+
+    with pytest.raises(ArchiveUnavailable, match="403: Forbidden"):
+        archive(handler).comments_created_between(DAY_START, DAY_END)

@@ -28,8 +28,10 @@ in build step 3; posts are stored as `pending` until then.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,
   `posts_by_id`; `connect_to_archive()` builds the real one. Raises `ArchiveUnavailable`
   when a request still fails after five tries, naming the last reason (a status, the
-  archive's "slow down" message, or a network error). A bad request (a 4xx other than 429)
-  is not retried.
+  archive's "slow down" message, a network error, or the start of an error page that isn't
+  the archive's own). The archive's "slow down" message is always
+  retried, whatever status it comes with (it often arrives as 422); any other 4xx error
+  except 429 is a bad request and is not retried.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;
   `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).
 - `agreement.AgreementDetector.agreeing(texts)` — which replies only agree with their parent.
@@ -68,10 +70,9 @@ the store and the `emit` function, which match the small interfaces above.
 
 ## Used by
 [worker](worker.md) (the catch-up job builds and runs it); [database](database.md)
-(`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s);
-[api](api.md) (`GET /api/ingestion` reports `HISTORY_DAYS` as the days wanted).
+(`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s).
 
 ## Configuration and data
-`MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). Fixed in
-code: `HISTORY_DAYS = 56`, `ARCHIVE_CATCH_UP_HOURS = 6`, `PAGE_SIZE = 100`,
+`MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`
+comes from `voices.config`, shared with the API. Fixed in code: `ARCHIVE_CATCH_UP_HOURS = 6`, `PAGE_SIZE = 100`, `ERROR_TEXT_CHARACTERS = 200`,
 `MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `EMBED_BATCH_SIZE = 8`.

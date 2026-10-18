@@ -9,11 +9,10 @@ from dataclasses import dataclass
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from voices.config import load_settings
+from voices.config import HISTORY_DAYS, load_settings
 from voices.db.store import connect_store
 from voices.events import server_sent_events
 from voices.health import database_is_reachable, queue_is_reachable
-from voices.ingestion.catch_up import HISTORY_DAYS
 from voices.log import configure_logging, log_event, tracing
 
 HealthChecks = dict[str, Callable[[], bool]]

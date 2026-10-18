@@ -8,7 +8,8 @@ from collections.abc import Callable
 from datetime import date, datetime, timedelta
 from typing import Protocol
 
-HISTORY_DAYS = 56  # eight weeks (atlas OPEN-7)
+from voices.config import HISTORY_DAYS
+
 ARCHIVE_CATCH_UP_HOURS = 6  # a day is complete once it's over and the archive has had this long
 
 

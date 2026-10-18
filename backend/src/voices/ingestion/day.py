@@ -82,7 +82,7 @@ class DayIngestion:
         fetched = self._fetch(day)
         wanted = [item for item in fetched if not is_unwanted(item)]
         threads, threaded = self._attach_threads(wanted)
-        agreeing, kept = _split_agreeing(threaded, self.agreement)
+        agreeing, kept = self._split_agreeing(threaded)
         upvotes = self._upvotes_for_parents(agreeing, kept)
         batch = DayBatch(day, threads, self._embed(kept), upvotes)
         self.store.save_day(batch)
@@ -105,6 +105,17 @@ class DayIngestion:
         known = new_threads.keys() | in_store
         return list(new_threads.values()), [i for i in items if i.thread_source_id in known]
 
+    def _split_agreeing(self, items: list[Item]) -> tuple[list[Item], list[Item]]:
+        """Separates comments that only agree with their parent from everything else."""
+        comments = [item for item in items if item.kind == "comment"]
+        verdicts = self.agreement.agreeing([comment.body for comment in comments])
+        agreeing_ids = {
+            comment.source_id for comment, agrees in zip(comments, verdicts, strict=True) if agrees
+        }
+        agreeing = [item for item in items if item.source_id in agreeing_ids]
+        kept = [item for item in items if item.source_id not in agreeing_ids]
+        return agreeing, kept
+
     def _upvotes_for_parents(self, agreeing: list[Item], kept: list[Item]) -> dict[str, int]:
         """One upvote per agreeing reply, for parents we have; replies to others are dropped."""
         parents = [reply.parent_source_id for reply in agreeing]
@@ -120,18 +131,6 @@ class DayIngestion:
 
 def _thread_of(post: Item) -> NewThread:
     return NewThread(post.source_id, post.title or "", post.created_at)
-
-
-def _split_agreeing(items: list[Item], agreement: Agreement) -> tuple[list[Item], list[Item]]:
-    """Separates comments that only agree with their parent from everything else."""
-    comments = [item for item in items if item.kind == "comment"]
-    verdicts = agreement.agreeing([comment.body for comment in comments])
-    agreeing_ids = {
-        comment.source_id for comment, agrees in zip(comments, verdicts, strict=True) if agrees
-    }
-    agreeing = [item for item in items if item.source_id in agreeing_ids]
-    kept = [item for item in items if item.source_id not in agreeing_ids]
-    return agreeing, kept
 
 
 def _day_counts(steps: DaySteps) -> dict[str, int]:

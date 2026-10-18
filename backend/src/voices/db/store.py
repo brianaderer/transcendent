@@ -4,11 +4,23 @@ which days are done (atlas plates 21 and 40)."""
 from collections.abc import Sequence
 from datetime import UTC, date, datetime
 
-from sqlalchemy import Engine, create_engine, func, select, update
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import (
+    Connection,
+    Delete,
+    Engine,
+    Select,
+    Update,
+    create_engine,
+    delete,
+    func,
+    select,
+    update,
+)
+from sqlalchemy.dialects.postgresql import Insert, insert
+from sqlalchemy.orm import InstrumentedAttribute
 
 from voices.db.address import sqlalchemy_url
-from voices.db.models import IngestedDay, Post, PostUpvotesDaily, Thread
+from voices.db.models import Base, IngestedDay, Post, PostUpvotesDaily, Thread
 from voices.ingestion.day import DayBatch, EmbeddedItem, NewThread
 
 
@@ -24,16 +36,21 @@ class Store:
 
     def save_day(self, batch: DayBatch) -> None:
         """Everything the day adds, in one transaction. Saving the same day again changes
-        nothing: posts and threads already there are skipped, and the day's upvote count is
-        replaced, not added to, before each post's total is recounted from its days."""
+        nothing: posts and threads already there are skipped, the day's upvote rows are
+        replaced as a whole, and every post they touch, before or after, is recounted."""
         with self.engine.begin() as connection:
             if batch.threads:
                 connection.execute(_insert_new(Thread, [_thread_row(t) for t in batch.threads]))
             if batch.posts:
                 connection.execute(_insert_new(Post, [_post_row(p) for p in batch.posts]))
-            for post_id, count in batch.upvotes.items():
-                connection.execute(_set_daily_upvotes(post_id, batch.day, count))
-                connection.execute(_recount_upvotes(post_id))
+            self._replace_days_upvotes(connection, batch)
+
+    def _replace_days_upvotes(self, connection: Connection, batch: DayBatch) -> None:
+        cleared = connection.scalars(_clear_daily_upvotes(batch.day)).all()
+        if batch.upvotes:
+            connection.execute(insert(PostUpvotesDaily).values(_upvote_rows(batch)))
+        for post_id in set(cleared) | batch.upvotes.keys():
+            connection.execute(_recount_upvotes(post_id))
 
     def done_days(self) -> set[date]:
         with self.engine.connect() as connection:
@@ -61,7 +78,7 @@ class Store:
                 "failed_day": _iso(connection.scalar(_latest_day("failed"))),
             }
 
-    def _existing(self, column, ids: Sequence[str]) -> set[str]:
+    def _existing(self, column: InstrumentedAttribute[str], ids: Sequence[str]) -> set[str]:
         if not ids:
             return set()
         with self.engine.connect() as connection:
@@ -77,7 +94,7 @@ def connect_store(database_url: str) -> Store:
     return Store(create_engine(sqlalchemy_url(database_url), pool_pre_ping=True))
 
 
-def _insert_new(table, rows: list[dict]):
+def _insert_new(table: type[Base], rows: list[dict]) -> Insert:
     return insert(table).values(rows).on_conflict_do_nothing()
 
 
@@ -100,14 +117,22 @@ def _post_row(embedded: EmbeddedItem) -> dict:
     }
 
 
-def _set_daily_upvotes(post_id: str, day: date, count: int):
-    statement = insert(PostUpvotesDaily).values(post_source_id=post_id, day=day, count=count)
-    return statement.on_conflict_do_update(
-        index_elements=["post_source_id", "day"], set_={"count": statement.excluded.count}
+def _clear_daily_upvotes(day: date) -> Delete:
+    return (
+        delete(PostUpvotesDaily)
+        .where(PostUpvotesDaily.day == day)
+        .returning(PostUpvotesDaily.post_source_id)
     )
 
 
-def _recount_upvotes(post_id: str):
+def _upvote_rows(batch: DayBatch) -> list[dict]:
+    return [
+        {"post_source_id": post_id, "day": batch.day, "count": count}
+        for post_id, count in batch.upvotes.items()
+    ]
+
+
+def _recount_upvotes(post_id: str) -> Update:
     total = (
         select(func.coalesce(func.sum(PostUpvotesDaily.count), 0))
         .where(PostUpvotesDaily.post_source_id == post_id)
@@ -116,11 +141,11 @@ def _recount_upvotes(post_id: str):
     return update(Post).where(Post.source_id == post_id).values(upvotes=total)
 
 
-def _count_days(status: str):
+def _count_days(status: str) -> Select:
     return select(func.count()).select_from(IngestedDay).where(IngestedDay.status == status)
 
 
-def _latest_day(status: str):
+def _latest_day(status: str) -> Select:
     return select(func.max(IngestedDay.day)).where(IngestedDay.status == status)
 
 

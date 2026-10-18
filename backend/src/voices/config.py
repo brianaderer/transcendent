@@ -2,6 +2,8 @@
 
 from pydantic_settings import BaseSettings
 
+HISTORY_DAYS = 56  # how far back the app keeps r/sailing: eight weeks (atlas OPEN-7)
+
 
 class Settings(BaseSettings):
     database_url: str = "postgresql://voices:voices@postgres:5432/voices"

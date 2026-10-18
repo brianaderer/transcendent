@@ -5,7 +5,7 @@ from voices.api.main import ApiServices, create_app
 
 async def no_events(_stream):
     return
-    yield
+    yield  # never reached; its presence makes this an (empty) async generator
 
 
 def services_with(checks):
