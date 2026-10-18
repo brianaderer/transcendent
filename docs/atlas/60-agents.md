@@ -19,7 +19,7 @@ flowchart LR
     end
     subgraph REP["Report agent — one run per document"]
         SW{"Retrieval on?"}
-        TOOLS["Tools: search · lookup · similar passages ·<br/>topic trends · upcoming events"]
+        TOOLS["Tools: search · lookup ·<br/>topic trends · upcoming events"]
         WRITE["LLM writes the Community Voices Document<br/>past week + prediction"]
         SW -->|"B: yes"| TOOLS --> WRITE
         SW -->|"A: no tools"| WRITE
@@ -32,12 +32,11 @@ flowchart LR
 
 Specified by Brian; the details are *proposed*.
 
-- **search(term)** — finds posts and comments containing a word or phrase, using
-  Postgres full-text search (stemmed, so "reefing" also finds "reef" and "reefed").
-  It complements pgvector: similarity search finds posts that *mean* something close,
-  term search finds the exact concept the agent names — a boat model, a place, a piece
-  of gear. Limited to the period being worked on unless the agent asks wider; returns at
-  most 20 hits, each with its id, author, date, thread title and a short excerpt.
+- **search(term)** — **semantic** (specified): the term is embedded and pgvector finds
+  the passages closest to it in meaning, so "heavy weather" also finds posts about
+  reefing in a gale that never use those words. Limited to the period being worked on
+  unless the agent asks wider; returns at most 20 hits, each with its post id, author,
+  date, thread title, the matching passage, and how close it was *(proposed)*.
 - **lookup(id)** — returns one post or comment in full: its text, author, date, thread
   title, and the id of what it replies to, so the agent can climb a conversation one
   lookup at a time.
@@ -65,10 +64,9 @@ Specified by Brian; the details are *proposed*.
 - **One graph, one switch** (`CLAUDE.md` §7). Version A runs with **no tools at all,
   including search and lookup**: they read our store, and version A is by definition
   the model without our store. The model knows only the community and the dates.
-  Version B gets five tools:
-  - **search** and **lookup** (above);
-  - **similar passages** — pgvector similarity search over the requested period; every
-    hit is counted for the retrieval statistics;
+  Version B gets four tools:
+  - **search** and **lookup** (above) — search is the retrieval: every hit is counted
+    for the retrieval statistics;
   - **topic trends** — the ranked, extrapolated tags from plate [50](50-prediction.md);
   - **upcoming events** — passages mentioning dates after the period (regattas, boat
     shows, weather windows).
