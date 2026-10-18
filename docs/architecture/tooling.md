@@ -70,7 +70,10 @@ This module contains no application code.
 - **The `test-boot` agent**, `.claude/agents/test-boot.md`. Launched only by the skill.
   It makes a fresh clone under `.boot-test/<date-time>/app`, reads the README once,
   checks the listed prerequisites on this machine, runs every step exactly as written,
-  then follows the README's demo steps to prove the app really works. It reports
+  then follows the README's demo steps to prove the app really works. There is no
+  committed data snapshot: the agent waits for the app's first start to finish
+  loading its data, as the README describes, and records how long that took (atlas
+  question OPEN-13 needs the number). It reports
   **Boot succeeded** or **Boot failed at step N**, a table of every step, the friction
   points worst first with the exact README change that would remove each, the total
   time, what it could not test, and where the logs are. It changes nothing in the repo
