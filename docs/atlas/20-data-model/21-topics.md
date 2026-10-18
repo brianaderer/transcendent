@@ -34,6 +34,7 @@ erDiagram
     TOPICS ||--o{ TOPIC_DAILY_ENGAGEMENT : "measured by"
     CLUSTER_DECISIONS }o--o| TOPICS : "attached to or minted"
     CLUSTER_DECISIONS ||--o{ POSTS : "covers"
+    POSTS ||--o{ RETRIEVAL_EVENTS : "returned in"
 
     THREADS {
         text source_id "Reddit's id, unique"
@@ -82,6 +83,12 @@ erDiagram
         text prompt "exactly what the LLM was shown"
         text model
     }
+    RETRIEVAL_EVENTS {
+        text run "which run"
+        text agent "report or tagging"
+        text tool "search or lookup"
+        timestamptz at
+    }
 ```
 
 ### What each table is for
@@ -109,6 +116,10 @@ erDiagram
   range — a week, eight weeks — is a sum over its days. Rebuilt from the posts after
   each day's intake, never edited by hand. Eight weeks of about thirty tags is under two
   thousand rows.
+- **retrieval_events** — one row each time a post is returned by the agents' search or
+  lookup tools ([60](../60-agents.md)): which run, which agent, which tool, when
+  (OPEN-12, resolved). The retrieval-statistics screen counts these; the report
+  agent's retrievals are shown apart from the tagging agent's.
 - **cluster_decisions** — one row per cluster per day: what the LLM decided, why, which
   tags it was choosing between and how close each was, and the exact prompt it saw.
   Every tag is traceable to the decisions that built it, and because tagging always

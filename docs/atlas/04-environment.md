@@ -54,8 +54,12 @@ flowchart LR
 - **One key, one file:** `.env.example` lists every setting with an explanation;
   only `OPENROUTER_API_KEY` must be filled in. Prewarm needs it, because tagging calls
   the model.
-- **Ports:** the frontend on `http://localhost:5173` *(proposed)*; nothing else is
-  exposed to the host except what the README needs.
+- **Ports:** the frontend on `http://localhost:5173` *(proposed)*. The browser also
+  has to reach the API and its event streams; the frontend's server passes `/api`
+  requests through to the API container, so only one port is exposed *(proposed)*.
+- **First start also downloads the embedding model** (a few hundred megabytes) onto
+  its volume — another wait, and another outside service (Hugging Face) the first
+  start depends on.
 
 ## Open in this draft
 

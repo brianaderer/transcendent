@@ -8,7 +8,7 @@ this plate (OPEN-15); everything on it is *proposed*.
 
 ```mermaid
 flowchart LR
-    REQ["Request: community + week"]
+    REQ["Request: a date range<br/>from Explore's Generate report"]
     A["Report agent, version A<br/>no tools"]
     B["Report agent, version B<br/>search · lookup · trends · events"]
     MEAS["Measurements<br/>code first, one fixed judging prompt"]
@@ -28,7 +28,7 @@ flowchart LR
 ## What makes it a fair test
 
 - **One code path, one switch** ([60](60-agents.md), `CLAUDE.md` §7). Same model, same
-  settings, same prompt wording, same week, same output structure. The only difference
+  settings, same prompt wording, same date range, same output structure. The only difference
   is that version B has tools that read our store.
 - **Both run from the same request,** in parallel, and are saved together.
 
