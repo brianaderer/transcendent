@@ -2,7 +2,7 @@
 # Offline tests for the commit-hook scripts in .claude/hooks/: the decision checks
 # and the /commit-chain worktree landing.
 # Each test group builds one throwaway git repo and adds commits to it; each check
-# looks only at the newest commit.
+# mostly looks at the newest commit.
 # Run: tests/hooks/test_commit_checks.sh
 set -uo pipefail
 
@@ -102,14 +102,23 @@ test_changed_files() {
   expect_output "src/feature.py" "a merge lists only what the merged branch brought in" in_repo "$repo" "$HOOKS/changed-files.sh" HEAD
 }
 
+# Make a documentation commit for <base> in a fresh chain worktree. Echoes
+# "<worktree> <docs sha>". <doc file> is edited if it exists, created if not.
+make_docs_commit_on() {
+  local repo=$1 base=$2 doc_file=$3 worktree
+  worktree=$(in_repo "$repo" "$HOOKS/chain-worktree.sh" create "$base")
+  mkdir -p "$worktree/$(dirname "$doc_file")"
+  echo "documented" >> "$worktree/$doc_file"
+  git -C "$worktree" add -- "$doc_file"
+  git -C "$worktree" commit -q -m "docs: sync" -m "Docs-Sync: $base"
+  echo "$worktree $(git -C "$worktree" rev-parse HEAD)"
+}
+
 test_chain_worktree_lands_docs_without_touching_other_work() {
   local repo base worktree docs
   repo=$(new_repo); commit_files "$repo" "code" src/a.py docs/a.md
   base=$(git -C "$repo" rev-parse HEAD)
-  worktree=$(in_repo "$repo" "$HOOKS/chain-worktree.sh" create "$base")
-  echo "documented" >> "$worktree/docs/a.md"
-  git -C "$worktree" commit -q -am "docs: sync" -m "Docs-Sync: $base"
-  docs=$(git -C "$worktree" rev-parse HEAD)
+  read -r worktree docs <<<"$(make_docs_commit_on "$repo" "$base" docs/a.md)"
   commit_files "$repo" "other work" src/b.py
   echo "staged" >> "$repo/src/a.py"; git -C "$repo" add src/a.py
   expect_exit 0 "landing the docs commit succeeds with other work staged" in_repo "$repo" "$HOOKS/chain-worktree.sh" land "$base" "$docs"
@@ -119,14 +128,22 @@ test_chain_worktree_lands_docs_without_touching_other_work() {
   in_repo "$repo" "$HOOKS/chain-worktree.sh" remove "$worktree"
 }
 
+test_chain_worktree_lands_a_docs_commit_that_adds_a_file() {
+  local repo base worktree docs
+  repo=$(new_repo); commit_files "$repo" "code" src/a.py
+  base=$(git -C "$repo" rev-parse HEAD)
+  read -r worktree docs <<<"$(make_docs_commit_on "$repo" "$base" docs/new-module.md)"
+  expect_exit 0 "landing a docs commit that creates a file succeeds" in_repo "$repo" "$HOOKS/chain-worktree.sh" land "$base" "$docs"
+  expect_output "docs/new-module.md" "the landed commit contains the new file" git -C "$repo" show --name-only --format= HEAD
+  expect_output "" "nothing is left behind untracked" git -C "$repo" status --porcelain -- docs
+  in_repo "$repo" "$HOOKS/chain-worktree.sh" remove "$worktree"
+}
+
 test_chain_worktree_parks_docs_when_their_files_have_local_edits() {
   local repo base worktree docs
   repo=$(new_repo); commit_files "$repo" "code" src/a.py docs/a.md
   base=$(git -C "$repo" rev-parse HEAD)
-  worktree=$(in_repo "$repo" "$HOOKS/chain-worktree.sh" create "$base")
-  echo "documented" >> "$worktree/docs/a.md"
-  git -C "$worktree" commit -q -am "docs: sync" -m "Docs-Sync: $base"
-  docs=$(git -C "$worktree" rev-parse HEAD)
+  read -r worktree docs <<<"$(make_docs_commit_on "$repo" "$base" docs/a.md)"
   echo "someone else is editing" >> "$repo/docs/a.md"
   expect_exit 3 "landing is refused when the docs' files have local edits" in_repo "$repo" "$HOOKS/chain-worktree.sh" land "$base" "$docs"
   expect_exit 0 "the docs commit is parked on a branch" git -C "$repo" rev-parse --verify "docs-sync/$(git -C "$repo" rev-parse --short "$base")"
@@ -137,6 +154,7 @@ test_has_source_changes
 test_is_skippable_commit
 test_changed_files
 test_chain_worktree_lands_docs_without_touching_other_work
+test_chain_worktree_lands_a_docs_commit_that_adds_a_file
 test_chain_worktree_parks_docs_when_their_files_have_local_edits
 
 if [ "$failures" -gt 0 ]; then

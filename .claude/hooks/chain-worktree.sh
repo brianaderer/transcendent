@@ -13,7 +13,9 @@ set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 worktrees_dir="$repo_root/.chain-worktrees"
+usage_exit_code=2
 parked_exit_code=3
+message_file=""   # script-level so the exit trap can still see it
 
 create_worktree() {
   local sha=$1 path
@@ -27,7 +29,7 @@ has_local_edits() {
   git -C "$repo_root" status --porcelain -- "$@" | grep -q .
 }
 
-park_on_branch() {
+park_on_branch_and_exit() {
   local base=$1 docs=$2 branch
   branch="docs-sync/$(git rev-parse --short "$base")"
   git branch --force "$branch" "$docs"
@@ -36,15 +38,17 @@ park_on_branch() {
 }
 
 land_docs_commit() {
-  local base=$1 docs=$2 message_file path paths=()
+  local base=$1 docs=$2 path paths=()
   while IFS= read -r path; do paths+=("$path"); done < <(git diff --name-only "$base" "$docs")
-  [ "${#paths[@]}" -gt 0 ] || { echo "land: $docs changes nothing" >&2; exit 2; }
-  has_local_edits "${paths[@]}" && park_on_branch "$base" "$docs"
+  [ "${#paths[@]}" -gt 0 ] || { echo "land: $docs changes nothing" >&2; exit "$usage_exit_code"; }
+  has_local_edits "${paths[@]}" && park_on_branch_and_exit "$base" "$docs"
   message_file=$(mktemp "$worktrees_dir/message.XXXXXX")
+  trap 'rm -f "$message_file"' EXIT
   git log -1 --format=%B "$docs" > "$message_file"
   git -C "$repo_root" diff --binary "$base" "$docs" | git -C "$repo_root" apply
+  # New files must be known to git before a path-limited commit will take them.
+  git -C "$repo_root" add --intent-to-add -- "${paths[@]}"
   git -C "$repo_root" commit --quiet --only --file "$message_file" -- "${paths[@]}"
-  rm -f "$message_file"
   git -C "$repo_root" rev-parse --short HEAD
 }
 
@@ -56,5 +60,5 @@ case "${1:-}" in
   create) create_worktree "$2" ;;
   land)   land_docs_commit "$2" "$3" ;;
   remove) remove_worktree "$2" ;;
-  *) echo "usage: chain-worktree.sh create <sha> | land <base> <docs> | remove <path>" >&2; exit 2 ;;
+  *) echo "usage: chain-worktree.sh create <sha> | land <base> <docs> | remove <path>" >&2; exit "$usage_exit_code" ;;
 esac
