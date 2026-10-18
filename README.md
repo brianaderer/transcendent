@@ -49,7 +49,44 @@ store.**
   workflow.
 - Submission is a link to the **public** GitHub repo, emailed to jobs@t19s.com.
 
-> Install and run instructions go here once there is code.
+## Install and run
+
+Everything runs inside Docker, so Docker is the only thing you need to install.
+
+### 1. Install Docker
+
+- **macOS:** install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/)
+  (choose the Apple silicon or Intel download to match your Mac), open it once, and
+  wait until it says Docker is running.
+- **Windows:** install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/),
+  open it once, and wait until it says Docker is running.
+- **Linux:** install [Docker Engine](https://docs.docker.com/engine/install/) for your
+  distribution, including the Compose plugin.
+
+Check that both Docker and Docker Compose are installed:
+
+```bash
+docker --version
+docker compose version
+```
+
+You should see a version number from each, such as `Docker version 27.5.1` and
+`Docker Compose version v2.32.4`.
+
+### 2. Check that Docker can run a container
+
+```bash
+docker run --rm hello-world
+```
+
+You should see `Hello from Docker!` followed by a short explanation. If you see
+`Cannot connect to the Docker daemon` instead, Docker isn't running yet: open Docker
+Desktop (or on Linux run `sudo systemctl start docker`) and try again.
+
+### 3. Start the app
+
+> The app isn't built yet. When it is, this step will be a single command, run from
+> the folder you cloned this repo into.
 
 **Atlas presentation page:** not published yet. The link goes here once the first plan
 is drawn.
