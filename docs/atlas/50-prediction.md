@@ -66,7 +66,7 @@ community and the dates.
 
 ## Backtest *(proposed)*
 
-The committed snapshot holds **eight weeks** (specified, OPEN-7): seven to fit, one to
+The stored history covers **eight weeks** (specified, OPEN-7): seven to fit, one to
 score against.
 
 Hold the most recent week back, predict it from the weeks before, and score both

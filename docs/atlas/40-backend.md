@@ -52,8 +52,8 @@ flowchart LR
 
 - **generation** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it
   never receives a retriever, so it cannot reach the store.
-- **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs as a command (`docker compose run …`), not inside the web server,
-  and is never needed for the demo: a committed one-week snapshot is loaded instead.
+- **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs in the Celery worker, not inside the web server; first start and the daily
+  pull are the same catch-up over a range of days (see *Background jobs*, OPEN-13).
 - **projection** (specified, OPEN-20): a post is embedded once, and its position on the
   dot plot is computed once, in the daily intake, and stored with it. The dot plot only
   ever reads stored positions. *(Proposed detail: the flattening (UMAP) is learned once

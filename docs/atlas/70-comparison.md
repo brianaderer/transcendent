@@ -49,11 +49,11 @@ flowchart LR
 
 ## comparison_runs
 
-One row per comparison: the week, the snapshot it ran on, the model and settings, both
+One row per comparison: the date range, the model and settings, both
 full prompts, both documents, version B's tool calls (and so the posts it retrieved),
-every measurement, the judging prompt, and timings. The README links to one finished
-run committed with the snapshot (OPEN-13), so reviewers see a result before running
-anything.
+every measurement, the judging prompt, and timings. *(Proposed:)* the README links to
+one finished example run, so reviewers can see a result before running anything; how
+it ships depends on OPEN-13.
 
 ## Open in this draft
 
