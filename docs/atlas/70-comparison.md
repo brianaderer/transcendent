@@ -14,7 +14,7 @@ flowchart LR
     MEAS["Score both against the same answer key<br/>topics, order, direction, prediction"]
     KEY[("Answer key<br/>tags + daily engagement for the range")]
     KEY --> MEAS
-    BT["Backtest<br/>see 50"]
+    BT["Prediction score<br/>see 50"]
     RUN[("comparison_runs")]
     SCR["Comparison screen<br/>see 31"]
 

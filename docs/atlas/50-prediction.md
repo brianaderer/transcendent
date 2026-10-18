@@ -18,7 +18,7 @@ flowchart LR
     RANK["Rank tags<br/>rising · steady · fading · new"]
     CTX["Signals the numbers can't see<br/>(dates mentioned in posts, threads still open)"]
     LLM["LLM writes the prediction<br/>each claim cites its numbers and posts"]
-    BT["Backtest<br/>predict a past week, score against what happened"]
+    BT["Prediction score<br/>predict the range from the day before it,<br/>score against what happened"]
 
     ENG --> VEC --> FIT --> RANK --> LLM
     CTX --> LLM
