@@ -7,8 +7,10 @@ The web app. For now it shows whether the backend is running; the Explore page a
 build step 4 ([atlas plates 30](../atlas/30-frontend.md) and [31](../atlas/30-frontend/31-screens.md)).
 
 ## Public interface
-- `BackendStatus` — shows "Backend running", or "Not answering:" with each service that
-  isn't, rechecking every five seconds.
+- `BackendStatus` — shows "Checking the backend…" until the first answer, then "Backend
+  running", or "Not answering:" with each service that isn't, or "Backend unreachable"
+  when the API itself doesn't answer (for example while it is still starting). It
+  rechecks every five seconds.
 - `fetchHealth()`, `servicesDown(health)` in `src/health.ts`.
 
 ## How it works

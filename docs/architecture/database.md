@@ -23,10 +23,12 @@ description, keywords, centroid), `topic_daily_engagement`, `cluster_decisions`,
 `retrieval_events`, `ingested_days`.
 
 ## Uses
-[logging](logging.md), Postgres with pgvector.
+[logging](logging.md), [environment](environment.md) (settings, through
+`voices.config.load_settings`), Postgres with pgvector.
 
 ## Used by
-[environment](environment.md) (the `setup` service), [api](api.md) (health check).
+[environment](environment.md): the `setup` service in `compose.yaml` runs it. No other
+module imports it; the [api](api.md) health check connects to Postgres directly.
 
 ## Configuration and data
 `DATABASE_URL`. Data lives on the `postgres-data` volume.

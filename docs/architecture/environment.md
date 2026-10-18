@@ -16,13 +16,16 @@ Seven services. `postgres` (with the pgvector extension) and `redis` start first
 report healthy. `setup` then creates the tables and exits; `api` and `worker` wait for it
 to finish successfully. `beat` schedules jobs onto Redis. `frontend` serves the built web
 app on port 5173 and passes every `/api` request through to `api`, so only one port is
-exposed. The four backend services share one image built from `backend/`.
+exposed. The four backend services are all built from the same `backend/` folder and differ only
+in the command they run.
 
 ## Uses
 [database](database.md), [api](api.md), [worker](worker.md), [frontend](frontend.md), [logging](logging.md).
 
 ## Used by
-Nothing in the code; the README's install and run steps.
+- [api](api.md), [worker](worker.md) and [database](database.md) (setup) read their
+  settings through `voices.config.load_settings()`.
+- The README's install and run steps.
 
 ## Configuration and data
 - `.env` (copied from `.env.example`): `OPENROUTER_API_KEY`, needed once tagging and

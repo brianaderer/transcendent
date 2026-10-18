@@ -246,7 +246,7 @@ the guard.
 - The `claude` command-line tool, used by `.githooks/post-commit` to run the commit
   chain in the background. Without it the git hook does nothing.
 - The `test-boot` agent also uses whatever tools the README tells a reviewer to
-  install (none yet, because there is no application code yet), and reads the main
+  install (Docker, with its Compose plugin), and reads the main
   repo's local `.env` for any API key the README asks for.
 
 ## Used by

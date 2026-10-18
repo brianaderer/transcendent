@@ -19,7 +19,8 @@ appear under `worker`).
 [logging](logging.md), [environment](environment.md) (settings), Redis.
 
 ## Used by
-Nothing yet.
+No module sends it jobs yet. [environment](environment.md) runs it twice, as the `worker`
+and `beat` services.
 
 ## Configuration and data
 `REDIS_URL`, `LOG_DIR`. Beat keeps its schedule file in `/tmp` inside its container.

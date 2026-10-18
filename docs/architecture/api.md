@@ -22,7 +22,8 @@ logging as the `api` service, and checks Postgres and Redis on each health reque
 [logging](logging.md), [environment](environment.md) (settings), Postgres, Redis.
 
 ## Used by
-[frontend](frontend.md).
+[frontend](frontend.md) (`GET /api/health`); [environment](environment.md) runs it as the
+`api` service.
 
 ## Configuration and data
 `DATABASE_URL`, `REDIS_URL`, `LOG_DIR`.

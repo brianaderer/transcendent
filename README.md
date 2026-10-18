@@ -103,6 +103,10 @@ with no spaces or quotes:
 OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
+For now the app starts and runs without the key; it's needed once the app starts
+tagging posts and writing reports. The `.env` file must exist, though, so don't skip
+the `cp` command.
+
 The `.env` file stays on your machine. Git is set to ignore it, so the key can't be
 committed by accident.
 
@@ -118,8 +122,9 @@ The first run downloads and builds everything, which takes a few minutes. It's r
 when the log stops scrolling and shows lines from `api`, `worker` and `frontend`.
 
 Open **http://localhost:5173** in your browser. You should see **Community Voices**
-and **Backend running**. If it says **Not answering:** followed by a name, that part
-of the app hasn't started yet; wait a few seconds and it updates by itself.
+and **Backend running**. If it says **Backend unreachable**, the API is still starting;
+if it says **Not answering:** followed by a name, that part of the app hasn't started
+yet. Either way, wait a few seconds and it updates by itself.
 
 To stop the app, press `Ctrl+C` in that terminal. Everything it has stored is kept
 for next time. To erase all stored data and start fresh, run
