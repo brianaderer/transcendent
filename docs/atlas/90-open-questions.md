@@ -4,7 +4,7 @@
 
 | ID | Question | Raised on |
 |---|---|---|
-| OPEN-13 | What exactly is in the committed snapshot? Raw posts alone would mean the reviewer's first boot has to embed eight weeks of posts and run the tagging agent over all of them, which takes time and costs model calls before anything is on screen, and gives different tags each time. The recommendation: commit the raw posts plus the embeddings, the tags, the cluster decisions, and one finished comparison run, so the app opens fully populated with no key at all; a fresh tagging or report run is then the live part of the demo and needs the reviewer's key. | [40](40-backend.md) |
+| OPEN-13 | For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) CLAUDE.md §7 currently requires a committed snapshot so the demo never depends on live fetching, which this decision sets aside. If prewarm proves slow or fragile, the fallback is committing the computed database. | [04](04-environment.md) |
 
 ## Resolved
 
