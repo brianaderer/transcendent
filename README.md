@@ -331,7 +331,9 @@ rather than a pause in the conversation. The full steps are in `CLAUDE.md` §3.3
     `all tests passed`.
   - `/test-boot` checks this README's install and run steps the way you'll use them.
     It clones the repo into an empty folder, follows those steps exactly, tries the
-    demo, and reports anything that failed or was harder than it should be. Details
+    demo, and reports anything that failed or was harder than it should be. It runs
+    its containers under their own name and port, so it starts from nothing and
+    leaves any copy of the app you already have running untouched. Details
     are in [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
 - [`docs/architecture/`](docs/architecture/README.md) describes how the code is
   actually built, one document per module.

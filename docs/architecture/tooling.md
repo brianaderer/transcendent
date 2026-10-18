@@ -73,7 +73,11 @@ This module contains no application code.
   then follows the README's demo steps to prove the app really works. There is no
   committed data snapshot: the agent waits for the app's first start to finish
   loading its data, as the README describes, and records how long that took (atlas
-  question OPEN-13 needs the number). It reports
+  question OPEN-13 needs the number). Every Docker Compose command it runs uses its
+  own project name (`COMPOSE_PROJECT_NAME=boot-<date-time>`) and its own free port
+  (`PORT`), so it starts with no containers or data volumes, and never touches a
+  developer's copy of the app (project `community-voices`) that may be running on
+  the same machine. It reports
   **Boot succeeded** or **Boot failed at step N**, a table of every step, the friction
   points worst first with the exact README change that would remove each, the total
   time, what it could not test, and where the logs are. It changes nothing in the repo
@@ -214,8 +218,16 @@ treats a step that only worked because of that as a finding. When a step fails, 
 records the exact error, makes only the smallest move a reasonable reviewer would make
 to continue, and writes down what it did. If the README asks for an API key, it copies
 that one value from the main repo's local `.env` into the clone's `.env` without
-printing it. When it finishes it stops every process and container it started and
-leaves the `.boot-test/` folder in place so the logs can be read.
+printing it. Before its first Docker Compose command it sets its own project name and
+port in the shell. Both override the compose file and `.env` without changing the
+README's commands, so it still runs those exactly as written, and it starts from empty
+containers and data volumes like a reviewer's machine instead of reusing the
+developer's. Wherever the README says `localhost:5173` it uses its own port and says
+so in the report. Docker's cache of built images is still shared with this machine, so
+it notes that image builds may be faster than a reviewer would see. When it finishes
+it stops every process it started, removes its containers, volumes and locally built
+images with `docker compose down --volumes --rmi local` under the same project name
+and port, and leaves the `.boot-test/` folder in place so the logs can be read.
 
 **The code review.** `/uncle-bob` resolves the commits, drops documentation-sync
 commits and commits with no source changes, and launches the `uncle-bob` agent, which
