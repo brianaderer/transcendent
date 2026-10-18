@@ -44,20 +44,23 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` checks that the models and the applied
-migrations agree (it's left out of the default test run because it needs a running
-database). Running the `alembic` command directly reads the address from `DATABASE_URL`.
+`docker compose run --rm api pytest -m database` runs the four tests that need a running
+database: one checks that the models and the applied migrations agree, and three check
+that the store saves a day (twice without duplicates), adds agreeing replies to the
+upvote counts, and keeps the day ledger. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 `topic_similarity` is double precision (`Float`); the earlier SQL file used `real`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
-`voices.config.load_settings`), Postgres with pgvector, SQLAlchemy, Alembic.
+`voices.config.load_settings`), [ingestion](ingestion.md) (the store saves its `DayBatch`
+and takes the number of days wanted, `HISTORY_DAYS`, from it), Postgres with pgvector,
+SQLAlchemy, Alembic.
 
 ## Used by
 [environment](environment.md): the `setup` service in `compose.yaml` runs setup.
-[worker](worker.md) and [ingestion](ingestion.md) use the store to save each day;
-[api](api.md) uses it for `GET /api/ingestion` (its health check connects to Postgres
+[worker](worker.md) builds the store and hands it to the [ingestion](ingestion.md)
+catch-up, which saves each day and keeps the day ledger through it; [api](api.md) uses it for `GET /api/ingestion` (its health check connects to Postgres
 directly).
 
 ## Configuration and data

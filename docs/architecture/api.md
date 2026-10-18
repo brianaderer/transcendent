@@ -32,8 +32,9 @@ the full error, then re-raised.
 (`voices.db.store` for the ingestion status), [events](events.md), Postgres, Redis.
 
 ## Used by
-[frontend](frontend.md) (`GET /api/health`); [environment](environment.md) runs it as the
-`api` service.
+[frontend](frontend.md) (`GET /api/health`, `GET /api/ingestion` and
+`GET /api/streams/ingestion/events`); [environment](environment.md) runs it as the `api`
+service.
 
 ## Configuration and data
-`DATABASE_URL`, `REDIS_URL`, `LOG_DIR`.
+`DATABASE_URL`, `REDIS_URL`, `LOG_DIR`, `SERVICE_NAME`.

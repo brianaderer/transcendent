@@ -9,13 +9,22 @@ Reddit. Plans: [atlas plate 40](../atlas/40-backend.md) (the catch-up) and
 in build step 3; posts are stored as `pending` until then.
 
 ## Public interface
-- `catch_up.run_catch_up(now, ledger, process, emit)` — processes every complete day not
-  yet done, oldest first, at most 56 days back. Stops at the first day that fails.
+- `catch_up.run_catch_up(now, ledger, process, emit, history_days=56)` — processes every
+  complete day not yet done, oldest first, at most `history_days` back. Marks each day in
+  the ledger and emits its events; stops at the first day that fails, re-raising its error.
+  `ledger` is anything with `done_days`, `mark_running`, `mark_done` and `mark_failed`
+  (the `Ledger` interface); `emit` is any function shaped like `RedisEvents.emit`.
 - `catch_up.missing_days(...)`, `catch_up.last_complete_day(now)` — a day is complete six
   hours after it ends, so the archive has caught up.
-- `day.process_day(day, archive, embedder, agreement, store)` — one day, returning counts.
+- `day.process_day(day, archive, embedder, agreement, store)` — one day, returning counts
+  (`fetched`, `dropped_unwanted`, `dropped_without_thread`, `dropped_orphan_upvotes`,
+  `stored`, `threads_added`, `upvotes`). Each argument is a small interface (`Archive`,
+  `DocumentEmbedder`, `Agreement`, `DayStore`), so tests pass stand-ins.
+- `day.DayBatch`, `day.EmbeddedItem`, `day.Thread` — what one day hands to the store to
+  save together.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,
-  `posts_by_id`; `connect_to_archive()` builds the real one.
+  `posts_by_id`; `connect_to_archive()` builds the real one. Raises `ArchiveUnavailable`
+  when a request still fails after five tries.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;
   `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).
 - `agreement.AgreementDetector.agreeing(texts)` — which replies only agree with their parent.
@@ -46,12 +55,14 @@ for the full eight weeks; around 550–600 posts and comments kept a day; the wo
 about 2 GB.
 
 ## Uses
-[database](database.md) (through `voices.db.store`), [events](events.md),
-[logging](logging.md), the Arctic Shift archive, the embedding model on the `model-cache`
-volume.
+[logging](logging.md); the Arctic Shift archive (through `httpx`); the embedding model
+(through `fastembed`), on the `model-cache` volume. It never imports the
+[database](database.md) or [events](events.md) modules: the [worker](worker.md) hands it
+the store and the `emit` function, which match the small interfaces above.
 
 ## Used by
-[worker](worker.md) (the catch-up job).
+[worker](worker.md) (the catch-up job builds and runs it); [database](database.md)
+(`voices.db.store` saves a `DayBatch` and reports `HISTORY_DAYS` as the days wanted).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). Fixed in

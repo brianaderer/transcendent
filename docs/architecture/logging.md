@@ -24,7 +24,9 @@ context variable, so it follows the code that runs inside a `tracing` block.
 Python's standard `logging`.
 
 ## Used by
-[api](api.md), [worker](worker.md), [database](database.md) (setup).
+[api](api.md) (and `voices/health.py`), [worker](worker.md), [database](database.md) (setup),
+[ingestion](ingestion.md) (archive retries), [events](events.md) (every emitted event is
+also logged).
 
 ## Configuration and data
 `LOG_DIR` (default `/var/log/voices`), on the `logs` volume. Read the files with

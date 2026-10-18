@@ -17,7 +17,8 @@ catch-up that fills the database from the archive ([atlas plate 40](../atlas/40-
 
 ## How it works
 - **When the catch-up runs:** when a worker starts (so first start and every restart catch
-  up), and daily at 06:00 UTC from Beat.
+  up), and daily at 06:00 UTC from Beat. Nothing in the web app queues it yet; it can be
+  queued by hand as the `voices.catch_up` task.
 - **One at a time:** a Redis lock (`lock:catch-up`) makes a second request do nothing while a
   catch-up is running. A worker that is starting clears any leftover lock first: none can be
   running yet, so a held lock belongs to a run that died with its worker.

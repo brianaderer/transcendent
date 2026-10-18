@@ -124,17 +124,25 @@ when the log stops scrolling and shows lines from `api`, `worker` and `frontend`
 stops.
 
 Open **http://localhost:5173** in your browser. You should see **Community Voices**
-and **Backend running**. Below that, the page shows the r/sailing history loading:
-**Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
-arrives. The first start fetches eight weeks of posts from the Arctic Shift archive and
-prepares each one for search, which takes about 40–45 minutes; the first minute or so is a
-one-time download of the 130 MB model that does it. You can leave it running in the
-background. When it's done the line reads **History up to date through** the latest day.
-Later starts only fetch the days that are missing. If it says **Backend unreachable**, the API is still starting;
+and **Backend running**. If it says **Backend unreachable**, the API is still starting;
 if it says **Not answering:** followed by `database` or `queue`, that part of the app
 hasn't started yet. Either way, wait a few seconds and it updates by itself. To check
 the back end directly, open http://localhost:5173/api/health; it should show
 `"status":"ok"`.
+
+Below that, the page shows the r/sailing history loading. It may say **Waiting to start
+loading r/sailing history** for the first minute or so, while the worker downloads, once,
+the 130 MB model that prepares posts for search. Then it reads, for example,
+**Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
+arrives. The first start fetches eight weeks of posts from the Arctic Shift archive (a
+public archive of Reddit, so your computer needs an internet connection) and prepares each
+one for search, which takes about 40–45 minutes; the worker uses about 2 GB of memory
+while it does. You can leave it running in the background. When it's done the line reads
+**History up to date through** the latest day. Later starts only fetch the days that are
+missing. If it reads **Loading stopped at** a date, something went wrong on that day (the
+archive not answering, for example). Nothing from that day was saved. Stopping and
+starting the app again (below) picks up from that day; otherwise the next try is the daily
+run at 06:00 UTC.
 
 Ignore the `Network:` address the frontend prints in the log; it's internal to Docker.
 Use http://localhost:5173.
@@ -157,7 +165,7 @@ docker compose run --rm --no-deps frontend npm test
 ```
 
 Each should end with every test passed (a `warning` line from a library is fine). The backend
-line also says `1 deselected`: that is the one test that needs a running database, which the
+line also says `4 deselected`: those are the four tests that need a running database, which the
 default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline in seconds.
 

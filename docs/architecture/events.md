@@ -25,7 +25,9 @@ Streams and event types so far: `ingestion` carries `catch_up.started`,
 Redis, [logging](logging.md).
 
 ## Used by
-[ingestion](ingestion.md) via the [worker](worker.md); [api](api.md); [frontend](frontend.md).
+[worker](worker.md) (`catch_up_task.py` builds `RedisEvents` and hands its `emit` to the
+[ingestion](ingestion.md) catch-up); [api](api.md) (the stream route uses
+`server_sent_events`); [frontend](frontend.md) (`IngestionStatus` uses `useLiveEvents`).
 
 ## Configuration and data
 `REDIS_URL`.

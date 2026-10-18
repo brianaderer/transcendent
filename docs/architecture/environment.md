@@ -47,9 +47,14 @@ which the `setup` service needs.
   on; `OPENROUTER_API_KEY`, needed once tagging and
   reports exist; the app starts without it.
 - Set by `compose.yaml` for the backend services: `DATABASE_URL`, `REDIS_URL`, `LOG_DIR`,
-  and `SERVICE_NAME` (each container's own name, used in its log lines). `MODEL_DIR`
-  (default `/home/voices/.cache/models`) is where the embedding model is downloaded, on the
+  and `SERVICE_NAME` (each container's own name, used in its log lines).
+- `MODEL_DIR` is set nowhere; its default in `voices/config.py`,
+  `/home/voices/.cache/models`, is where the worker downloads the embedding model, on the
   `model-cache` volume.
+- The backend's dependencies are pinned in `backend/pyproject.toml` and `backend/uv.lock`;
+  among them `fastembed` runs the embedding model and `httpx` reads the archive.
+- The first start needs an internet connection (the worker fetches from the Arctic Shift
+  archive and downloads the model) and about 2 GB of memory for the worker.
 - Named volumes (created as `community-voices_<name>`): `postgres-data`, `redis-data`
   (Redis writes an append-only file), `model-cache` (the embedding model's files, from
   build step 2, mounted at `/home/voices/.cache`), `logs` (mounted at `/var/log/voices`).
