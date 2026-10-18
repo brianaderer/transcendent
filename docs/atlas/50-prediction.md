@@ -13,7 +13,7 @@ vector**, and next week is predicted by **extrapolating** each tag's trend.
 ```mermaid
 flowchart LR
     ENG[("topic_daily_engagement<br/>see 21")]
-    VEC["Trend vector per tag<br/>one entry per period: posts, comments, reactions,<br/>distinct people, new threads, unanswered questions"]
+    VEC["Trend vector per tag<br/>one entry per period: posts, comments, upvotes,<br/>distinct people, new threads, unanswered questions"]
     FIT["Extrapolate one period ahead<br/>(damped trend: growth slows rather than running away)"]
     RANK["Rank tags<br/>rising · steady · fading · new"]
     CTX["Signals the numbers can't see<br/>(dates mentioned in posts, threads still open)"]
@@ -30,7 +30,7 @@ flowchart LR
 ## The trend vector *(proposed)*
 
 For each tag, one row per period with the period's engagement: posts, comments,
-reactions (short replies),
+upvotes (agreeing replies),
 distinct people, new threads, unanswered questions, all summed from plate 21's daily
 table. A tag minted recently has a short vector. That's the "new" case, and the most
 interesting one to call out.

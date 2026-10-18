@@ -17,8 +17,10 @@ topic's engagement has been moving, not guessed from one week of text.
   to an existing tag, mint a new tag, or ignore it as noise**. A post that hasn't
   fallen into a cluster within three days **is noise and is deleted**.
 - **Posts are not cut into pieces**: one post or comment is one embedding.
-- Deleted posts and bot posts are dropped. **Short replies are kept**: they're
-  significant, and they are tabulated, because they inform the trend.
+- Deleted posts and bot posts are dropped. **Short agreeing replies** ("+1", "this",
+  "same here") are significant and inform the trend, but aren't saved as posts. A basic
+  semantic check finds them, and each one adds to an **`upvotes`** count on the post it
+  replies to, a magnitude increaser for that post (OPEN-19).
 
 **Everything else on this plate is *proposed*.**
 
@@ -28,7 +30,7 @@ topic's engagement has been moving, not guessed from one week of text.
 erDiagram
     THREADS ||--o{ POSTS : contains
     POSTS }o--o| TOPICS : "tagged with"
-    POSTS ||--o{ REACTIONS : "replied to with"
+    POSTS ||--o{ POST_UPVOTES_DAILY : "agreed with"
     TOPICS ||--o{ TOPIC_DAILY_ENGAGEMENT : "measured by"
     CLUSTER_DECISIONS }o--o| TOPICS : "attached to or minted"
     CLUSTER_DECISIONS ||--o{ POSTS : "covers"
@@ -44,18 +46,16 @@ erDiagram
         text author
         timestamptz created_at
         text body
-        int score "upvotes at fetch time, not used for trends"
+        int reddit_score "Reddit's own score at fetch time, not used for trends"
+        int upvotes "agreeing replies it received"
         text parent_source_id "what it replies to"
         vector embedding "its meaning, as numbers"
         text status "pending, tagged"
         float topic_similarity "how close it sits to its tag's center"
     }
-    REACTIONS {
-        text source_id "Reddit's id, unique"
-        text author
-        timestamptz created_at
-        text body "the short reply itself"
-        text parent_source_id "what it reacts to"
+    POST_UPVOTES_DAILY {
+        date day "when the agreeing replies were written"
+        int count
     }
     TOPICS {
         text label "short name, written by the LLM"
@@ -69,7 +69,7 @@ erDiagram
         date day
         int posts
         int comments
-        int reactions "short replies"
+        int upvotes "agreeing replies"
         int unique_authors
         int new_threads
         int unanswered_questions
@@ -90,10 +90,13 @@ erDiagram
   each. Reddit's id is unique, so the small overlap between daily pulls is dropped on
   insert (`CLAUDE.md` §7). A post is `pending` until a cluster takes it, then `tagged`;
   noise is deleted rather than marked.
-- **reactions** — short replies ("this", "+1", "same here") *(proposed, OPEN-19)*. They
-  carry no meaning of their own to cluster, so they are not embedded; they count toward
-  the tag of the post they reply to, on the day they were written. Kept in their own
-  table so the three-day noise rule can't delete them for failing to cluster.
+- **upvotes** — Brian's design: an agreeing reply isn't stored; it adds one to its
+  parent's `upvotes`. *Proposed:* the count is also kept per day in
+  **post_upvotes_daily** (post, day, count, with no text), because the trend needs to
+  know *when* the agreement happened: "+1"s arriving on Friday for a Monday post are
+  Friday's engagement. The name `upvotes` is ours; Reddit's own score is kept apart as
+  `reddit_score` so the two are never confused. Upvotes ride on their parent: they count
+  toward its tag, and go if it's deleted as noise.
 - **topics** — the topic tags. The *semantic information* is four things together:
   - a **label** and **description** a person can read, written by the LLM from the
     tag's most typical posts;
@@ -101,7 +104,7 @@ erDiagram
   - the **centroid**: the average of its posts' embeddings, the tag's position in
     meaning-space. Clusters are compared against the centroids to find the tags they
     might belong to, and the centroid moves whenever posts are added.
-- **topic_daily_engagement** — one row per tag per day: posts, comments, reactions,
+- **topic_daily_engagement** — one row per tag per day: posts, comments, upvotes,
   distinct people, new threads and unanswered questions. **This is the graph.** Any
   range — a week, eight weeks — is a sum over its days. Rebuilt from the posts after
   each day's intake, never edited by hand. Eight weeks of about thirty tags is under two
@@ -121,8 +124,8 @@ Brian; details in brackets are *proposed*.
 flowchart TB
     PULL["Fetch new posts and comments<br/>(Arctic Shift, since the newest stored)"]
     DROP["Drop deleted and removed posts, and bots<br/>(AutoModerator and other known bot accounts)"]
-    SHORT{"Short reply?<br/>(no meaning of its own)"}
-    REACT[("reactions<br/>counted toward the parent's tag")]
+    SHORT{"Agreeing reply?<br/>(short, and close in meaning to '+1', 'this', 'same here')"}
+    REACT["Add one to the parent's upvotes<br/>reply itself not saved"]
     EMB["Embed each post or comment whole<br/>status: pending"]
     CL["Cluster the last three days of posts<br/>(HDBSCAN · tagged posts in the window act as anchors)"]
     CMP["Compare each cluster with the tags' centroids<br/>places it in the domain space"]
@@ -165,7 +168,8 @@ are both "find the closest vectors" questions, which pgvector answers inside Pos
 
 ## Open in this draft
 
-- `?` How a short reply is recognized — OPEN-19.
+- `?` The word limit and closeness threshold for an agreeing reply — tuned against
+  the real data.
 - `?` What happens to a reply whose parent was deleted as noise *(proposed: the parent
   keeps a stub row — id, author, time, no text or embedding — so threads stay connected
   and lookup can say "removed as noise")*.

@@ -140,7 +140,7 @@ Opened from the topics panel or a document section.
 
 - Name, description, keywords as chips, first-seen date, badge.
 - **The main chart:** daily engagement across the 8 weeks as stacked areas — posts,
-  comments, reactions (short replies) — with distinct people as a line, the Explore
+  comments, upvotes (agreeing replies like "+1") — with distinct people as a line, the Explore
   range shaded, and the projection for the next period as a dashed band.
 - "Typical posts": 3 post cards (username, date, excerpt, link).
 - "How this topic was built": a compact timeline of tagging decisions —
