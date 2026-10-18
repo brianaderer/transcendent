@@ -28,7 +28,7 @@ packages = ["src/voices"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q -p no:cacheprovider"  # tests run in throwaway containers; a cache only fails to write
 
 [tool.ruff]
 line-length = 100
