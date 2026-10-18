@@ -118,8 +118,13 @@ This module contains no application code.
     the short commit id and the process id) and prints its path.
   - `land <base> <docs>` takes the documentation commit `<docs>`, made on top of
     `<base>`, applies its changes to the main folder, and commits only the files it
-    changed, with its message (and so its `Docs-Sync` trailer) kept. Anything else
-    staged or edited in the main folder is left alone. It prints the new commit. If
+    changed, with its message (and so its `Docs-Sync` trailer) kept. Files the
+    documentation commit creates are first marked for git (`git add --intent-to-add`),
+    because a commit limited to named files refuses files git has never seen; before
+    commit `eff463c` this made landing fail for any new document. Anything else
+    staged or edited in the main folder is left alone. The commit message is copied
+    to a temporary file under `.chain-worktrees/`, which is deleted however the
+    script exits. It prints the new commit. If
     any of those files already has uncommitted edits in the main folder, it lands
     nothing: it points the branch `docs-sync/<base>` at the documentation commit,
     prints `parked: docs-sync/<base>`, and exits 3. It exits 2 if the documentation
@@ -134,7 +139,10 @@ This module contains no application code.
   now start `/commit-chain`, which decides the rest.
 - **`tests/hooks/test_commit_checks.sh`**, the tests for the scripts above. Run
   it after any change to `.claude/hooks/` or `.githooks/`; it prints one `ok` or
-  `FAIL` line per case and exits 1 if any case failed.
+  `FAIL` line per check (21 at commit `eff463c`) and exits 1 if any check failed.
+  The landing tests cover a documentation commit that edits a file while other work
+  is staged, one that creates a new file, and one that is parked because its file
+  has local edits; they share one setup helper, `make_docs_commit_on`.
 
 ## How it works
 There are two ways a commit gets noticed, and both end at the same guard and the same
