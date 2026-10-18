@@ -30,7 +30,8 @@ the full error, then re-raised.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings), [database](database.md)
-(`voices.db.store` for the ingestion status), [events](events.md), Postgres, Redis.
+(`voices.db.store` for the ingestion status), [ingestion](ingestion.md) (`HISTORY_DAYS`,
+the number of days wanted), [events](events.md), Postgres, Redis.
 
 ## Used by
 [frontend](frontend.md) (`GET /api/health`, `GET /api/ingestion` and

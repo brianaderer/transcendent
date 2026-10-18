@@ -55,8 +55,8 @@ upvotes, adds up upvotes from different days, and keeps the day ledger. They are
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
-`voices.config.load_settings`), [ingestion](ingestion.md) (the store saves its `DayBatch`
-and takes the number of days wanted, `HISTORY_DAYS`, from it), Postgres with pgvector,
+`voices.config.load_settings`), [ingestion](ingestion.md) (the store saves its `DayBatch`,
+with its `EmbeddedItem`s and `NewThread`s), Postgres with pgvector,
 SQLAlchemy, Alembic.
 
 ## Used by

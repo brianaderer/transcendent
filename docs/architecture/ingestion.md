@@ -68,7 +68,8 @@ the store and the `emit` function, which match the small interfaces above.
 
 ## Used by
 [worker](worker.md) (the catch-up job builds and runs it); [database](database.md)
-(`voices.db.store` saves a `DayBatch` and reports `HISTORY_DAYS` as the days wanted).
+(`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s);
+[api](api.md) (`GET /api/ingestion` reports `HISTORY_DAYS` as the days wanted).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). Fixed in
