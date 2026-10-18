@@ -189,8 +189,9 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
     made outside Claude Code, run `git config core.hooksPath .githooks` once after
     cloning; that hook also needs the `claude` command. How it all fits together is in
     [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
-  - `/test-boot` checks these instructions the way you'll use them. It clones the
-    repo into an empty folder, follows the install and run steps exactly, tries the
-    demo, and reports anything that failed or was harder than it should be.
+  - `/test-boot` checks this README's install and run steps the way you'll use them.
+    It clones the repo into an empty folder, follows those steps exactly, tries the
+    demo, and reports anything that failed or was harder than it should be. Details
+    are in [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
 - [`docs/architecture/`](docs/architecture/README.md) describes how the code is
   actually built, one document per module.
