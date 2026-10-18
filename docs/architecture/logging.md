@@ -26,7 +26,8 @@ Python's standard `logging`.
 ## Used by
 [api](api.md) (and `voices/health.py`), [worker](worker.md), [database](database.md) (setup),
 [ingestion](ingestion.md) (archive retries), [tagging](tagging.md) (every turn of the
-tagging agent, `tagging.turn`, and each decision, `tagging.decided`), [events](events.md)
+tagging agent, `tagging.turn`, everything sent back to the agent, `tagging.answer`, and
+each decision, `tagging.decided`), [events](events.md)
 (every emitted event is also logged).
 
 ## Configuration and data

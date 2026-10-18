@@ -150,8 +150,10 @@ running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are
 missing. If it reads **Loading stopped at** a date, something went wrong on that day, and
 the reason follows (the archive not answering, for example, or the key missing from step 3).
-The app tries that day again by itself ten minutes later, and keeps trying every ten
-minutes; stopping and starting the app again (below) also picks up from that day. A day
+If the archive or another service failed, the app tries that day again by itself ten minutes
+later, and keeps trying every ten minutes. A missing key is not tried again: add the key as
+step 3 says, then run `docker compose up --build` again. Stopping and starting the app again
+(below) also picks up from that day. A day
 that is tried again is fetched from the start, and nothing in it is counted twice.
 
 Ignore the `Network:` address the frontend prints in the log; it's internal to Docker.
