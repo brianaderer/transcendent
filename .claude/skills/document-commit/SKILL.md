@@ -24,7 +24,7 @@ If git rejects the argument, report that in a sentence and stop.
 For each commit, run:
 
 ```bash
-.claude/hooks/is-doc-sync-commit.sh <sha>
+.claude/hooks/is-skippable-commit.sh <sha>
 ```
 
 Exit code 0 means **skip it**: it is a documentation-sync commit (it carries a
@@ -46,7 +46,7 @@ Wait for it to finish. Do not edit documentation yourself while it runs.
 ## 4. Verify and relay
 
 - If the agent says it committed, confirm the new commit carries the trailer:
-  `.claude/hooks/is-doc-sync-commit.sh HEAD && echo "guard OK"`. If it does not, say so
+  `.claude/hooks/is-skippable-commit.sh HEAD && echo "guard OK"`. If it does not, say so
   plainly — the next hook run would loop.
 - Confirm the agent's commit touched nothing but documentation, comments, and
   docstrings: `git show --stat HEAD`.

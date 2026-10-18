@@ -22,7 +22,7 @@ If git rejects the argument, say so in a sentence and stop.
 ## 2. Drop commits with nothing to review
 
 For each commit:
-- `.claude/hooks/is-doc-sync-commit.sh <sha>` exits 0 → skip it (a documentation-sync
+- `.claude/hooks/is-skippable-commit.sh <sha>` exits 0 → skip it (a documentation-sync
   commit, or documentation only).
 - `.claude/hooks/has-source-changes.sh <sha>` exits 1 → skip it (no source code or
   tests changed — only markdown, config, or data).

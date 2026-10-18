@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Git post-commit hook for commits made OUTSIDE Claude Code (e.g. in a terminal).
-# Runs /uncle-bob (when source code changed), then /document-commit, headlessly
-# on the new commit.
+# Runs the post-commit skills headlessly, in the order post-commit-steps.sh gives:
+# /uncle-bob (read-only review, printed here), then /document-commit.
 # Inside Claude Code, the PostToolUse hook handles it instead (CLAUDECODE is set).
 # Enable once per clone:  git config core.hooksPath .githooks
 # Skip once:              SKIP_DOC_SYNC=1 git commit ...
@@ -11,22 +11,27 @@ set -euo pipefail
 [ -n "${DOC_SYNC_RUNNING:-}" ] && exit 0          # the agent's own commit, mid-run
 command -v claude >/dev/null || exit 0
 
+read_only_tools=(
+  "Read" "Grep" "Glob" "Agent"
+  "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)"
+  "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git grep:*)" "Bash(git status:*)"
+  "Bash(ls:*)" "Bash(.claude/hooks/changed-files.sh:*)" "Bash(.claude/hooks/has-source-changes.sh:*)"
+  "Bash(.claude/hooks/is-skippable-commit.sh:*)" "Bash(.claude/hooks/post-commit-steps.sh:*)"
+)
+writing_tools=("Edit" "Write" "Bash(git add:*)" "Bash(git commit:*)")
+
+run_uncle_bob() {
+  claude -p "/uncle-bob $1" --allowedTools "${read_only_tools[@]}"
+}
+
+run_document_commit() {
+  DOC_SYNC_RUNNING=1 claude -p "/document-commit $1" --permission-mode acceptEdits \
+    --allowedTools "${read_only_tools[@]}" "${writing_tools[@]}"
+}
+
 repo=$(git rev-parse --show-toplevel)
 sha=$(git rev-parse --short HEAD)
-"$repo/.claude/hooks/is-doc-sync-commit.sh" "$sha" && exit 0
-
-if "$repo/.claude/hooks/has-source-changes.sh" "$sha"; then
-  echo "post-commit: Clean Code review of $sha with /uncle-bob (read-only)…"
-  claude -p "/uncle-bob $sha" --allowedTools "Read" "Grep" "Glob" "Agent" \
-    "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)" \
-    "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git grep:*)" \
-    "Bash(.claude/hooks/is-doc-sync-commit.sh:*)" "Bash(.claude/hooks/has-source-changes.sh:*)" || true
-fi
-
-echo "post-commit: documenting $sha with /document-commit (SKIP_DOC_SYNC=1 to skip)…"
-DOC_SYNC_RUNNING=1 claude -p "/document-commit $sha" \
-  --permission-mode acceptEdits \
-  --allowedTools "Read" "Edit" "Write" "Grep" "Glob" "Agent" \
-    "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)" \
-    "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git add:*)" "Bash(git commit:*)" \
-    "Bash(git grep:*)" "Bash(git status:*)" "Bash(ls:*)" "Bash(.claude/hooks/is-doc-sync-commit.sh:*)"
+for step in $("$repo/.claude/hooks/post-commit-steps.sh" "$sha"); do
+  echo "post-commit: /$step $sha (SKIP_DOC_SYNC=1 to skip)…"
+  "run_${step//-/_}" "$sha" || echo "post-commit: /$step $sha failed (exit $?); run it by hand" >&2
+done

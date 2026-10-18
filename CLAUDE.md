@@ -179,7 +179,7 @@ not saved for later.
 
 | Place | What it holds |
 |---|---|
-| The code itself | Self-documenting names and compact functions first (§7). Docstrings on public functions, classes, and modules where the name alone can't say what it promises. Comments only for *why*, never restating *what*. |
+| The code itself | Self-documenting names and compact functions first (§8). Docstrings on public functions, classes, and modules where the name alone can't say what it promises. Comments only for *why*, never restating *what*. |
 | `docs/architecture/` | How the code is **actually built**, one file per module, plus `README.md` as the module index. |
 | `docs/atlas/` | The **plan** — what Brian has decided should be built (§3). Architecture docs describe what *is*; atlas plates describe what *should be*. |
 | `README.md` | The objective, and the exact steps to install, configure, run, and test from a fresh clone. |
@@ -218,23 +218,30 @@ fan-out tracing in `/document-commit` reliable.
 1. Write the code and its tests.
 2. Update the documentation for what you changed, in the same commit.
 3. Commit.
-4. `/document-commit` runs automatically on the new commit (below). It checks your
-   documentation, follows every reference outward, fixes anything stale, and makes a
-   separate documentation commit.
-5. If the commit changed source code or tests, `/uncle-bob` then reviews it against
-   the Clean Code guidelines (§8). Must-fix findings are fixed in the next commit,
-   before any new work.
+4. The hooks (below) then run, in this order:
+   - **`/uncle-bob`**, if the commit changed source code or tests: a Clean Code review
+     against §8. Must-fix findings are fixed in the next commit, before any new work.
+     The review runs first so that a fix commit it prompts is documented once, not
+     twice.
+   - **`/document-commit`**: checks your documentation, follows every reference
+     outward, fixes anything stale, and makes a separate documentation commit.
 
 ### The automatic hook
 
+Which steps run, and in what order, is decided in one place:
+`.claude/hooks/post-commit-steps.sh`. Both hooks ask it, so they can't disagree.
+
 - **Inside Claude Code:** a `PostToolUse` hook (`.claude/settings.json` →
-  `.claude/hooks/post-commit-document.sh`) notices each successful `git commit` and
-  tells Claude to run `/document-commit <sha>`. When told, run it before making any
-  further code change.
+  `.claude/hooks/claude-post-commit.sh`) notices each successful `git commit` and
+  tells Claude which steps to run. When told, run them before making any further code
+  change.
 - **Outside Claude Code** (a commit from a terminal): the git hook
-  `.githooks/post-commit` runs `/document-commit` headlessly. Enable it once per clone
-  with `git config core.hooksPath .githooks`. Skip it for one commit with
-  `SKIP_DOC_SYNC=1 git commit …`.
+  `.githooks/post-commit` runs the same steps headlessly — the review read-only,
+  printed to the terminal. A step that fails is reported, and the next one still runs.
+  Enable it once per clone with `git config core.hooksPath .githooks`. Skip it for one
+  commit with `SKIP_DOC_SYNC=1 git commit …`.
+- **Tests:** `tests/hooks/test_commit_checks.sh` covers every decision the hooks make.
+  Run it after any change to `.claude/hooks/` or `.githooks/`.
 - **Requirements:** the Claude Code hook needs `jq` on the path; the git hook needs the
   `claude` command and silently does nothing without it. Details in
   `docs/architecture/tooling.md`.
@@ -246,13 +253,14 @@ forever. Three layers stop that:
 
 1. **Every documentation-sync commit carries a `Docs-Sync: <range>` trailer.** Never
    make a commit with that trailer by hand, and never remove it from one.
-2. **`.claude/hooks/is-doc-sync-commit.sh` is the single check** used by both hooks
-   and by the skill. It skips any commit carrying the trailer, and any commit that
-   changes only `docs/` and `README.md`.
+2. **`.claude/hooks/is-skippable-commit.sh` is the single check** used by both hooks
+   (through `post-commit-steps.sh`) and by both skills. It skips any commit carrying
+   the trailer, and any commit that changes only `docs/` and `README.md`.
 3. **The git hook also skips** when running inside Claude Code or while a sync is
    already running (`DOC_SYNC_RUNNING`).
 
-Any change to the hooks or the skill must keep all three layers working.
+Any change to the hooks or the skills must keep all three layers working, and
+`tests/hooks/test_commit_checks.sh` must pass.
 
 ---
 

@@ -28,7 +28,9 @@ is held to, and you apply them, not your own taste:
   mandatory "Uses" / "Used by" lists, and the loop guard.
 - **`CLAUDE.md` §7** — the challenge rules: the README is the demo; the comparison with
   and without retrieval; ingestion, retrieval statistics, and the embedding picture;
-  the code-quality rules.
+  the project-specific code-quality points.
+- **`CLAUDE.md` §8** — the Clean Code guidelines, which apply to comments and
+  docstrings you correct as much as to code.
 - **`README.md` → *Primary objective*** — what the whole app is for. A change that
   moves a feature toward or away from a requirement listed there should be reflected
   where the README describes that feature.
@@ -156,7 +158,7 @@ stops the commit hooks from documenting this commit and starting an endless loop
 Confirm it landed:
 
 ```bash
-.claude/hooks/is-doc-sync-commit.sh HEAD && echo "guard OK"
+.claude/hooks/is-skippable-commit.sh HEAD && echo "guard OK"
 ```
 
 If that does not print `guard OK`, stop and report it as a failure.
