@@ -12,7 +12,7 @@ flowchart LR
     FE["Frontend<br/>React · TanStack Query + Router · Zustand<br/>see 30"]
     API["Backend<br/>FastAPI<br/>see 40"]
     STORE[("Postgres + pgvector")]
-    INGEST["Ingestion<br/>daily fetch · r/sailing via Arctic Shift"]
+    INGEST["Ingestion<br/>Celery Beat, daily · r/sailing via Arctic Shift"]
 
     USER --> FE
     FE --> API

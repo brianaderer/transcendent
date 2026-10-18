@@ -19,6 +19,7 @@ Everything else on this plate is *proposed*.
 | Data store | **Postgres with pgvector** — specified (OPEN-4, resolved) |
 | Writing model | Claude, through Anthropic's API *(proposed, OPEN-5)* |
 | Embedding model | A small open model run inside the container *(proposed, OPEN-5)* |
+| Background jobs | **Celery** workers, with **Celery Beat** scheduling the archive pulls — specified. Broker: Redis, its own container *(proposed)* |
 | Agents | **LangGraph / LangChain** — specified. Two agents, see [60](60-agents.md) |
 | Running it | Its own service in Docker Compose *(proposed)* |
 
@@ -51,10 +52,50 @@ flowchart LR
 
 - **generation** is one code path with a switch (`CLAUDE.md` §7): with retrieval off it
   never receives a retriever, so it cannot reach the store.
-- **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs as a command (`docker compose run …`), not inside the web server,
+- **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs as a command (`docker compose run …`), not inside the web server,
   and is never needed for the demo: a committed one-week snapshot is loaded instead.
 - **projection** squashes embeddings to two dimensions for the embedding map, for
   example with UMAP, and caches the result per week.
+
+## Background jobs *(proposed details)*
+
+```mermaid
+flowchart LR
+    BEAT["Celery Beat<br/>exactly one copy"]
+    REDIS[("Redis<br/>job queue")]
+    WORK["Celery worker"]
+    PULL["Archive pull<br/>daily, 06:00 UTC"]
+    TAGJ["Tagging run<br/>on demand, see 60"]
+    REPJ["Report run<br/>on demand, see 60"]
+    WEB["web (FastAPI)"]
+    AS["Arctic Shift"]
+    PG[("Postgres + pgvector")]
+
+    BEAT -->|"schedules"| REDIS
+    WEB -->|"queues on request"| REDIS
+    REDIS --> WORK
+    WORK --> PULL
+    WORK --> TAGJ
+    WORK --> REPJ
+    PULL --> AS
+    PULL --> PG
+    TAGJ --> PG
+    REPJ --> PG
+```
+
+- **Daily, with a look-back.** Each pull fetches the last **seven days**, not just
+  yesterday, and updates what's already stored. Comments keep arriving on a post for
+  days, and upvote counts keep changing, so a strictly one-day pull would freeze every
+  thread at its first day. Posts and comments are keyed by Reddit's own id, so
+  re-fetching updates rows and never duplicates them (`CLAUDE.md` §7).
+- **Why daily is enough.** The document is weekly and trends are computed by the day;
+  pulling more often adds load on a volunteer-run archive without changing any result.
+- **Tagging and report runs are Celery jobs too.** A report run makes many LLM calls and
+  can take a minute; the web request queues the job and returns at once, and the
+  frontend checks its status through TanStack Query until it's done.
+- **Beat runs as exactly one copy**, or every pull would happen twice.
+- **The demo never waits on Beat.** The committed eight-week snapshot is loaded by a
+  command; Beat only keeps the data fresh afterwards.
 
 ## Open in this draft
 
