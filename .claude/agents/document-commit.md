@@ -58,7 +58,7 @@ README as the most important document you maintain, not an afterthought:
   (`package.json`, `pyproject.toml`, `requirements*.txt`, lockfiles), `Dockerfile`s and
   compose files, `Makefile`s and scripts the README runs, `.env.example` and any new or
   renamed environment variable, ports, required services (databases, vector stores),
-  data snapshot and seed or load commands, minimum tool versions, and the start
+  data loading commands (including the first-start catch-up), minimum tool versions, and the start
   command itself.
 - **Write boot steps as commands a reviewer can copy and paste, in order,** with the
   expected result of each step stated ("you should see …"), and every value the
