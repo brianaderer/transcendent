@@ -84,8 +84,10 @@ holds it. Don't stop the other process.
 
 Booting is not enough. Follow the README's "try it" or demo steps exactly:
 - open or `curl` the URL it gives and confirm a real page or response comes back;
+- wait for the first start to finish loading its data, exactly as the README
+  describes, and record how long it took (atlas OPEN-13 needs this number);
 - run whatever produces the Community Voices Document, and the comparison with and
-  without retrieval, using the committed data snapshot, as the README describes;
+  without retrieval, as the README describes;
 - confirm the result appears where the README says it will.
 
 If the README has no "try it" steps, that is a finding: a reviewer about to demo the

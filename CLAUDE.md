@@ -309,8 +309,9 @@ Any change to the hooks or the skills must keep all three layers working, and
 
 ## 7. Rules for the challenge
 
-These come straight from the challenge brief and what the reviewers have said they
-value. The brief is summarized in `README.md` → *Primary objective*.
+Some of these come from the challenge brief (summarized in `README.md` → *Primary
+objective*); the rest are Brian's decisions or working rules for this project. The
+atlas plates hold the detailed decisions.
 
 ### The README is the demo
 
@@ -340,10 +341,8 @@ core feature, not an afterthought:
   B, the model given passages pulled from our store). Everything else — model,
   settings, prompt wording, the week covered, output format — is identical, so the
   only difference between the two documents is the retrieval.
-- **Every comparison run is saved** with its inputs: the week and data snapshot, the
-  model name and settings, the full prompt sent for each version, the passages
-  retrieved for version B, and both outputs. A run can be re-opened and re-read
-  later.
+- **Reports are ephemeral.** A comparison run's reports and scores are shown when it
+  finishes and are not stored (atlas OPEN-24); they may be made downloadable.
 - **The app shows the comparison side by side**, with measurements, not just two
   blocks of text. The document's conclusions are aggregate (which topics, how big,
   which way they're moving), so both versions are scored against one answer key
@@ -357,18 +356,15 @@ core feature, not an afterthought:
 - **Measurements are computed by code where possible**, and, where a model is used to
   judge, the judging prompt is saved with the result and is the same for both
   versions.
-- The README links to a saved example comparison, so reviewers can see the result
-  even before running anything.
 
 ### Retrieval, ingestion, and visualization
 
-- **Ingestion is automated and repeatable:** one command fetches a week of community
-  data, splits it into passages, turns each into a numeric fingerprint for similarity
-  search (an *embedding*), and stores it. Running it twice on the same week must not
-  create duplicates.
-- **Plan for too much data:** filter to the week, remove duplicates, cap the number
-  of posts per thread, and summarize long threads before storing. Document the limits
-  chosen and why.
+- **Ingestion is automated and repeatable:** posts are fetched and processed day by
+  day through one catch-up operation (atlas plate 40); each post or comment is
+  embedded whole, once. Fetching the same day twice must not create duplicates.
+- **Too much data** is handled as Brian decided (atlas OPEN-14, OPEN-19): drop deleted
+  and bot posts, fold short agreeing replies into their parent's upvotes, and delete
+  posts that fall into no cluster within three days.
 - **Record retrieval statistics:** every time a stored passage is retrieved, count
   it. The app shows which passages are retrieved most.
 - **Show a flattened picture of the embeddings:** squash them down to two dimensions
