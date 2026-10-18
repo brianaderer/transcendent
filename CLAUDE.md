@@ -163,8 +163,9 @@ Commit atlas changes on their own, with messages starting `Atlas:` — for examp
 |---|---|
 | `/isolate-and-pin` | Any bug, regression, or "why is this failing". Gathers evidence, forms competing explanations, and tests each one in parallel in its own worktree to measure what each fix would actually do before anything is installed. |
 | `/tdd` | One explanation or one defect, taken from a failing test to a proven fix in an isolated worktree. Used by `/isolate-and-pin` for each explanation, or directly for a single known bug. |
-| `/document-commit [sha \| from..to]` | Documents a commit or range, then traces everything it touches or is referenced by and updates that documentation too, until nothing reachable is stale. Runs automatically after every commit (§6). Holds every change to the rules in §1, §3, §6 and §7 and the README's *Primary objective*; treats the README's boot steps as the most important document. |
-| `/uncle-bob [sha \| from..to]` | Clean Code review (§8) of the source changed by a commit or range, with ranked findings and a concrete fix for each. Runs automatically after every commit that changes source code; Must-fix findings are fixed before new work. |
+| `/commit-chain [sha]` | Runs automatically after every commit (§6): documents the commit's diff in an isolated worktree, lands the documentation commit, then Clean Code reviews both commits. |
+| `/document-commit [sha \| from..to]` | By hand, for a range: documents it, then traces everything it touches or is referenced by and updates that documentation too, until nothing reachable is stale. Runs inside `/commit-chain` automatically. Holds every change to the rules in §1, §3, §6 and §7 and the README's *Primary objective*; treats the README's boot steps as the most important document. |
+| `/uncle-bob [sha \| from..to]` | Clean Code review (§8) of the source changed by a commit or range, with ranked findings and a concrete fix for each. Runs inside `/commit-chain` automatically; Must-fix findings are fixed before new work. |
 | `/test-boot [ref] [github]` | Plays the reviewer: fresh clone in a blank folder, README boot steps followed exactly, demo checked. Reports success or every friction point with the fix for each. Changes nothing. |
 
 ---
@@ -218,47 +219,59 @@ fan-out tracing in `/document-commit` reliable.
 1. Write the code and its tests.
 2. Update the documentation for what you changed, in the same commit.
 3. Commit.
-4. The hooks (below) then run, in this order:
-   - **`/uncle-bob`**, if the commit changed source code or tests: a Clean Code review
-     against §8. Must-fix findings are fixed in the next commit, before any new work.
-     The review runs first so that a fix commit it prompts is documented once, not
-     twice.
-   - **`/document-commit`**: checks your documentation, follows every reference
-     outward, fixes anything stale, and makes a separate documentation commit.
+4. The hooks (below) run **`/commit-chain`** on the new commit.
+
+### The commit chain
+
+`/commit-chain <sha>` composes the documentation pass and the Clean Code review into
+one isolated run per commit:
+
+1. **Open a worktree at `<sha>`** (`.chain-worktrees/`, ignored by git). Other work
+   going on in the main folder — uncommitted edits, staged files, newer commits —
+   never leaks in.
+2. **Document the diff.** The `document-commit` agent works only from `<sha>`'s diff,
+   traces outward from it, and commits the documentation in the worktree.
+3. **Land the documentation commit** on the current branch, committing only its
+   documentation files and leaving anything else staged or edited untouched. If those
+   same files have local edits, it's parked on the branch `docs-sync/<sha>` instead.
+4. **Review exactly two commits** — `<sha>` and its documentation commit — with the
+   `uncle-bob` agent. The second matters because documentation passes correct comments
+   and docstrings, which the review checks. Skipped if neither commit touches source.
+5. **Close the worktree**, run `/test-boot` if boot steps changed, and report.
+
+Must-fix review findings are fixed in the next commit, before new work; that commit
+runs the chain again. If the same finding survives two rounds, stop and explain it to
+Brian. Two model calls per commit, no more.
 
 ### The automatic hook
 
-Which steps run, and in what order, is decided in one place:
-`.claude/hooks/post-commit-steps.sh`. Both hooks ask it, so they can't disagree.
-
 - **Inside Claude Code:** a `PostToolUse` hook (`.claude/settings.json` →
   `.claude/hooks/claude-post-commit.sh`) notices each successful `git commit` and
-  tells Claude which steps to run. When told, run them before making any further code
-  change.
+  tells Claude to run `/commit-chain <sha>`. When told, run it before making any
+  further code change.
 - **Outside Claude Code** (a commit from a terminal): the git hook
-  `.githooks/post-commit` runs the same steps headlessly — the review read-only,
-  printed to the terminal. A step that fails is reported, and the next one still runs.
-  Enable it once per clone with `git config core.hooksPath .githooks`. Skip it for one
-  commit with `SKIP_POST_COMMIT_STEPS=1 git commit …`, which skips both the review and
-  the documentation pass (the older name `SKIP_DOC_SYNC` still works).
-- **Tests:** `tests/hooks/test_commit_checks.sh` covers every decision the hooks make.
-  Run it after any change to `.claude/hooks/` or `.githooks/`.
+  `.githooks/post-commit` starts `/commit-chain` headlessly **in the background** and
+  returns at once; the log is `.chain-worktrees/logs/<sha>.log`. Enable it once per
+  clone with `git config core.hooksPath .githooks`. Skip it for one commit with
+  `SKIP_POST_COMMIT_STEPS=1 git commit …` (the older name `SKIP_DOC_SYNC` still works).
+- **Tests:** `tests/hooks/test_commit_checks.sh` covers the hook decisions and the
+  worktree landing. Run it after any change to `.claude/hooks/` or `.githooks/`.
 - **Requirements:** the Claude Code hook needs `jq` on the path; the git hook needs the
   `claude` command and silently does nothing without it. Details in
   `docs/architecture/tooling.md`.
 
 ### The loop guard — never weaken it
 
-`/document-commit` produces a commit, so without a guard it would trigger itself
-forever. Three layers stop that:
+The chain produces a commit, so without a guard it would trigger itself forever.
+Three layers stop that:
 
-1. **Every documentation-sync commit carries a `Docs-Sync: <range>` trailer.** Never
-   make a commit with that trailer by hand, and never remove it from one.
+1. **Every documentation commit carries a `Docs-Sync: <sha>` trailer**, and landing
+   keeps it. Never make a commit with that trailer by hand, and never remove it.
 2. **`.claude/hooks/is-skippable-commit.sh` is the single check** used by both hooks
-   (through `post-commit-steps.sh`) and by both skills. It skips any commit carrying
-   the trailer, and any commit that changes only `docs/` and `README.md`.
-3. **The git hook also skips** when running inside Claude Code or while a sync is
-   already running (`DOC_SYNC_RUNNING`).
+   and the skills. It skips any commit carrying the trailer, and any commit that
+   changes only `docs/` and `README.md`.
+3. **The git hook also skips** whenever it runs inside a Claude Code session — which
+   includes the headless chain's own commits.
 
 Any change to the hooks or the skills must keep all three layers working, and
 `tests/hooks/test_commit_checks.sh` must pass.

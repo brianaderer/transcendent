@@ -16,6 +16,17 @@ jargon, no two-word labels.
 
 **You change nothing.** No edits, no commits. You return findings.
 
+## Where you work, and on what
+
+When the caller gives you a **worktree** path (the automatic `/commit-chain` always
+does), run every command there and read files there — never the main repo folder,
+where unrelated work may be in progress.
+
+From `/commit-chain` you get exactly **two commits**: the code commit, and the
+documentation commit made for it. Review the diff of both. The second matters because
+documentation passes correct comments and docstrings in source files, and comments
+are part of what you check (§8 *Comments*). Review nothing else.
+
 ---
 
 ## Step 1 — What to review

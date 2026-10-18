@@ -1,10 +1,15 @@
 ---
 name: document-commit
-description: Documents a commit or a range of commits, then traces every file, doc, and cross-reference the change reaches and updates those too, repeating until nothing reachable is stale. Produces one documentation commit marked with a Docs-Sync trailer so it never triggers itself. Takes a commit (abc123), a range (abc123..def456), or nothing (HEAD). Called automatically after every commit by the repo's hooks; also run it by hand on any range.
+description: Documents a commit or a range of commits, then traces every file, doc, and cross-reference the change reaches and updates those too, repeating until nothing reachable is stale. Produces one documentation commit marked with a Docs-Sync trailer so it never triggers itself. Takes a commit (abc123), a range (abc123..def456), or nothing (HEAD). Runs automatically inside /commit-chain after every commit; run it by hand on a range.
 argument-hint: "[commit | from..to]"
 ---
 
 # /document-commit
+
+**This is the by-hand version, for documenting a range of commits.** After every
+commit, the hooks run `/commit-chain` instead, which documents that commit's diff in an
+isolated worktree and then reviews it. Running this by hand works in the main folder,
+so do it when no other work is in progress.
 
 Argument: `$ARGUMENTS` (empty means `HEAD`).
 

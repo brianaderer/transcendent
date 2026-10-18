@@ -7,11 +7,12 @@ set -uo pipefail
 
 REPO_ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 HOOKS="$REPO_ROOT/.claude/hooks"
-SCRATCH_ROOT="$REPO_ROOT/.test-tmp"
+mkdir -p "$REPO_ROOT/.test-tmp"
+SCRATCH_ROOT=$(mktemp -d "$REPO_ROOT/.test-tmp/run.XXXXXX")
+trap 'rm -rf "$SCRATCH_ROOT"' EXIT
 failures=0
 
 new_repo() {
-  mkdir -p "$SCRATCH_ROOT"
   local dir
   dir=$(mktemp -d "$SCRATCH_ROOT/repo.XXXXXX")
   git -C "$dir" init -q
@@ -27,7 +28,7 @@ commit_files() {
     mkdir -p "$dir/$(dirname "$path")"
     echo "$RANDOM" >> "$dir/$path"
   done
-  git -C "$dir" add -A
+  git -C "$dir" add -- "$@"
   git -C "$dir" commit -q -m "$message"
 }
 
@@ -89,26 +90,53 @@ test_is_skippable_commit() {
   expect_exit 2 "an unknown commit is an error, not a 'skip'" in_repo "$repo" "$HOOKS/is-skippable-commit.sh" deadbeef
 }
 
-test_post_commit_steps() {
+test_changed_files() {
   local repo
-  repo=$(new_repo); commit_files "$repo" "code" src/a.py
-  expect_output "uncle-bob document-commit" "a code commit is reviewed, then documented" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
-  commit_files "$repo" "config" config/foo.json
-  expect_output "document-commit" "a config-only commit is documented, not reviewed" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
-  commit_files "$repo" "docs" docs/a.md
-  expect_output "" "a docs-only commit needs no steps" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
+  repo=$(new_repo); commit_files "$repo" "base" README.md
   git -C "$repo" checkout -q -b feature
   commit_files "$repo" "feature" src/feature.py
   git -C "$repo" checkout -q -
+  commit_files "$repo" "main moves on" docs/main.md
   git -C "$repo" merge -q --no-ff feature -m "merge feature"
-  expect_output "uncle-bob document-commit" "a merge commit that brings in a .py file is reviewed, then documented" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
-  expect_exit 2 "an unknown commit is an error, not a list of steps" in_repo "$repo" "$HOOKS/post-commit-steps.sh" deadbeef
+  expect_output "src/feature.py" "a merge lists only what the merged branch brought in" in_repo "$repo" "$HOOKS/changed-files.sh" HEAD
+}
+
+test_chain_worktree_lands_docs_without_touching_other_work() {
+  local repo base worktree docs
+  repo=$(new_repo); commit_files "$repo" "code" src/a.py docs/a.md
+  base=$(git -C "$repo" rev-parse HEAD)
+  worktree=$(in_repo "$repo" "$HOOKS/chain-worktree.sh" create "$base")
+  echo "documented" >> "$worktree/docs/a.md"
+  git -C "$worktree" commit -q -am "docs: sync" -m "Docs-Sync: $base"
+  docs=$(git -C "$worktree" rev-parse HEAD)
+  commit_files "$repo" "other work" src/b.py
+  echo "staged" >> "$repo/src/a.py"; git -C "$repo" add src/a.py
+  expect_exit 0 "landing the docs commit succeeds with other work staged" in_repo "$repo" "$HOOKS/chain-worktree.sh" land "$base" "$docs"
+  expect_output "docs/a.md" "the landed commit contains only the docs" git -C "$repo" show --name-only --format= HEAD
+  expect_exit 0 "the landed commit keeps the Docs-Sync trailer" in_repo "$repo" "$HOOKS/is-skippable-commit.sh" HEAD
+  expect_output "M  src/a.py" "the other staged work is still staged" git -C "$repo" status --porcelain -- src
+  in_repo "$repo" "$HOOKS/chain-worktree.sh" remove "$worktree"
+}
+
+test_chain_worktree_parks_docs_when_their_files_have_local_edits() {
+  local repo base worktree docs
+  repo=$(new_repo); commit_files "$repo" "code" src/a.py docs/a.md
+  base=$(git -C "$repo" rev-parse HEAD)
+  worktree=$(in_repo "$repo" "$HOOKS/chain-worktree.sh" create "$base")
+  echo "documented" >> "$worktree/docs/a.md"
+  git -C "$worktree" commit -q -am "docs: sync" -m "Docs-Sync: $base"
+  docs=$(git -C "$worktree" rev-parse HEAD)
+  echo "someone else is editing" >> "$repo/docs/a.md"
+  expect_exit 3 "landing is refused when the docs' files have local edits" in_repo "$repo" "$HOOKS/chain-worktree.sh" land "$base" "$docs"
+  expect_exit 0 "the docs commit is parked on a branch" git -C "$repo" rev-parse --verify "docs-sync/$(git -C "$repo" rev-parse --short "$base")"
+  in_repo "$repo" "$HOOKS/chain-worktree.sh" remove "$worktree"
 }
 
 test_has_source_changes
 test_is_skippable_commit
-test_post_commit_steps
-rm -rf "$SCRATCH_ROOT"
+test_changed_files
+test_chain_worktree_lands_docs_without_touching_other_work
+test_chain_worktree_parks_docs_when_their_files_have_local_edits
 
 if [ "$failures" -gt 0 ]; then
   echo "$failures test(s) failed"; exit 1

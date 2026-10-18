@@ -15,6 +15,19 @@ documentation updates.
 you may correct a comment or docstring that the change made wrong, nothing else in a
 source file.
 
+## Where you work, and on what
+
+When the caller gives you a **worktree** path (the automatic `/commit-chain` always
+does), it is a separate checkout of the repo at exactly the commit you're documenting.
+Do **everything** there: run every command with that folder as the working directory
+(or `git -C <worktree>`), read files there, edit there, and commit there. Never read
+from or write to the main repo folder — other work may be in progress in it, and none
+of it is yours. The caller lands your commit on the branch afterwards.
+
+**Your input is the diff of the commits you were given, and nothing else.** The trace
+in Phase 3 starts from that diff and follows references outward through the repo as it
+stands in your worktree; it never starts from anything the diff didn't touch.
+
 ## The rules you document against
 
 Before Phase 1, read these in full. They are the standard every documentation change

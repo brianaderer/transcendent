@@ -1,38 +1,33 @@
 #!/usr/bin/env bash
 # Git post-commit hook for commits made OUTSIDE Claude Code (e.g. in a terminal).
-# Runs the post-commit skills headlessly, in the order post-commit-steps.sh gives:
-# /uncle-bob (read-only review, printed here), then /document-commit.
-# Inside Claude Code, the PostToolUse hook handles it instead (CLAUDECODE is set).
+# Starts /commit-chain on the new commit in the background and returns at once: the
+# chain works in its own worktree, so it never touches what you're doing here.
+# Its log is .chain-worktrees/logs/<sha>.log.
+# Inside Claude Code, the PostToolUse hook handles it instead (CLAUDECODE is set,
+# which also covers the chain's own commits, made from inside its headless session).
 # Enable once per clone:  git config core.hooksPath .githooks
 # Skip once:              SKIP_POST_COMMIT_STEPS=1 git commit ...
 #                         (SKIP_DOC_SYNC=1, the older name, still works)
 set -euo pipefail
 [ -n "${CLAUDECODE:-}" ] && exit 0
 [ -n "${SKIP_POST_COMMIT_STEPS:-${SKIP_DOC_SYNC:-}}" ] && exit 0
-[ -n "${DOC_SYNC_RUNNING:-}" ] && exit 0          # the agent's own commit, mid-run
 command -v claude >/dev/null || exit 0
-
-read_only_tools=(
-  "Read" "Grep" "Glob" "Agent"
-  "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)"
-  "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git grep:*)" "Bash(git status:*)"
-  "Bash(ls:*)" "Bash(.claude/hooks/changed-files.sh:*)" "Bash(.claude/hooks/has-source-changes.sh:*)"
-  "Bash(.claude/hooks/is-skippable-commit.sh:*)" "Bash(.claude/hooks/post-commit-steps.sh:*)"
-)
-writing_tools=("Edit" "Write" "Bash(git add:*)" "Bash(git commit:*)")
-
-run_uncle_bob() {
-  claude -p "/uncle-bob $1" --allowedTools "${read_only_tools[@]}"
-}
-
-run_document_commit() {
-  DOC_SYNC_RUNNING=1 claude -p "/document-commit $1" --permission-mode acceptEdits \
-    --allowedTools "${read_only_tools[@]}" "${writing_tools[@]}"
-}
 
 repo=$(git rev-parse --show-toplevel)
 sha=$(git rev-parse --short HEAD)
-for step in $("$repo/.claude/hooks/post-commit-steps.sh" "$sha"); do
-  echo "post-commit: /$step $sha (SKIP_POST_COMMIT_STEPS=1 to skip)…"
-  "run_${step//-/_}" "$sha" || echo "post-commit: /$step $sha failed (exit $?); run it by hand" >&2
-done
+"$repo/.claude/hooks/is-skippable-commit.sh" "$sha" && exit 0
+
+chain_tools=(
+  "Read" "Grep" "Glob" "Agent" "Edit" "Write"
+  "Bash(git log:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git diff-tree:*)"
+  "Bash(git rev-parse:*)" "Bash(git rev-list:*)" "Bash(git grep:*)" "Bash(git status:*)"
+  "Bash(git -C:*)" "Bash(git add:*)" "Bash(git commit:*)" "Bash(ls:*)"
+  "Bash(.claude/hooks/changed-files.sh:*)" "Bash(.claude/hooks/has-source-changes.sh:*)"
+  "Bash(.claude/hooks/is-skippable-commit.sh:*)" "Bash(.claude/hooks/chain-worktree.sh:*)"
+)
+
+log_dir="$repo/.chain-worktrees/logs"
+mkdir -p "$log_dir"
+echo "post-commit: /commit-chain $sha started in the background → $log_dir/$sha.log"
+nohup claude -p "/commit-chain $sha" --permission-mode acceptEdits \
+  --allowedTools "${chain_tools[@]}" > "$log_dir/$sha.log" 2>&1 &

@@ -1,10 +1,14 @@
 ---
 name: uncle-bob
-description: Clean Code review (Robert C. Martin) of the source code changed by a commit or range — names, function size and arguments, comments, error handling, duplication, levels of abstraction, tests — with ranked findings and a concrete fix for each. Takes a commit, a range (from..to), or nothing (HEAD). Called automatically after every commit by the repo's hooks; also run it by hand on any range.
+description: Clean Code review (Robert C. Martin) of the source code changed by a commit or range — names, function size and arguments, comments, error handling, duplication, levels of abstraction, tests — with ranked findings and a concrete fix for each. Takes a commit, a range (from..to), or nothing (HEAD). Runs automatically inside /commit-chain after every commit; run it by hand on any range.
 argument-hint: "[commit | from..to]"
 ---
 
 # /uncle-bob
+
+**This is the by-hand version, for reviewing any commit or range.** After every
+commit, the hooks run `/commit-chain`, which runs this review automatically on the
+commit and its documentation commit.
 
 Argument: `$ARGUMENTS` (empty means `HEAD`).
 

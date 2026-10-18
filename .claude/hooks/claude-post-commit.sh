@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code PostToolUse hook (matcher: Bash).
-# After a successful `git commit` inside a Claude Code session, tells Claude which
-# post-commit skills to run (see post-commit-steps.sh). Silent otherwise.
+# After a successful `git commit` inside a Claude Code session, tells Claude to run
+# /commit-chain on it. Silent for skippable commits and for anything else.
 set -euo pipefail
 
 fresh_commit_max_age_seconds=60   # older HEAD means the commit command failed
@@ -17,9 +17,8 @@ head_commit_is_fresh() {
 }
 
 instructions_for() {
-  local sha=$1 steps=$2 commands
-  commands=$(sed "s|.*|/& $sha|" <<<"$steps" | paste -sd ',' - | sed 's/,/, then /g')
-  jq -n --arg text "Commit $sha was just made. Per CLAUDE.md §6, run $commands now, before any further code changes." \
+  local sha=$1
+  jq -n --arg text "Commit $sha was just made. Per CLAUDE.md §6, run /commit-chain $sha now, before any further code changes." \
     '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $text}}'
 }
 
@@ -30,6 +29,5 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 head_commit_is_fresh || exit 0
 
 sha=$(git rev-parse --short HEAD)
-steps=$(.claude/hooks/post-commit-steps.sh "$sha")
-[ -n "$steps" ] || exit 0
-instructions_for "$sha" "$steps"
+.claude/hooks/is-skippable-commit.sh "$sha" && exit 0
+instructions_for "$sha"

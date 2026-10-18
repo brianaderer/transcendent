@@ -6,3 +6,6 @@
 
 # Throwaway repos made by tests/hooks
 .test-tmp/
+
+# Isolated worktrees made by /commit-chain
+.chain-worktrees/
