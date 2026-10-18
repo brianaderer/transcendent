@@ -21,6 +21,7 @@ flowchart LR
     VPG[/"volume: postgres-data"/]
     VRD[/"volume: redis-data"/]
     VMOD[/"volume: model-cache<br/>the embedding model's files"/]
+    VLOG[/"volume: logs<br/>see 05"/]
     ENV[/".env<br/>OPENROUTER_API_KEY"/]
 
     FE --> API
