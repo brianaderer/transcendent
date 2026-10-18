@@ -145,6 +145,9 @@ the same piece of work, and checked against the plates before committing:
 same URL, so the link never changes. The URL is recorded at the top of `README.md` and
 in `00-index.md`. After each change: commit, then republish.
 
+Commit atlas changes on their own, with messages starting `Atlas:` — for example
+`Atlas: 21 (draft): job table and status values`.
+
 ### 3.3 Scoping by conversation — turning what Brian says into plates
 
 Brian scopes by talking. He describes what he wants in whatever order it occurs to
@@ -173,9 +176,6 @@ each thing Brian says:
 
 Scope stays with what Brian has said. Don't design ahead of him; a plate with three
 specified boxes is better than one with ten guessed ones.
-
-Commit atlas changes on their own, with messages starting `Atlas:` — for example
-`Atlas: 21 (draft): job table and status values`.
 
 ## 4. Git
 
@@ -322,10 +322,13 @@ value. The brief is summarized in `README.md` → *Primary objective*.
   single `make` target). Every extra manual step is a chance for the demo to fail.
 - Secrets never go in the repo. Provide `.env.example` with every variable named and
   explained, and say in the README exactly which keys the reviewer must supply.
-- **The demo must work without live crawling.** Ship a small, committed snapshot of
-  one week of community data and a command that loads it, so the app runs even if
-  the source site is slow, rate-limits, or blocks the crawler. Live ingestion is a
-  separate, optional command.
+- **First start fetches live, and must show it's working.** Nothing is pre-seeded
+  (Brian's decision, atlas OPEN-13): the first `docker compose up` fetches and
+  processes the history through the same catch-up the daily pull uses. While it runs,
+  the app shows progress, and the README says how long to expect. If first start
+  proves slow or fragile, the fallback in OPEN-13 is to commit the processed data.
+  (The brief itself says nothing about live versus pre-loaded data; an earlier version
+  of this rule required a snapshot, and that was our assumption, not the brief's.)
 - **Before calling boot-affecting work finished, run `/test-boot`.** It clones the
   repo into a blank folder, follows the README exactly as a reviewer would, and
   reports success or every friction point. `/document-commit` runs it automatically
