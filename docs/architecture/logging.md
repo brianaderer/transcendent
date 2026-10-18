@@ -15,7 +15,8 @@ fields from every service. Plan: [atlas plate 05](../atlas/05-logging.md).
 
 ## How it works
 Each line has `time` (UTC), `service`, `level`, `event`, `trace_id`, any extra fields, and
-`error` with the full traceback when an exception is logged. The trace id lives in a
+`error` with the full traceback when an exception is logged. An extra field that
+shares a name with a standard one is dropped, so it can never overwrite it. The trace id lives in a
 context variable, so it follows the code that runs inside a `tracing` block.
 
 ## Uses
