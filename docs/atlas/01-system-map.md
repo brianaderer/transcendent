@@ -32,4 +32,4 @@ flowchart LR
 
 ## Open in this draft
 
-- `?` The models (OPEN-5), deferred until the agentic loop is designed.
+- `?` The models (OPEN-5). The agents are on [60](60-agents.md).

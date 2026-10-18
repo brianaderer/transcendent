@@ -4,7 +4,7 @@
 
 | ID | Question | Raised on |
 |---|---|---|
-| OPEN-5 | Which models write the document, make the decisions, and make the embeddings? Deferred by Brian until the agentic loop (the sequence of LLM steps and the decisions each makes) is designed. The earlier recommendation stands as a starting point: Claude for writing and decisions, and a small open embedding model inside the container so reviewers need only one key. | [40](40-backend.md) |
+| OPEN-5 | Which models write the document, make the decisions, and make the embeddings? The agentic loop is now on plate 60: two LangGraph agents, one that ratifies tags and one that writes the report. The earlier recommendation stands as a starting point: Claude for writing and decisions, and a small open embedding model inside the container so reviewers need only one key. | [40](40-backend.md) |
 
 ## Resolved
 

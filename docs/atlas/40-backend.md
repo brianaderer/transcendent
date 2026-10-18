@@ -19,6 +19,7 @@ Everything else on this plate is *proposed*.
 | Data store | **Postgres with pgvector** — specified (OPEN-4, resolved) |
 | Writing model | Claude, through Anthropic's API *(proposed, OPEN-5)* |
 | Embedding model | A small open model run inside the container *(proposed, OPEN-5)* |
+| Agents | **LangGraph / LangChain** — specified. Two agents, see [60](60-agents.md) |
 | Running it | Its own service in Docker Compose *(proposed)* |
 
 ## Modules *(proposed)*
