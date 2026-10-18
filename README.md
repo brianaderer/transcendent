@@ -212,6 +212,13 @@ The rules are in [`CLAUDE.md`](CLAUDE.md), section 3. In short:
 - Write anything undecided as a full-sentence question on the open questions plate.
 - Commit, then republish the page to the same link.
 
+Most plates are written while Brian describes what he wants in conversation. Claude
+sorts each thing he says onto the plate it belongs to, starting with boxes on the
+system map and giving a box its own plate once there is enough detail to need one.
+What Brian said is written as specified; anything Claude filled in is marked as a
+proposal, and anything unclear becomes an open question with Claude's recommendation
+rather than a pause in the conversation. The full steps are in `CLAUDE.md` §3.3.
+
 ---
 
 ## Other things in this repo
