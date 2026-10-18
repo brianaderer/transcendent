@@ -5,6 +5,7 @@
 | ID | Question | Raised on |
 |---|---|---|
 | OPEN-13 | For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) If prewarm proves slow or fragile, the fallback is committing the computed database. | [04](04-environment.md) |
+| OPEN-28 | How are database changes made once the tables exist? Today setup runs one schema file of `CREATE TABLE IF NOT EXISTS` statements on every start, which creates missing tables but never changes existing ones: adding a column to an existing table only takes effect after erasing the database. The recommendation: numbered plain-SQL migration files (`001_initial.sql`, `002_…`) applied in order by setup, with a small table recording which have run, each applied in its own transaction. The alternative is Alembic, the standard Python migration tool, which reviewers may recognize but which brings in SQLAlchemy, a library the rest of the code doesn't use. | [40](40-backend.md) |
 
 ## Resolved
 
