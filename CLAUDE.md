@@ -145,6 +145,35 @@ the same piece of work, and checked against the plates before committing:
 same URL, so the link never changes. The URL is recorded at the top of `README.md` and
 in `00-index.md`. After each change: commit, then republish.
 
+### 3.3 Scoping by conversation — turning what Brian says into plates
+
+Brian scopes by talking. He describes what he wants in whatever order it occurs to
+him; the agent's job is to break it down into plates without being told how. After
+each thing Brian says:
+
+1. **Sort every statement onto the plate it belongs to.** Whole-system shape goes on
+   `01`; a part with its own inner workings goes on that part's plate. If no plate
+   fits, create one with the next free number in the right area (§3.1) and add it to
+   `00-index.md`.
+2. **Start broad, split when a box gets crowded.** Everything begins as a box on `01`.
+   When Brian has said enough about one box that it needs its own diagram, give it a
+   plate, move the detail there, leave the box on `01` with a link to it.
+3. **Keep his words and yours apart.** What Brian said is written as specified. Anything
+   the agent had to fill in to make the plate coherent is marked as a proposal. Never
+   promote a proposal to specified without Brian saying so.
+4. **Don't interrupt the flow.** Ambiguities don't stop the conversation. Each one is
+   marked `?` on its plate and written up as an `OPEN-N` question (full sentences, §1)
+   — with the agent's recommendation. Where something has an obvious default, write the
+   default as a proposal instead of asking.
+5. **Record decisions as they're made.** When Brian answers an open question, move it to
+   Resolved with the date and update every plate it affects.
+6. **Commit and reply.** Commit the plates (`Atlas:` message), carry the change into the
+   presentation page (§3.2), then answer Brian in a few lines of prose: which plates
+   changed, what new open questions there are, and the agent's recommendation on each.
+
+Scope stays with what Brian has said. Don't design ahead of him; a plate with three
+specified boxes is better than one with ten guessed ones.
+
 Commit atlas changes on their own, with messages starting `Atlas:` — for example
 `Atlas: 21 (draft): job table and status values`.
 
