@@ -134,3 +134,13 @@ def test_an_error_page_that_is_not_json_keeps_its_status_and_text():
 
     with pytest.raises(ArchiveUnavailable, match="403: Forbidden"):
         archive(handler).comments_created_between(DAY_START, DAY_END)
+
+
+def test_a_success_page_that_is_not_json_is_reported_as_unavailable():
+    with pytest.raises(ArchiveUnavailable, match="200: <html>maintenance"):
+        archive(lambda request: httpx.Response(200, text="<html>maintenance")).posts_by_id(["p1"])
+
+
+def test_an_error_answer_without_a_message_still_names_its_status():
+    with pytest.raises(ArchiveUnavailable, match="404: no reason given"):
+        archive(lambda request: httpx.Response(404, json={"data": None})).posts_by_id(["p1"])

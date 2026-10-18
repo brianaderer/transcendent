@@ -28,8 +28,8 @@ in build step 3; posts are stored as `pending` until then.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,
   `posts_by_id`; `connect_to_archive()` builds the real one. Raises `ArchiveUnavailable`
   when a request still fails after five tries, naming the last reason (a status, the
-  archive's "slow down" message, a network error, or the start of an error page that isn't
-  the archive's own). The archive's "slow down" message is always
+  archive's "slow down" message, a network error, the start of an answer that isn't the
+  archive's usual JSON, or "no reason given"). The answer is read once. The archive's "slow down" message is always
   retried, whatever status it comes with (it often arrives as 422); any other 4xx error
   except 429 is a bad request and is not retried.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;

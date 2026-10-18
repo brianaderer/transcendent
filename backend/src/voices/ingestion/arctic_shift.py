@@ -80,24 +80,32 @@ class ArcticShift:
             raise _TryAgain(repr(error)) from error
         if _worth_retrying(response.status_code):
             raise _TryAgain(f"status {response.status_code}")
-        if response.status_code == httpx.codes.OK and not response.json().get("error"):
-            return response.json()["data"]
-        error = _error_text(response)
-        if SLOW_DOWN in error:
-            raise _TryAgain(f"slow down: {error}")
-        raise ArchiveUnavailable(f"{path}: {response.status_code}: {error}")
+        body = _json_or_none(response)
+        if response.status_code == httpx.codes.OK and body and not body.get("error"):
+            return body["data"]
+        reason = _reason(response, body)
+        if SLOW_DOWN in reason:
+            raise _TryAgain(f"slow down: {reason}")
+        raise ArchiveUnavailable(f"{path}: {response.status_code}: {reason}")
 
 
 class _TryAgain(Exception):
     """The archive is busy or briefly unreachable; the same request may work in a moment."""
 
 
-def _error_text(response: httpx.Response) -> str:
-    """The archive's own error message, or the start of whatever page came back instead."""
+def _json_or_none(response: httpx.Response) -> dict | None:
     try:
-        return str(response.json().get("error"))
+        body = response.json()
     except ValueError:
-        return response.text[:ERROR_TEXT_CHARACTERS]
+        return None
+    return body if isinstance(body, dict) else None
+
+
+def _reason(response: httpx.Response, body: dict | None) -> str:
+    """The archive's own error message, or the start of whatever page came back instead."""
+    if body is None:
+        return response.text[:ERROR_TEXT_CHARACTERS] or "an empty answer"
+    return str(body.get("error") or "no reason given")
 
 
 def _worth_retrying(status: int) -> bool:
