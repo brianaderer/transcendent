@@ -3,8 +3,8 @@
 [← Index](00-index.md) · [01 System Map](01-system-map.md) · [30 Frontend](30-frontend.md) · [Open questions](90-open-questions.md)
 
 The server side: the API the frontend calls, and the modules behind it that ingest,
-store, retrieve, write and compare. Brian specified **FastAPI**. Everything else on
-this plate is *proposed*.
+store, retrieve, write and compare. Brian specified **FastAPI** and **Postgres**.
+Everything else on this plate is *proposed*.
 
 ## Stack
 
@@ -16,7 +16,7 @@ this plate is *proposed*.
 | Dependencies | uv, with a lockfile *(proposed)* |
 | Tests | pytest, with stand-ins for the model, the embedder and the website (`CLAUDE.md` §7) *(proposed)* |
 | Lint and format | Ruff for both *(proposed)* |
-| Data store | Postgres with the pgvector extension *(proposed, OPEN-4)* |
+| Data store | **Postgres** — specified. How similarity search is done (the pgvector extension or otherwise) is on hold until the prediction approach is settled — OPEN-4 |
 | Writing model | Claude, through Anthropic's API *(proposed, OPEN-5)* |
 | Embedding model | A small open model run inside the container *(proposed, OPEN-5)* |
 | Running it | Its own service in Docker Compose *(proposed)* |
@@ -58,6 +58,6 @@ flowchart LR
 ## Open in this draft
 
 - `?` Which community — OPEN-3. It decides what ingestion fetches.
-- `?` The data store — OPEN-4.
+- `?` How similarity search is done inside Postgres — OPEN-4, on hold until the prediction approach is discussed.
 - `?` The writing model and the embedding model — OPEN-5.
 - `?` Everything marked *proposed* above.
