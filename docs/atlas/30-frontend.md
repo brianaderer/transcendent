@@ -17,7 +17,7 @@ proposed. The screens below are still a proposal.
 | Language and build | TypeScript, built with Vite |
 | Tables | TanStack Table, for the retrieval-statistics list and the comparison measurements |
 | Embedding chart | Apache ECharts — draws a few thousand points in a 2D scatter on a canvas, with hover and coloring built in |
-| Showing the document | The Community Voices Document rendered from markdown |
+| Showing the document | The report's prose, with its committed list of topics, ranks and directions as a small table beside it (OPEN-25) |
 | Styling | Tailwind CSS |
 | API client | Typed client generated from the backend's API description — the backend must publish an OpenAPI description (OPEN-1 resolved) |
 | Tests | Vitest + React Testing Library, with a stand-in backend (MSW) so tests run offline (`CLAUDE.md` §7) |
