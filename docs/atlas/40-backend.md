@@ -57,6 +57,5 @@ flowchart LR
 
 ## Open in this draft
 
-- `?` Replacing authors' usernames with stable pseudonyms in the committed snapshot, since the repo will be public *(proposed)*.
 - `?` The models — OPEN-5, deferred until the agentic loop is designed.
 - `?` Everything marked *proposed* above.
