@@ -29,8 +29,10 @@ in build step 3; posts are stored as `pending` until then.
   `posts_by_id`; `connect_to_archive()` builds the real one. Raises `ArchiveUnavailable`
   when a request still fails after five tries, naming the last reason (a status, the
   archive's "slow down" message, a network error, the start of an answer that isn't the
-  archive's usual JSON, or "no reason given"). The answer is read once. The archive's "slow down" message is always
-  retried, whatever status it comes with (it often arrives as 422); any other 4xx error
+  archive's usual JSON, "an empty answer" when nothing came back, or "no reason given" when
+  the archive's error carries no message). A success status whose answer isn't readable
+  JSON counts as a failure too. Each answer is read once. The archive's "slow down" message
+  is always retried, whatever status it comes with (it often arrives as 422); any other 4xx error
   except 429 is a bad request and is not retried.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;
   `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).

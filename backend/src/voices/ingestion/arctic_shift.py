@@ -102,7 +102,10 @@ def _json_or_none(response: httpx.Response) -> dict | None:
 
 
 def _reason(response: httpx.Response, body: dict | None) -> str:
-    """The archive's own error message, or the start of whatever page came back instead."""
+    """The archive's own error message, or the start of whatever page came back instead.
+
+    Never empty: an answer with no text, or an error with no message, is named as such.
+    """
     if body is None:
         return response.text[:ERROR_TEXT_CHARACTERS] or "an empty answer"
     return str(body.get("error") or "no reason given")
