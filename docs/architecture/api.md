@@ -1,6 +1,6 @@
 # api
 
-**Source:** `backend/src/voices/api/main.py`, `backend/src/voices/health.py`   ·   **Tests:** `backend/tests/test_health_route.py`
+**Source:** `backend/src/voices/api/main.py`, `backend/src/voices/health.py`   ·   **Tests:** `backend/tests/test_health_route.py`, `backend/tests/test_health.py`
 
 ## Purpose
 The web API the frontend calls. Every route lives under `/api`.
@@ -16,7 +16,7 @@ The web API the frontend calls. Every route lives under `/api`.
 
 ## How it works
 Uvicorn runs `create_production_app` (a factory), which reads settings, configures
-logging as the `api` service, and checks Postgres and Redis on each health request. A
+logging under the container's `SERVICE_NAME` (`api`), and checks Postgres and Redis on each health request. A
 health check that fails logs why (`health.database_unreachable`, `health.queue_unreachable`).
 Every request is logged as `api.request` with its method, path, status and time taken,
 under a trace id of its own; a request that raises is logged as `api.request_failed` with

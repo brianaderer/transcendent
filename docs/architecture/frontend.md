@@ -14,7 +14,8 @@ build step 4 ([atlas plates 30](../atlas/30-frontend.md) and [31](../atlas/30-fr
 - `fetchHealth()` and `describeHealth(health)` (the sentence shown) in `src/health.ts`.
 
 ## How it works
-React with TanStack Query, built by Vite and served by `vite preview` on port 5173, which
+React with TanStack Query, built by Vite and served by `vite preview` on port 5173 inside its container (published on
+your computer as `PORT`, see [environment](environment.md)), which
 passes `/api` through to the API container. The backend answers 503 with the same body
 when something is down, so the status reads the body either way.
 

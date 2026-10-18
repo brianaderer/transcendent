@@ -132,7 +132,7 @@ To stop the app, press `Ctrl+C` in that terminal. Everything it has stored is ke
 for next time. To erase all stored data and start fresh, run
 `docker compose down --volumes`.
 
-Only port 5173 is used. If something else on your machine already uses it, `docker
+Only one port is used, 5173 unless you change it. If something else on your machine already uses it, `docker
 compose up` stops with an error naming the port. Set `PORT=5174` (or any free port) in
 `.env`, run the command again, and open http://localhost:5174 instead.
 

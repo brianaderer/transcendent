@@ -1,6 +1,6 @@
 # worker
 
-**Source:** `backend/src/voices/worker/app.py`   ·   **Tests:** none yet (build step 2 adds the jobs)
+**Source:** `backend/src/voices/worker/app.py`   ·   **Tests:** `backend/tests/test_worker.py`
 
 ## Purpose
 Runs background jobs through Celery, with Celery Beat scheduling them. Ingestion's
@@ -14,7 +14,8 @@ day-by-day catch-up arrives in build step 2 ([atlas plate 40](../atlas/40-backen
 Redis is both the queue and the result store. The Beat schedule is empty for now. Celery's
 own logging is replaced with the JSON logging, named after the container (`SERVICE_NAME`):
 the worker's lines say `worker` and go to `worker.jsonl`, Beat's say `beat` and go to
-`beat.jsonl`.
+`beat.jsonl`. Celery is told to keep retrying the Redis connection at startup
+(`broker_connection_retry_on_startup`), which also silences its startup warning.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings), Redis.

@@ -7,7 +7,8 @@ Runs every part of the app with one command, `docker compose up --build`, so a r
 needs only Docker. Plan: [atlas plate 04](../atlas/04-environment.md).
 
 ## Public interface
-- `docker compose up --build` — starts every service; the app is at `http://localhost:5173`.
+- `docker compose up --build` — starts every service; the app is at `http://localhost:5173`
+  (or the port set as `PORT` in `.env`).
 - `docker compose down --volumes` — stops it and erases all stored data.
 - `voices.config.load_settings()` — the backend's settings, read from the environment.
 
@@ -15,8 +16,9 @@ needs only Docker. Plan: [atlas plate 04](../atlas/04-environment.md).
 Seven services. `postgres` (with the pgvector extension) and `redis` start first and
 report healthy. `setup` then creates the tables and exits; `api` and `worker` wait for it
 to finish successfully. `beat` schedules jobs onto Redis. `frontend` serves the built web
-app on port 5173 and passes every `/api` request through to `api`, so only one port is
-exposed. The four backend services are all built from the same `backend/` folder and differ only
+app on port 5173 inside its container, published on your computer as `PORT` (5173 unless
+`.env` says otherwise), and passes every `/api` request through to `api`, so only one port is
+exposed. It runs with `init: true` so `Ctrl+C` stops it at once. The four backend services are all built from the same `backend/` folder and differ only
 in the command they run.
 
 ## Uses
