@@ -3,7 +3,8 @@
 [← Index](00-index.md) · [01 System Map](01-system-map.md) · [04 Environment](04-environment.md) · [Open questions](90-open-questions.md)
 
 **Specified by Brian:** turn-by-turn logging and observability. **Everything is
-logged.** Everything else is *proposed*.
+logged.** It's **under the hood, for developers only**: JSON log files, no viewer,
+nothing in the app (OPEN-27). Everything else is *proposed*.
 
 ## What is logged *(proposed)*
 
@@ -31,4 +32,4 @@ logged.** Everything else is *proposed*.
 
 ## Open in this draft
 
-- `?` Whether to add a dedicated viewer for model turns — OPEN-27.
+- Nothing open on this plate.
