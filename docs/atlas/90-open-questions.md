@@ -4,7 +4,7 @@
 
 | ID | Question | Raised on |
 |---|---|---|
-| OPEN-13 | For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) CLAUDE.md §7 currently requires a committed snapshot so the demo never depends on live fetching, which this decision sets aside. If prewarm proves slow or fragile, the fallback is committing the computed database. | [04](04-environment.md) |
+| OPEN-13 | For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes, likely minutes, dominated by a few hundred tagging calls and embedding on the laptop's processor; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) CLAUDE.md §7 has been rewritten to match: the snapshot rule was our own assumption, not in the brief. If prewarm proves slow or fragile, the fallback is committing the computed database. | [04](04-environment.md) |
 
 ## Resolved
 
