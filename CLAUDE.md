@@ -239,7 +239,8 @@ Which steps run, and in what order, is decided in one place:
   `.githooks/post-commit` runs the same steps headlessly — the review read-only,
   printed to the terminal. A step that fails is reported, and the next one still runs.
   Enable it once per clone with `git config core.hooksPath .githooks`. Skip it for one
-  commit with `SKIP_DOC_SYNC=1 git commit …`.
+  commit with `SKIP_POST_COMMIT_STEPS=1 git commit …`, which skips both the review and
+  the documentation pass (the older name `SKIP_DOC_SYNC` still works).
 - **Tests:** `tests/hooks/test_commit_checks.sh` covers every decision the hooks make.
   Run it after any change to `.claude/hooks/` or `.githooks/`.
 - **Requirements:** the Claude Code hook needs `jq` on the path; the git hook needs the

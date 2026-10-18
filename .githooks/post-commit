@@ -4,10 +4,11 @@
 # /uncle-bob (read-only review, printed here), then /document-commit.
 # Inside Claude Code, the PostToolUse hook handles it instead (CLAUDECODE is set).
 # Enable once per clone:  git config core.hooksPath .githooks
-# Skip once:              SKIP_DOC_SYNC=1 git commit ...
+# Skip once:              SKIP_POST_COMMIT_STEPS=1 git commit ...
+#                         (SKIP_DOC_SYNC=1, the older name, still works)
 set -euo pipefail
 [ -n "${CLAUDECODE:-}" ] && exit 0
-[ -n "${SKIP_DOC_SYNC:-}" ] && exit 0
+[ -n "${SKIP_POST_COMMIT_STEPS:-${SKIP_DOC_SYNC:-}}" ] && exit 0
 [ -n "${DOC_SYNC_RUNNING:-}" ] && exit 0          # the agent's own commit, mid-run
 command -v claude >/dev/null || exit 0
 
@@ -32,6 +33,6 @@ run_document_commit() {
 repo=$(git rev-parse --show-toplevel)
 sha=$(git rev-parse --short HEAD)
 for step in $("$repo/.claude/hooks/post-commit-steps.sh" "$sha"); do
-  echo "post-commit: /$step $sha (SKIP_DOC_SYNC=1 to skip)…"
+  echo "post-commit: /$step $sha (SKIP_POST_COMMIT_STEPS=1 to skip)…"
   "run_${step//-/_}" "$sha" || echo "post-commit: /$step $sha failed (exit $?); run it by hand" >&2
 done

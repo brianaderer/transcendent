@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Offline tests for the commit-hook decision scripts in .claude/hooks/.
-# Each case builds a throwaway git repo and asserts one decision.
+# Each test group builds one throwaway git repo and adds commits to it; each check
+# looks only at the newest commit.
 # Run: tests/hooks/test_commit_checks.sh
 set -uo pipefail
 
@@ -44,12 +45,13 @@ expect_exit() {
 
 expect_output() {
   local expected=$1 description=$2; shift 2
-  local actual
-  actual=$("$@" 2>/dev/null | tr '\n' ' ' | sed 's/ $//')
-  if [ "$actual" = "$expected" ]; then
+  local raw actual status
+  raw=$("$@" 2>/dev/null); status=$?
+  actual=$(tr '\n' ' ' <<<"$raw" | sed 's/ $//')
+  if [ "$status" -eq 0 ] && [ "$actual" = "$expected" ]; then
     echo "ok   - $description"
   else
-    echo "FAIL - $description (expected '$expected', got '$actual')"
+    echo "FAIL - $description (expected '$expected' and exit 0, got '$actual' and exit $status)"
     failures=$((failures + 1))
   fi
 }
@@ -95,6 +97,11 @@ test_post_commit_steps() {
   expect_output "document-commit" "a config-only commit is documented, not reviewed" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
   commit_files "$repo" "docs" docs/a.md
   expect_output "" "a docs-only commit needs no steps" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
+  git -C "$repo" checkout -q -b feature
+  commit_files "$repo" "feature" src/feature.py
+  git -C "$repo" checkout -q -
+  git -C "$repo" merge -q --no-ff feature -m "merge feature"
+  expect_output "uncle-bob document-commit" "a merge commit that brings in a .py file is reviewed, then documented" in_repo "$repo" "$HOOKS/post-commit-steps.sh" HEAD
   expect_exit 2 "an unknown commit is an error, not a list of steps" in_repo "$repo" "$HOOKS/post-commit-steps.sh" deadbeef
 }
 
