@@ -20,12 +20,14 @@ flowchart LR
     subgraph REP["Report agent — one run per document"]
         SW{"Retrieval on?"}
         TOOLS["Tools: search · lookup ·<br/>topic trends · upcoming events"]
+        READ["Tool: read posts<br/>a fixed shuffle, 10 per step"]
         WRITE["LLM writes the Community Voices Document<br/>past week + prediction"]
         SW -->|"B: yes"| TOOLS --> WRITE
-        SW -->|"A: no tools"| WRITE
+        SW -->|"A: no, read only"| READ --> WRITE
     end
     APPLY --> STORE[("Postgres + pgvector")]
     STORE --> TOOLS
+    STORE --> READ
 ```
 
 ## Shared tools: search and lookup
@@ -64,9 +66,18 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
 
 ## Report agent *(proposed details)*
 
-- **One graph, one switch** (`CLAUDE.md` §7). Version A runs with **no tools at all,
-  including search and lookup**: they read our store, and version A is by definition
-  the model without our store. The model knows only the community and the dates.
+**Specified by Brian (2026-10-19, [OPEN-39](90-open-questions.md)):** version A reads
+posts (a fixed shuffle, no retrieval by meaning), at most 10 per step; version B searches by
+meaning. Version A must have read access to posts, but no retrieval by meaning, and a budget
+of 10 posts so it can't go round in a loop of turns. Also specified the same day: both
+versions' report instructions are nudged a little toward prediction, asking, for each topic,
+where it looks to be heading next and why; the rest of the instructions and the document's
+structure stay as they were.
+
+- **One graph, one switch** (`CLAUDE.md` §7). Version A gets **one tool, read posts**, and
+  never search, lookup, topic trends or upcoming events: those are the retrieval, and
+  version A is by definition the model without retrieval. *(Before 2026-10-19 version A had
+  no tools at all, and with nothing concrete to go on it would not name anything specific.)*
   Version B gets four tools:
   - **search** and **lookup** (above) — search is the retrieval: every hit is counted
     for the retrieval statistics;
@@ -76,6 +87,10 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
 - **The tools are the retrieval.** Giving the agent tools rather than pasting posts
   into the prompt lets it look up what it needs as it writes, and its tool calls stream
   live, so the comparison can show exactly what version B looked at.
+- **read posts** (version A's one tool) — whole posts and comments from the period, a
+  few at a time, in an order that has nothing to do with meaning, so version A sees real
+  posts without being handed the relevant ones. Reads aren't retrieval, so they aren't
+  counted in the retrieval statistics.
 - **Same model, same settings, same prompt wording** for both versions; only the tools
   differ.
 
@@ -85,15 +100,23 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
   once, each running that version's two steps, and the results are collected in the order
   A, B. Inside each branch a plain loop of our own over LangChain, `ReportWriter`, takes the
   step's model turns and tool calls; this is the tagging agent's design too, whose decision
-  loop runs inside its own LangGraph fan-out. Version A is offered only the answer; version
-  B is offered the four tools and the answer. The model is Claude Sonnet 5.5 through OpenRouter (`REPORT_MODEL_NAME`).
+  loop runs inside its own LangGraph fan-out. Each version is offered exactly its own tools
+  and the answer: version A `read_posts`, version B the four tools. The model is Claude Sonnet 5.5 through OpenRouter (`REPORT_MODEL_NAME`).
 - **Two steps per version:** first it writes the report for the range, then, as of the day
   before the range began, it predicts the range (plate [50](50-prediction.md), OPEN-22).
   Each step answers through its own answer tool, `Report` (the document in Markdown and its
   list of topics with rank and direction) or `Prediction` (the expected topics with
   directions, and two or three sentences of reasoning); these are the committed lists of
   OPEN-25. Both versions are told, in the same words, to write even with no tools or data,
-  from what the model knows of the community and the season.
+  from what the model knows of the community and the season, and the report asks, for each
+  topic, where it looks to be heading next and why.
+- **What version A's tool sees:** the same days as version B's tools (the range while
+  writing, the 28 days before it while predicting). **read_posts** takes an optional day
+  inside those days and returns up to 5 whole posts written then, each with its author, date
+  and thread title, in a shuffle fixed by the run (ordered by `md5(post id || run name)`, so
+  the same run reads the same posts), never one it has already given. Each step may read 10
+  posts in all; after that it answers "No posts left to read; answer now with what you
+  have." Its calls stream live like version B's, so version A's lane shows its reads.
 - **What version B's tools see:** while writing, only the range; while predicting, only the
   28 days before it, so the forecast can't peek inside the range. **search** returns at
   most 20 posts by meaning, always within those days (it never asks wider). **lookup**

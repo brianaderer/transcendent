@@ -1,5 +1,6 @@
 """One call of the report agent (atlas plate 60): the model may use its tools, up to a cap,
-then answers through the task's answer tool. Version A runs with no tools at all."""
+then answers through the task's answer tool. It is offered exactly the tools its tools object
+carries: version A's one reading tool, or version B's four that retrieve (OPEN-39)."""
 
 import time
 from collections.abc import Sequence
@@ -10,7 +11,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMe
 from pydantic import BaseModel, ValidationError
 
 from voices.report.tasks import Task
-from voices.report.tools import TOOL_SCHEMAS, ToolResult
+from voices.report.tools import ToolResult
 
 # A cap per call on the turns before only the answer is offered: each tool call spends one, and
 # so does a reply that calls nothing, so a model that keeps searching or talking ends.
@@ -25,6 +26,8 @@ class ChatModel(Protocol):
 
 
 class Tools(Protocol):
+    @property
+    def schemas(self) -> list[dict]: ...  # what the model is offered: one schema per tool
     def run(self, name: str, arguments: dict) -> ToolResult: ...
 
 
@@ -56,19 +59,19 @@ class ReportWriter:
         """Runs the task to its answer; raises NoAnswer if none comes after the corrections."""
         started = time.perf_counter()
         call = _Call(self.model, task, self.emit)
-        answer = self._answer_with_tools(call) if self.tools else None
+        answer = self._answer_with_tools(call, self.tools) if self.tools else None
         answer = answer or self._insist_on_an_answer(call)
         call.written.answer = answer
         call.written.seconds = round(time.perf_counter() - started, 1)
         return call.written
 
-    def _answer_with_tools(self, call: "_Call") -> BaseModel | None:
+    def _answer_with_tools(self, call: "_Call", tools: Tools) -> BaseModel | None:
         while call.turns_spent < MAX_TOOL_CALLS:
-            reply = call.take_turn([*TOOL_SCHEMAS, call.task.answer])
+            reply = call.take_turn([*tools.schemas, call.task.answer])
             answer = call.answer_in(reply)
             if answer:
                 return answer
-            call.respond(reply, self.tools)
+            call.respond(reply, tools)
         call.tell(f"No more tool calls; answer now by calling {call.answer_name}.")
         return None
 

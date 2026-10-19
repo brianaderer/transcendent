@@ -1,5 +1,5 @@
-"""The comparison's two versions (atlas plate 70): A, the model on its own, and B, the model
-with tools that read our store."""
+"""The comparison's two versions (atlas plate 70): A, the model reading a few posts with no
+retrieval by meaning, and B, the model with tools that search our store (OPEN-39)."""
 
 from typing import Literal
 

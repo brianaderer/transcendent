@@ -204,21 +204,22 @@ What step 5 built against screens 1 to 3 above, so the brief and the app can be 
 - **Generate report** (screen 1) starts a run for the range (`POST /api/runs`) and puts the
   run's id in Explore's address (`&run=<id>`), so a reload keeps the progress panel (its
   lanes start empty again, but the run's state is still read); choosing a new range drops
-  it. The panel below the plot has two lanes, "A · without our data" and "B · with
+  it. The panel below the plot has two lanes, "A · without retrieval" and "B · with
   retrieval", each listing its steps ("Writing the report…", "Predicting the range: done
-  (41s)") and, for B, each tool call with how many posts it returned, from the run's live
+  (41s)") and each tool call with how many posts it returned (A's reads, B's searches and
+  lookups; OPEN-39), from the run's live
   events (plate [41](../40-backend/41-live-events.md)). Then "Measuring…", and when done
   **Read the report** and **See the comparison**. There is no progress bar, and no text
   appearing as it's written.
 - **Document** (screen 2), `/runs/<id>/report`, version B unless `?version=A`: the masthead
   ("Community Voices — r/sailing", the range, "Written with retrieval" or "Written without
-  our data", the model, and a link to the comparison), the document as the model wrote it in
+  retrieval", the model, and a link to the comparison), the document as the model wrote it in
   Markdown (the period in brief, then one section per topic with its quotes), and beside it
   its topics with rank and direction, what it expected for the range, and its reasoning.
   Not built: the download button, per-topic sparklines and badges, the prediction cards
   with charts, quote markers linking to source posts, and the footer note.
 - **Comparison** (screen 3), `/runs/<id>/comparison`: a header with the range, the model and
-  "identical instructions; only version B has tools"; the scoreboard as a table, A against
+  "identical instructions; version A reads a few posts, only version B searches"; the scoreboard as a table, A against
   B (main topics found, topics invented, order of importance as close, partly or poor with
   its number, directions right, prediction score, tokens and time, and posts looked at);
   the topic grid (the range's main topics with each one's measured direction and what A and

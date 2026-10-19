@@ -373,6 +373,45 @@ def test_search_finds_posts_by_meaning_and_retrievals_are_recorded(store):
         )
 
 
+def ours_of(posts):
+    return [p["post_id"] for p in posts if p["post_id"].startswith("test-")]
+
+
+def test_sampling_posts_gives_whole_posts_from_the_days_in_a_repeatable_shuffle(store):
+    first = store.sample_posts(DAY, DAY, limit=50, seed="test-seed", exclude_ids=[])
+    again = store.sample_posts(DAY, DAY, limit=50, seed="test-seed", exclude_ids=[])
+
+    assert sorted(ours_of(first)) == ["test-1", "test-2", "test-3", "test-4"]
+    assert ours_of(first) == ours_of(again)
+    whole = next(p for p in first if p["post_id"] == "test-2")
+    assert whole == {
+        "post_id": "test-2",
+        "author": "a-test-2",
+        "date": DAY,
+        "thread": "Impellers",
+        "text": "Run it dry and it dies.",
+    }
+
+
+def test_sampling_posts_skips_the_ones_already_given_and_stays_inside_the_days(store):
+    given = ["test-1", "test-2"]
+
+    rest = store.sample_posts(DAY, DAY, limit=50, seed="test-seed", exclude_ids=given)
+    later = store.sample_posts(THIRD_DAY, THIRD_DAY, limit=50, seed="test-seed", exclude_ids=[])
+
+    assert sorted(ours_of(rest)) == ["test-3", "test-4"]
+    assert ours_of(later) == []
+
+
+def test_sampling_posts_orders_by_the_seed_not_by_meaning(store):
+    orders = {
+        tuple(ours_of(store.sample_posts(DAY, DAY, limit=50, seed=f"test-{n}", exclude_ids=[])))
+        for n in range(20)
+    }
+
+    assert len(orders) > 1
+
+
 def test_looking_up_an_unknown_post_raises(store):
     with pytest.raises(PostNotFound):
         store.lookup_post("test-nope")

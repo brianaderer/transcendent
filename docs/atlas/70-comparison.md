@@ -11,7 +11,7 @@ step 5 has already built (`backend/src/voices/comparison/`, see
 ```mermaid
 flowchart LR
     REQ["Request: a date range<br/>from Explore's Generate report"]
-    A["Report agent, version A<br/>no tools"]
+    A["Report agent, version A<br/>read posts · 10 per step"]
     B["Report agent, version B<br/>search · lookup · trends · events"]
     MEAS["Score both against the same answer key<br/>topics, order, direction, prediction"]
     KEY[("Answer key<br/>tags + daily engagement for the range")]
@@ -31,7 +31,13 @@ flowchart LR
 
 - **One code path, one switch** ([60](60-agents.md), `CLAUDE.md` §7). Same model, same
   settings, same prompt wording, same date range, same output structure. The only difference
-  is that version B has tools that read our store.
+  is the tools. **Specified by Brian (2026-10-19, [OPEN-39](90-open-questions.md)):**
+  version A reads posts (a fixed shuffle, no retrieval by meaning), at most 10 per step;
+  version B searches by meaning. So version A sees some of the community's real posts, but
+  not the ones that matter most to a topic, which only a search by meaning would find; the
+  comparison measures what retrieval adds over reading a handful at random. Version A's reads
+  see the same days as version B's tools, so its prediction can't look inside the range
+  either, and they aren't counted in the retrieval statistics.
 - **Both run from the same request,** in parallel.
 
 ## The measurements

@@ -21,7 +21,8 @@ PREDICTION = {
 
 
 class AnsweringModel:
-    """Answers each task at once; offered tools, it searches once first. Records what it saw."""
+    """Answers each task at once; offered tools, it searches (or reads) once first. Records
+    what it saw."""
 
     def __init__(self):
         self.tasks = []
@@ -38,9 +39,11 @@ class AnsweringModel:
             self.tasks.append(first)
             self.offered_tools.append(self._tools)
         answer = "Report" if "Report" in self._tools else "Prediction"
-        searched = any(getattr(m, "tool_call_id", None) for m in messages)
-        if "search" in self._tools and not searched:
+        used_a_tool = any(getattr(m, "tool_call_id", None) for m in messages)
+        if "search" in self._tools and not used_a_tool:
             return _call("search", {"term": "winter"})
+        if "read_posts" in self._tools and not used_a_tool:
+            return _call("read_posts", {})
         return _call(answer, REPORT if answer == "Report" else PREDICTION)
 
 
@@ -56,7 +59,7 @@ class FakeData:
     """Two topics: winterizing, busy in the range; anchoring, quiet."""
 
     def __init__(self):
-        self.searched_windows = []
+        self.searched_windows, self.read_windows, self.retrieval_tools = [], [], []
 
     def topic_days(self, first_day, last_day):
         rows = [TopicDay(topic_id=1, day=date(2026, 10, 14), engagement=30, posts=10)]
@@ -81,8 +84,12 @@ class FakeData:
     def lookup_post(self, post_id):
         return {"post_id": post_id, "date": date(2026, 10, 14)}
 
+    def sample_posts(self, first_day, last_day, limit, seed, exclude_ids):
+        self.read_windows.append((first_day, last_day))
+        return [{"post_id": "p9", "text": "Hauled out today."}]
+
     def record_retrievals(self, post_ids, run, agent, tool):
-        pass
+        self.retrieval_tools.append(tool)
 
 
 class MeaningEmbedder:
@@ -108,15 +115,33 @@ def run(model=None, data=None, events=None):
     return ComparisonRun(parts, emit).run("abc123", DAYS)
 
 
-def test_both_versions_get_the_same_words_and_only_b_gets_tools():
+def test_both_versions_get_the_same_words_and_only_b_gets_retrieval():
     model = AnsweringModel()
 
     run(model)
 
     a_write, a_predict, b_write, b_predict = model.tasks
     assert (a_write, a_predict) == (b_write, b_predict)
-    assert model.offered_tools[0] == ["Report"]
-    assert "search" in model.offered_tools[2]
+    assert model.offered_tools[0] == ["read_posts", "Report"]
+    assert model.offered_tools[1] == ["read_posts", "Prediction"]
+    assert "search" in model.offered_tools[2] and "read_posts" not in model.offered_tools[2]
+
+
+def test_version_a_reads_only_before_the_range_when_predicting_as_b_searches():
+    data = FakeData()
+
+    run(data=data)
+
+    assert data.read_windows == data.searched_windows
+    assert data.read_windows[1][1] == date(2026, 10, 11)
+
+
+def test_version_a_reads_are_not_counted_as_retrievals():
+    data = FakeData()
+
+    run(data=data)
+
+    assert data.retrieval_tools == ["search", "search"]  # B's two searches, nothing of A's
 
 
 def test_the_prediction_searches_only_before_the_range():
@@ -136,7 +161,7 @@ def test_both_versions_are_scored_against_the_same_answer_key():
     assert [t.label for t in result.main_topics] == ["Winterizing"]
     assert a.scores.topics_found == 1 and a.scores.topics_invented == 1
     assert a.report_matches == {"Winterizing boats": 1, "Space sailing": None}
-    assert (b.tool_calls, a.tool_calls) == (2, 0)
+    assert (b.tool_calls, a.tool_calls) == (2, 2)
 
 
 def test_the_run_is_announced_live_from_start_to_scores():
@@ -148,4 +173,5 @@ def test_the_run_is_announced_live_from_start_to_scores():
     assert kinds[0] == "run.started" and kinds[-1] == "run.finished"
     assert "measurement.done" in kinds
     tool_calls = [body for kind, body in events if kind == "tool.called"]
-    assert {body["version"] for body in tool_calls} == {"B"}
+    assert {body["version"] for body in tool_calls} == {"A", "B"}
+    assert {body["tool"] for body in tool_calls if body["version"] == "A"} == {"read_posts"}

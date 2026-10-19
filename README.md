@@ -187,10 +187,11 @@ tagging agent's retrievals**) to see the tagging agent's. The **Dark** (or **Lig
 at the right of the top bar switches between dark and light colours.
 
 **The report, with and without retrieval.** Click **Generate report for …** below the plot.
-The same model writes the Community Voices Document for the range twice: version A on its
-own, version B with tools that search the stored posts. Each also predicts the range from
-what was known the day before it began. A panel below the plot shows both versions working
-live: each step, and every search version B makes with how many posts it found. It takes a
+The same model writes the Community Voices Document for the range twice: version A without
+retrieval, reading up to 10 stored posts per step in a fixed shuffle but never searching
+them, and version B with tools that search the stored posts by meaning. Each also predicts
+the range from what was known the day before it began. A panel below the plot shows both
+versions working live: each step, and every read or search with how many posts it gave. It takes a
 minute or two and a few cents of OpenRouter credit. When it finishes, **Read the report**
 opens version B's document (with its list of topics beside it), and **See the comparison**
 puts the two side by side: a scoreboard (main topics found, topics invented, order of

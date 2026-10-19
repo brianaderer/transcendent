@@ -1,5 +1,6 @@
 """The report agent's tools for version B (atlas plate 60): search, lookup, topic trends and
-upcoming events. Version A gets none of them, so it can't reach the store (CLAUDE.md §7).
+upcoming events. Version A gets none of them, so it can't retrieve by meaning (CLAUDE.md §7);
+its one tool, reading posts in a fixed shuffle, is in `reading_tools` (OPEN-39).
 
 Every post they return is counted as the report agent's retrieval (atlas OPEN-12). They see
 only their window: for the prediction, the days before the range, so it can't peek inside.
@@ -62,12 +63,16 @@ class ReportTools:
         self.run_name = run_name
         self.trends = trends
 
+    @property
+    def schemas(self) -> list[dict]:
+        return TOOL_SCHEMAS
+
     def run(self, name: str, arguments: dict) -> ToolResult:
         if name not in TOOL_ARGUMENT:
-            return _said(f"There is no tool named {name}; use {', '.join(TOOL_ARGUMENT)}.")
+            return said(f"There is no tool named {name}; use {', '.join(TOOL_ARGUMENT)}.")
         needed = TOOL_ARGUMENT[name]
         if needed and needed not in arguments:
-            return _said(f"Tool {name} needs the argument '{needed}'.")
+            return said(f"Tool {name} needs the argument '{needed}'.")
         return getattr(self, f"_{name}")(arguments)
 
     def _search(self, arguments: dict) -> ToolResult:
@@ -81,9 +86,9 @@ class ReportTools:
         try:
             post = self.store.lookup_post(post_id)
         except PostNotFound:
-            return _said(f"There is no post with id {post_id}; ids come from search results.")
+            return said(f"There is no post with id {post_id}; ids come from search results.")
         if post["date"] > self.window.end:
-            return _said(
+            return said(
                 f"Post {post_id} was written after {self.window.end}, past what you can see."
             )
         self._count([post_id], "lookup")
@@ -104,7 +109,8 @@ class ReportTools:
             self.store.record_retrievals(post_ids, self.run_name, "report", tool)
 
 
-def _said(text: str) -> ToolResult:
+def said(text: str) -> ToolResult:
+    """A tool's answer that hands back no posts: a refusal, or a reason."""
     return ToolResult(text, [])
 
 

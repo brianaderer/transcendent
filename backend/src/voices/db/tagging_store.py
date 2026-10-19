@@ -1,5 +1,6 @@
 """Reads and writes for tagging (atlas plate 21): the threads due a decision, their
-encodings, the agent's searches, applying its decisions, and the daily engagement table."""
+encodings, the agents' searches, version A's reading, applying the tagging decisions, and the
+daily engagement table."""
 
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, time, timedelta
@@ -141,6 +142,27 @@ class TaggingStore:
             "text": row.body,
             "replies_to": row.parent_source_id,
         }
+
+    def sample_posts(
+        self,
+        first_day: date,
+        last_day: date,
+        limit: int,
+        seed: str,
+        exclude_ids: Sequence[str],
+    ) -> list[dict]:
+        """Whole posts written in the days, in a shuffle fixed by the seed (never by meaning),
+        leaving out the ones already given: version A's reading (atlas OPEN-39)."""
+        shuffle = func.md5(Post.source_id.concat(seed))
+        query = (
+            select(Post.source_id, Post.author, Post.created_at, Thread.title, Post.body)
+            .join(Thread, Thread.source_id == Post.thread_source_id)
+            .where(*_created_between(first_day, last_day), Post.source_id.not_in(exclude_ids))
+            .order_by(shuffle)
+            .limit(limit)
+        )
+        with self.engine.connect() as connection:
+            return [_whole_post(row) for row in connection.execute(query).all()]
 
     def search_topics(self, embedding: Sequence[float], limit: int) -> list[dict]:
         return [vars(topic) for topic in self.nearest_topics(embedding, limit)]
@@ -457,6 +479,16 @@ def _hit(row) -> dict:
         "thread": row.title,
         "excerpt": row.body[:EXCERPT_CHARACTERS],
         "closeness": round(row.closeness, 3),
+    }
+
+
+def _whole_post(row) -> dict:
+    return {
+        "post_id": row.source_id,
+        "author": row.author,
+        "date": row.created_at.date(),
+        "thread": row.title,
+        "text": row.body,
     }
 
 

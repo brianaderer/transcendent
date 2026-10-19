@@ -1,7 +1,7 @@
-"""One comparison run (atlas plate 70): versions A (no tools) and B (tools that read our store)
-each write the report for a range and predict it from the day before; both are then scored
-against the same answer key. Everything is streamed live; nothing is kept but the result,
-briefly, so the page can show it (atlas OPEN-24)."""
+"""One comparison run (atlas plate 70): versions A (reading a few posts, with no retrieval by
+meaning) and B (tools that search our store) each write the report for a range and predict it
+from the day before; both are then scored against the same answer key. Everything is streamed
+live; nothing is kept but the result, briefly, so the page can show it (atlas OPEN-24)."""
 
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -17,13 +17,13 @@ from voices.explore.range_topics import TopicData, topics_in_range
 from voices.ingestion.embedder import ComparisonEmbedder
 from voices.prediction.trends import topic_trends
 from voices.report.graph import every_version_at_once
+from voices.report.reading_tools import PostReader, ReadingTools
 from voices.report.tasks import Prediction, Report, Task, predict_task, write_task
 from voices.report.tools import QueryEmbedder, ReportStore, ReportTools
 from voices.report.versions import Version
-from voices.report.writer import ChatModel, Emit, ReportWriter, Written
+from voices.report.writer import ChatModel, Emit, ReportWriter, Tools, Written
 
-DAYS_SEEN_BEFORE_A_PREDICTION = 28  # what version B may search when predicting a range
-NO_TOOLS = (None, None)  # version A: the model on its own, no way to reach our store
+DAYS_SEEN_BEFORE_A_PREDICTION = 28  # what either version may see when predicting a range
 
 
 class VersionResult(BaseModel):
@@ -55,7 +55,7 @@ class RunResult(BaseModel):
 class Embedder(QueryEmbedder, ComparisonEmbedder, Protocol): ...
 
 
-class RunData(TopicData, ReportStore, Protocol): ...
+class RunData(TopicData, ReportStore, PostReader, Protocol): ...
 
 
 @dataclass(frozen=True)
@@ -100,7 +100,7 @@ class _OneRun:
 
     def __init__(self, parts: RunParts, run_id: str, days: DayRange):
         self.parts = parts
-        self.run_name = f"report-{run_id}"  # how its retrievals are counted (atlas OPEN-12)
+        self.run_name = f"report-{run_id}"  # its retrievals' name (OPEN-12), and A's shuffle
         self.days = days
         self.active = active_topics(parts.data, days)
 
@@ -119,7 +119,7 @@ class _OneRun:
             version, (report, prediction), (scores, marking), (written, predicted)
         )
 
-    def _phase(self, task: Task, tools: ReportTools | None, emit: Emit) -> Written:
+    def _phase(self, task: Task, tools: Tools, emit: Emit) -> Written:
         emit("step.started", phase=task.phase)
         written = ReportWriter(self.parts.model, tools, emit).write(task)
         emit(
@@ -136,11 +136,16 @@ class _OneRun:
         )
         return written
 
-    def _tools_of(self, version: Version) -> tuple[ReportTools | None, ReportTools | None]:
-        """Version B reads our store in both phases; version A has none (CLAUDE.md §7)."""
+    def _tools_of(self, version: Version) -> tuple[Tools, Tools]:
+        """Version B searches our store in both phases; version A only reads posts, with no
+        retrieval by meaning (CLAUDE.md §7, OPEN-39), over the same windows as B's."""
         if version == "A":
-            return NO_TOOLS
+            return self._reading(self.days), self._reading(_days_before(self.days))
         return self._tools_for_the_report(), self._tools_for_the_prediction()
+
+    def _reading(self, window: DayRange) -> ReadingTools:
+        """A fresh budget for each phase, in the run's own shuffle."""
+        return ReadingTools(self.parts.data, window, self.run_name)
 
     def _tools_for_the_report(self) -> ReportTools:
         """The report sees its own range and the range's measured topics."""

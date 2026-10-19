@@ -18,8 +18,8 @@ export function ComparisonPage() {
       <header>
         <h1 className="font-serif text-2xl font-semibold">With and without retrieval</h1>
         <p className="text-sm text-slate-500">
-          {describeDays(run.result)} · {run.result.model} · identical instructions; only version B
-          has tools
+          {describeDays(run.result)} · {run.result.model} · identical instructions; version A reads
+          a few posts, only version B searches
         </p>
       </header>
       <Scoreboard a={a} b={b} />
