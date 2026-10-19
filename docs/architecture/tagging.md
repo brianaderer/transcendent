@@ -13,10 +13,10 @@ both have happened.
   threads and returns counts: `threads` (encoded today), `groups` (decided), `attached`
   (threads given a topic, by attach or by mint), `minted` (new topics), `noise_waiting`
   (threads called noise on their first day, kept for their third), `noise_deleted` (threads
-  called noise on their third day, deleted with their posts), and `left_waiting` (threads
-  left as they were because the agent named a topic that doesn't exist: on their first day
-  they wait for their third, on their third they keep their first day's topic, if any, and
-  are settled). `decide_all` is any
+  called noise on their third day, deleted with their posts), and, when the agent named a
+  topic that doesn't exist, `left_waiting` (first-day threads, which wait for their third)
+  and `kept_first_days_topic` (third-day threads, which keep their first day's topic, if
+  any, and are settled; a thread with no topic then stays untagged). `decide_all` is any
   function from a day and its briefs to their decisions; the worker passes
   `agent.TaggingAgent(...).decide`, which connects the model and decides the day's groups.
 - `threads.thread_text(post, replies)` — a thread as one text: its post, then its five
@@ -97,9 +97,9 @@ For day D (atlas OPEN-29):
    day keeps it, untagged, for its third; noise on its third day deletes the thread with its
    posts, which also removes their upvote and retrieval rows, and moves the centre of any
    topic its first day gave it. An attach to a topic id that doesn't exist is recorded with
-   no topic and the threads are left as they were (`left_waiting`): a first-day thread is
-   decided again on its third day; a third-day thread keeps the topic its first day gave it,
-   if any, and is settled.
+   no topic: a first-day thread is decided again on its third day (`left_waiting`); a
+   third-day thread keeps the topic its first day gave it, if any, and is settled
+   (`kept_first_days_topic`).
 8. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D, every post counting
    for its thread's topic, so a comment that arrives days later counts for the topic on the
    day it was written: posts, comments, agreeing-reply upvotes that day (also for older

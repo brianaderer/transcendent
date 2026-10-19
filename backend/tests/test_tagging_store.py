@@ -163,6 +163,7 @@ def test_minting_creates_a_topic_and_tags_the_threads(store):
         "noise_waiting": 0,
         "noise_deleted": 0,
         "left_waiting": 0,
+        "kept_first_days_topic": 0,
     }
 
 
@@ -317,7 +318,7 @@ def test_looking_up_an_unknown_post_raises(store):
         store.lookup_post("test-nope")
 
 
-def centre_of(store, topic_id):
+def centre_similarity_to_first_axis(store, topic_id):
     [candidate] = [c for c in store.nearest_topics(vector(1.0), 50) if c.topic_id == topic_id]
     return candidate.similarity
 
@@ -329,7 +330,7 @@ def test_noise_on_a_threads_third_day_moves_the_centre_of_the_topic_it_leaves(st
 
     store.apply_decisions(THIRD_DAY, [decided("noise", ["test-1"])], {})
 
-    assert centre_of(store, topic_id) == 1.0  # now only test-4, on the first axis
+    assert centre_similarity_to_first_axis(store, topic_id) == 1.0
 
 
 def test_attaching_to_a_missing_topic_on_a_threads_third_day_keeps_its_first_days_topic(store):
@@ -340,7 +341,16 @@ def test_attaching_to_a_missing_topic_on_a_threads_third_day_keeps_its_first_day
 
     assert topic_of(store, "test-1") == first_topic
     assert "test-1" not in ours(store.threads_due(THIRD_DAY))  # settled: not decided again
-    assert counts["left_waiting"] == 1
+    assert (counts["kept_first_days_topic"], counts["left_waiting"]) == (1, 0)
+
+
+def test_a_first_day_noise_thread_sent_to_a_missing_topic_on_its_third_day_stays_untagged(store):
+    store.apply_decisions(DAY, [decided("noise", ["test-1"])], {})
+
+    store.apply_decisions(THIRD_DAY, [decided("attach", ["test-1"], topic_id=-1)], {})
+
+    assert topic_of(store, "test-1") is None
+    assert "test-1" not in ours(store.threads_due(THIRD_DAY))
 
 
 @pytest.mark.parametrize(("days_later", "revived"), [(7, 0), (8, 1)])
