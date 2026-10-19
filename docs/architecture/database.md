@@ -12,7 +12,7 @@ Describes the tables and keeps the database in step with them. The tables follow
   [tagging](tagging.md).
 - `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
   for ingestion: `known_post_ids`, `known_thread_ids`, `save_day(batch)` (threads, posts
-  and upvotes in one transaction; saving a day again adds nothing — the day's upvote rows
+  and upvotes in one transaction; a new thread is recorded as first seen on the batch's day; saving a day again adds nothing — the day's upvote rows
   are replaced as a whole, and every post they touched before or touch now is recounted
   from its days, so a redone day never double-counts and can also take upvotes away), the day ledger (`done_days`,
   `mark_running`, `mark_done`, `mark_failed`) and `ingestion_status()` (days done, posts stored including comments,
@@ -57,13 +57,13 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the thirty-one tests that need a running
-database: one checks that the models and the applied migrations agree; five check that
-the store saves a day (twice without duplicates), never double-counts a re-saved day's
+`docker compose run --rm api pytest -m database` runs the thirty-six tests that need a running
+database: one checks that the models and the applied migrations agree; six check that
+the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, and keeps the day ledger; and twenty-five check the tagging store: which
+from different days, and keeps the day ledger; and twenty-nine check the tagging store: which
 threads are due on their first and third days (with their replies, best first), a thread
-without its post is due on the day first seen, written from its title, and can be a typical thread, and that a
+without its post is due on the day first seen (whether it was started that day or years before), written from its title, is due again two days later, and can be a typical thread, and that a
 settled thread is never due again, minting, attaching, noise on a first day waiting and on a
 third day deleting the thread with its comments and moving the centre of the topic it
 leaves, attaching to a topic that doesn't exist (on a third day the thread keeps its

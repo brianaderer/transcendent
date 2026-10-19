@@ -27,7 +27,7 @@ both have happened.
   average linkage) into `Group`s with a centre. Every thread lands in a group, alone if
   nothing is like it.
 - `window.window_start(day)` — the first of the three days ending on `day`: the day the
-  threads decided a second time today were started, and the start of the agents' search
+  threads decided a second time today were first seen, and the start of the agents' search
   window.
 - `decider.ToolLoopDecider(model, model_name, tools, max_look_ups=3).decide(brief)` — the agent's
   decision for one group, as a `DecidedCluster` with the exact prompt it saw and the model's name.
@@ -66,7 +66,8 @@ For day D (atlas OPEN-29):
    the embedding is saved on the thread, replacing a first-day one on the third day.
 3. **Groups.** The due threads are grouped by meaning; every thread is in a group, so every
    thread gets a decision.
-4. **Briefs.** For each group, the six threads closest to its centre (their posts) and the
+4. **Briefs.** For each group, the six threads closest to its centre (their posts; a thread whose post isn't
+   stored shows its title, with its author given as `unknown`) and the
    five existing topics closest to it (with how many posts their threads had in the topic's
    last week).
 5. **Decisions.** The tagging agent (Claude Haiku 5.5 through OpenRouter, chosen for cost) gets each brief,
@@ -142,7 +143,7 @@ models through `connect_model`, takes its list of right actions from `Action`, a
 `MAX_LOOK_UPS_BEFORE_DECIDING = 3`, `MAX_PARALLEL_DECISIONS = 8`, `SEARCH_RESULTS = 20`,
 `TAG_RESULTS = 10`, `SAME_NEW_TOPIC_SIMILARITY = 0.90`, `KEYWORDS_PER_TOPIC = 8`,
 `MIN_WORD_LENGTH = 4`, `RECENT_DAYS = 7`, `EXCERPT_CHARACTERS = 300`,
-`TYPICAL_POST_CHARACTERS = 600`; the model call uses temperature 0, a 120-second timeout
+`TYPICAL_POST_CHARACTERS = 600`, `UNKNOWN_AUTHOR = "unknown"` (`tagging_store.py`); the model call uses temperature 0, a 120-second timeout
 and 3 retries (`model.py`).
 Writes `topics`, `cluster_decisions`, `threads` (embedding, topic, decision, stage; deletes
 noise with its `posts`), `topic_daily_engagement`, `retrieval_events`.

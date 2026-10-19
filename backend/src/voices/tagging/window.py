@@ -8,5 +8,5 @@ THREAD_DAYS = 3
 
 def window_start(day: date) -> date:
     """The first of the three days ending on `day`: the day the threads decided a second
-    time today were started."""
+    time today were first seen."""
     return day - timedelta(days=THREAD_DAYS - 1)
