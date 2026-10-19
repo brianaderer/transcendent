@@ -5,7 +5,7 @@ import { http, HttpResponse } from "msw";
 import { renderInRouter } from "../test/renderInRouter";
 import { standInBackend } from "../test/standInBackend";
 import { FINISHED_RUN } from "./fixtures";
-import { RunProgress } from "./RunProgress";
+import { RunProgress, STATE_CHECK_MS } from "./RunProgress";
 
 const RUN_ID = "0123456789ab";
 let runState: object;
@@ -109,7 +109,7 @@ test("once both versions are done, the panel says it is scoring them", async () 
   expect(await screen.findByText("Scoring both versions…")).toBeInTheDocument();
 });
 
-const SOONER_THAN_THE_NEXT_STATE_CHECK_MS = 1000; // the panel rereads the run every 3 s anyway
+const SOONER_THAN_THE_NEXT_STATE_CHECK_MS = STATE_CHECK_MS / 3;
 
 test("the links appear as soon as the run says it has finished, without waiting to check", async () => {
   await showProgress();
@@ -118,5 +118,10 @@ test("the links appear as soon as the run says it has finished, without waiting 
 
   act(() => announce({ type: "run.finished" }));
 
-  expect(await screen.findByText("See the comparison", {}, { timeout: SOONER_THAN_THE_NEXT_STATE_CHECK_MS })).toBeInTheDocument();
+  const links = await screen.findByText(
+    "See the comparison",
+    {},
+    { timeout: SOONER_THAN_THE_NEXT_STATE_CHECK_MS },
+  );
+  expect(links).toBeInTheDocument();
 });

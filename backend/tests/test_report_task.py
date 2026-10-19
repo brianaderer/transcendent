@@ -35,6 +35,14 @@ def _record():
     return record, announced
 
 
+def _record_noting_the_state_when_announced():
+    seen = []
+    runs = RunStore(FakeRedis())
+    record = RunRecord(runs, lambda kind, **body: seen.append(runs.state(JOB.run_id).state))
+    runs.mark_running(JOB.run_id)
+    return record, seen
+
+
 def test_a_finished_run_keeps_its_result():
     record, announced = _record()
 
@@ -47,12 +55,7 @@ def test_a_finished_run_keeps_its_result():
 
 
 def test_finished_is_announced_only_once_the_result_can_be_read():
-    seen_when_announced = []
-    runs = RunStore(FakeRedis())
-    record = RunRecord(
-        runs, lambda kind, **body: seen_when_announced.append(runs.state(JOB.run_id).state)
-    )
-    runs.mark_running(JOB.run_id)
+    record, seen_when_announced = _record_noting_the_state_when_announced()
 
     run_and_keep_result(FinishingComparison(), record, JOB)
 
@@ -60,12 +63,7 @@ def test_finished_is_announced_only_once_the_result_can_be_read():
 
 
 def test_failed_is_announced_only_once_the_failure_can_be_read():
-    seen_when_announced = []
-    runs = RunStore(FakeRedis())
-    record = RunRecord(
-        runs, lambda kind, **body: seen_when_announced.append(runs.state(JOB.run_id).state)
-    )
-    runs.mark_running(JOB.run_id)
+    record, seen_when_announced = _record_noting_the_state_when_announced()
 
     with pytest.raises(RuntimeError):
         run_and_keep_result(FailingComparison(), record, JOB)

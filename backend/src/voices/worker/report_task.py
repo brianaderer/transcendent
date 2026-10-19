@@ -64,10 +64,10 @@ def compare_now(run_id: str, start: date, end: date) -> None:
 
 
 def run_and_keep_result(comparison: Comparison, record: RunRecord, job: RunJob) -> None:
-    """Marks the run finished with its result, then announces `run.finished`, so the page,
-    once told, can read the result at once. On any failure logs `run.failed`, marks the run
-    failed with the reason, which the page shows, then announces it the same way, and raises
-    for the worker's log."""
+    """Keeps the run's outcome before announcing it, so the page can read it as soon as it is
+    told: on success, marks the run finished with its result and announces `run.finished`; on
+    any failure, logs and marks the run failed with the reason (which the page shows),
+    announces `run.failed`, and re-raises for the worker's log."""
     try:
         result = comparison.run(job.run_id, job.days)
     except Exception as error:

@@ -16,7 +16,7 @@ import {
 } from "./runEvents";
 import { VERSION_ORDER, VERSIONS } from "./versions";
 
-const STATE_CHECK_MS = 3000; // in case a live event was missed, the run's state is read again
+export const STATE_CHECK_MS = 3000; // in case a live event was missed, the run's state is read again
 
 /** Both versions' work as it happens, then links to the results (atlas plate 31, screen 1). */
 export function RunProgress({ runId }: { runId: string }) {
@@ -123,7 +123,7 @@ function LaneBar({ lane }: { lane: Lane }) {
   );
 }
 
-/** The run has finished or failed, and its ending is already kept. */
+/** A live event that says the run has finished or failed. */
 function endsTheRun(event: LiveEvent): boolean {
   return event.type === "run.finished" || event.type === "run.failed";
 }
