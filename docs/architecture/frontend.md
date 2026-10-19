@@ -91,7 +91,10 @@ Screens and parts:
   a day failed), fetched again whenever a live `ingestion` event arrives.
   `describeIngestion(status)` in `src/ingestion.ts` writes the sentence.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
-- `runs/RunProgress` — below Explore's plot once a run is started: one lane per version,
+- `runs/RunProgress` — below Explore's plot once a run is started: one lane per version, each
+  with a progress bar fed by the live events (`laneProgress`: waiting, writing the report,
+  predicting the range, done; each phase's share fills with its tool calls, up to the writer's
+  cap) and a label such as "Writing the report · 3 tool calls"; under it,
   "A · without our data" and "B · with retrieval", each listing its steps ("Writing the report…",
   "Predicting the range: done (41s)") and version B's tool calls with how many posts each
   returned, from the run's live events (`runStream(runId)`, `run-<id>`). While the run is going it also rereads

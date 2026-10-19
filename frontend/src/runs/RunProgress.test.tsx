@@ -81,3 +81,19 @@ test("a finished run links to both results", async () => {
     `/runs/${RUN_ID}/comparison`,
   );
 });
+
+test("each version's bar moves as its live events arrive", async () => {
+  await showProgress();
+  const bars = () => screen.getAllByRole("progressbar");
+  expect(bars().map((bar) => bar.getAttribute("aria-valuenow"))).toEqual(["0", "0"]);
+
+  act(() => {
+    announce({ type: "step.started", version: "B", phase: "write" });
+    announce({ type: "tool.called", version: "B", phase: "write", tool: "search", arguments: {} });
+  });
+
+  const [a, b] = bars();
+  expect(a.getAttribute("aria-valuenow")).toBe("0");
+  expect(Number(b.getAttribute("aria-valuenow"))).toBeGreaterThan(0);
+  expect(screen.getByText("Writing the report · 1 tool call")).toBeInTheDocument();
+});

@@ -41,7 +41,9 @@ The web API the frontend calls. Every route lives under `/api`.
   comparison runs, `Runs`, the topic
   read, `TopicReads`, and the retrieval read, `RetrievalReads`, which takes a
   `RetrievalFilter`), so tests pass stand-ins. Responses over 1,000 bytes are gzip-compressed when the browser accepts it
-  (a range's map runs to megabytes).
+  (a range's map runs to megabytes), except the live event streams under `/api/streams/`
+  (`CompressAllButLiveEvents`): compression holds events back until a buffer fills, so the
+  browser would see none of them as they happen.
   `create_production_app()` wires in the real ones.
 - `database_is_reachable(url)`, `queue_is_reachable(url)` — the real checks.
 

@@ -6,15 +6,18 @@ import type { RunState } from "../api/generated";
 import type { LiveEvent } from "../useLiveEvents";
 import type { Version } from "./versions";
 
-export type Lane = { lines: string[]; done: boolean };
+export type Stage = "waiting" | "write" | "predict" | "done";
+export type Lane = { lines: string[]; done: boolean; stage: Stage; toolCalls: number };
 export type Progress = {
   lanes: Record<Version, Lane>;
   measuring: boolean;
   failed: string | null;
 };
 
+const NEW_LANE: Lane = { lines: [], done: false, stage: "waiting", toolCalls: 0 };
+
 export const STARTING: Progress = {
-  lanes: { A: { lines: [], done: false }, B: { lines: [], done: false } },
+  lanes: { A: { ...NEW_LANE }, B: { ...NEW_LANE } },
   measuring: false,
   failed: null,
 };
@@ -58,11 +61,35 @@ function withLine(progress: Progress, event: LiveEvent): Progress {
   if (!version || !line) return progress;
   const lane = progress.lanes[version];
   const done = lane.done || (event.type === "step.finished" && event.phase === "predict");
-  return {
-    ...progress,
-    lanes: { ...progress.lanes, [version]: { lines: [...lane.lines, line], done } },
-  };
+  const moved = {
+    lines: [...lane.lines, line],
+    done,
+    stage: done ? "done" : stageAfter(lane.stage, event),
+    toolCalls: lane.toolCalls + (event.type === "tool.called" ? 1 : 0),
+  } as Lane;
+  return { ...progress, lanes: { ...progress.lanes, [version]: moved } };
 }
+
+function stageAfter(stage: Stage, event: LiveEvent): Stage {
+  const started =
+    event.type === "step.started" && (event.phase === "write" || event.phase === "predict");
+  return started ? (event.phase as Stage) : stage;
+}
+
+/** Where a lane's bar stands: each phase's share of the bar fills with its tool calls, up to the
+ * writer's cap (backend report/writer.py MAX_TOOL_CALLS), so a busy phase visibly moves. */
+export function laneProgress(lane: Lane): { percent: number; label: string } {
+  if (lane.stage === "done") return { percent: 100, label: "Done" };
+  if (lane.stage === "waiting") return { percent: 0, label: "Waiting to start" };
+  const within = Math.min(lane.toolCalls, TOOL_CALL_CAP) / TOOL_CALL_CAP;
+  const percent = Math.round(PHASE_START[lane.stage] + within * PHASE_SHARE);
+  const calls = `${lane.toolCalls} tool call${lane.toolCalls === 1 ? "" : "s"}`;
+  return { percent, label: `${PHASE_NAMES[lane.stage]} · ${calls}` };
+}
+
+const TOOL_CALL_CAP = 20; // the writer's MAX_TOOL_CALLS
+const PHASE_SHARE = 40; // percent of the bar each phase fills
+const PHASE_START: Record<"write" | "predict", number> = { write: 10, predict: 55 };
 
 /** One line of a lane, e.g. "search(“winterizing”) → 15 posts". */
 export function lineFor(event: LiveEvent): string | null {

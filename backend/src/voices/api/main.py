@@ -15,6 +15,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from voices.config import HISTORY_DAYS, load_settings
 from voices.db.explore_store import ExploreStore
@@ -38,6 +39,7 @@ from voices.topics.topic_detail import TopicDetails, TopicNotFound
 
 HealthChecks = dict[str, Callable[[], bool]]
 STREAMS = {"ingestion"}
+LIVE_EVENTS_PATH = "/api/streams/"
 SMALLEST_RESPONSE_TO_COMPRESS = 1000  # bytes; a range's map runs to megabytes
 
 
@@ -89,7 +91,7 @@ def create_app(services: ApiServices) -> FastAPI:
         generate_unique_id_function=name_operation_after_its_function,
     )
     app.middleware("http")(log_each_request)
-    app.add_middleware(GZipMiddleware, minimum_size=SMALLEST_RESPONSE_TO_COMPRESS)
+    app.add_middleware(CompressAllButLiveEvents, minimum_size=SMALLEST_RESPONSE_TO_COMPRESS)
     app.exception_handler(InvalidRange)(refuse_the_range)
     app.exception_handler(TopicNotFound)(say_the_topic_is_not_found)
 
@@ -158,6 +160,21 @@ def create_app(services: ApiServices) -> FastAPI:
         return services.retrievals.stats(RetrievalFilter(agent, DayRange(start, end), run))
 
     return app
+
+
+class CompressAllButLiveEvents:
+    """Gzip for every answer except the live event streams: compression holds events back
+    until a buffer fills, so the browser would see none of them as they happen."""
+
+    def __init__(self, app: ASGIApp, minimum_size: int):
+        self.app = app
+        self.compressed = GZipMiddleware(app, minimum_size=minimum_size)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and scope["path"].startswith(LIVE_EVENTS_PATH):
+            await self.app(scope, receive, send)
+        else:
+            await self.compressed(scope, receive, send)
 
 
 def name_operation_after_its_function(route: APIRoute) -> str:

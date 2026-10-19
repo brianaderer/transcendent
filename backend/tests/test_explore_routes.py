@@ -64,3 +64,18 @@ def test_each_operation_is_named_after_its_route_function_for_the_generated_clie
 
     assert paths["/api/topics"]["get"]["operationId"] == "report_topics"
     assert paths["/api/map"]["get"]["operationId"] == "report_map"
+
+
+async def events_bigger_than_the_compression_threshold(_stream):
+    for n in range(2):
+        yield f"data: {'x' * SMALLEST_RESPONSE_TO_COMPRESS}{n}\n\n"
+
+
+def test_live_events_are_never_compressed_so_each_arrives_at_once():
+    services = stand_in_services(event_stream=events_bigger_than_the_compression_threshold)
+    response = TestClient(create_app(services)).get(
+        "/api/streams/ingestion/events", headers={"Accept-Encoding": "gzip"}
+    )
+
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "content-encoding" not in response.headers

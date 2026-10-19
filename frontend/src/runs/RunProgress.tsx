@@ -3,7 +3,14 @@ import { useCallback, useReducer } from "react";
 
 import { useReportRun } from "../api/generated";
 import { type LiveEvent, useLiveEvents } from "../useLiveEvents";
-import { folded, type Lane, runStream, STARTING, whyTheRunStopped } from "./runEvents";
+import {
+  folded,
+  type Lane,
+  laneProgress,
+  runStream,
+  STARTING,
+  whyTheRunStopped,
+} from "./runEvents";
 import { VERSION_ORDER, VERSIONS } from "./versions";
 
 const STATE_CHECK_MS = 3000; // in case a live event was missed, the run's state is read again
@@ -62,9 +69,8 @@ export function RunProgress({ runId }: { runId: string }) {
 function LaneView({ title, lane }: { title: string; lane: Lane }) {
   return (
     <div>
-      <h3 className="mb-1 text-sm font-semibold">
-        {title} {lane.done && "· done"}
-      </h3>
+      <h3 className="mb-1 text-sm font-semibold">{title}</h3>
+      <LaneBar lane={lane} />
       <ol className="max-h-48 overflow-y-auto font-mono text-xs text-slate-600 dark:text-slate-300">
         {lane.lines.map((line, n) => (
           <li key={n} className="whitespace-pre-wrap">
@@ -72,6 +78,29 @@ function LaneView({ title, lane }: { title: string; lane: Lane }) {
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+/** The lane's progress, fed live by the run's events. */
+function LaneBar({ lane }: { lane: Lane }) {
+  const { percent, label } = laneProgress(lane);
+  return (
+    <div className="mb-2">
+      <div
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        className="h-1.5 w-full overflow-hidden rounded bg-slate-200 dark:bg-slate-700"
+      >
+        <div
+          className="h-full bg-teal-600 transition-all duration-500"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="mt-1 text-xs text-slate-500">{label}</p>
     </div>
   );
 }
