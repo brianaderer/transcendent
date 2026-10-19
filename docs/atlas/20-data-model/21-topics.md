@@ -28,6 +28,12 @@ topic's engagement has been moving, not guessed from one week of text.
 - **A thread whose opening post we don't have** (removed, or started before our history and
   brought in by a new comment) is tagged from its **title plus its top comments**, and its
   days count from the **first comment we see** (OPEN-30, 2026-10-19).
+- **Noise is deleted, and the deleted thread is remembered** (Brian, 2026-10-19, OPEN-31),
+  so we are parsimonious with data: a thread deleted as noise leaves a marker with its id
+  and the day it went, and no text. A later comment on a marked thread is dropped at intake,
+  never stored, embedded or decided again. Each day is fetched once (the day ledger on
+  [40](../40-backend.md) is the high-water mark), so the deleted posts themselves are never
+  fetched again.
 - Deleted posts and bot posts are dropped. **Short agreeing replies** ("+1", "this",
   "same here") are significant and inform the trend, but aren't saved as posts. A basic
   semantic check finds them, and each one adds to an **`upvotes`** count on the post it
@@ -97,6 +103,10 @@ erDiagram
         text prompt "exactly what the LLM was shown"
         text model
     }
+    NOISE_THREADS {
+        text source_id "a thread deleted as noise; its later comments are dropped"
+        date deleted_on
+    }
     RETRIEVAL_EVENTS {
         text run "which run"
         text agent "report or tagging"
@@ -110,7 +120,9 @@ erDiagram
 - **threads, posts** — the community's posts and comments as fetched, one embedding
   each. Reddit's id is unique, so the small overlap between daily pulls is dropped on
   insert (`CLAUDE.md` §7). A post has no tag of its own: it counts for its
-  thread's, so a comment arriving later counts too. Noise is deleted rather than marked.
+  thread's, so a comment arriving later counts too. Noise is deleted, leaving only its marker.
+- **noise_threads** — one row per thread deleted as noise, id and day only (OPEN-31), so a
+  comment arriving on it later is dropped at intake instead of bringing the thread back.
 - **upvotes** — Brian's design: an agreeing reply isn't stored; it adds one to its
   parent's `upvotes`. *Proposed:* the count is also kept per day in
   **post_upvotes_daily** (post, day, count, with no text), because the trend needs to
@@ -215,9 +227,6 @@ are both "find the closest vectors" questions, which pgvector answers inside Pos
 
 - `?` The word limit and closeness threshold for an agreeing reply — tuned against
   the real data.
-- `?` What happens to a reply whose parent was deleted as noise *(proposed: the parent
-  keeps a stub row — id, author, time, no text or embedding — so threads stay connected
-  and lookup can say "removed as noise")*.
 - `?` The grouping cutoff, and how many nearest tags the LLM is shown — tuned against
   the real data.
 - `?` Whether tags that go quiet are ever merged or retired.
