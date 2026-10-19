@@ -86,7 +86,7 @@ def test_a_reply_in_plain_text_gets_a_reminder_to_decide():
 
     ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=5).decide(BRIEF)
 
-    assert "Decide now" in str(model.seen[-1][-1].content)
+    assert model.seen[-1][-1].content == REMINDER_TO_DECIDE
 
 
 def test_by_default_the_agent_gets_three_look_ups_then_must_decide():
