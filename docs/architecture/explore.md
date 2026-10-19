@@ -25,9 +25,10 @@ dot plot, recomputed for each range (atlas OPEN-20).
     `thread_title`, a short excerpt and `thread_topic_id` (`null` while the thread waits for a
     decision).
 - `direction.is_new(first_seen, days)` — first seen on or after the range's first day.
-  `direction.direction(new, now, before)` — `new` when `new`; otherwise `rising` or `fading` when the range's engagement is more than a
-  quarter (`CHANGE_THAT_COUNTS`) above or below the period of the same length just before it,
-  and `steady` in between. A topic silent before the range and active in it is `rising`.
+  `direction.trend(now, before)` — `rising` or `fading` when the range's engagement is more
+  than a quarter (`CHANGE_THAT_COUNTS`) above or below the period of the same length just
+  before it, and `steady` in between; a topic silent before the range and active in it is
+  `rising`. A topic's badge (`direction`) is `new` when `is_new`, otherwise its trend.
 - `projection.flatten(vectors)` — one point per vector, near in meaning near on the map.
 - `cache.RedisMapCache(redis)` — `get(key)`, `put(key, value)`; each map is kept two days
   (`KEPT_SECONDS`).

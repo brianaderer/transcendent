@@ -69,8 +69,8 @@ class CountingFlatten:
         return [(float(i), 0.0) for i, _ in enumerate(vectors)]
 
 
-def explore(store, flatten=None, cache=None):
-    return Explore(store, cache or FakeCache(), flatten or CountingFlatten())
+def explore(data, flatten=None, cache=None):
+    return Explore(data, cache or FakeCache(), flatten or CountingFlatten())
 
 
 def day(topic_id, on, engagement, posts=1):
@@ -85,17 +85,17 @@ def test_days_are_the_posts_per_day_and_the_latest_loaded_day():
 
 
 def test_topics_read_the_range_and_the_period_of_the_same_length_before_it():
-    store = FakeData()
+    data = FakeData()
 
-    explore(store).topics(DAYS)
+    explore(data).topics(DAYS)
 
-    assert store.asked == [(date(2026, 10, 9), END)]
+    assert data.asked == [(date(2026, 10, 9), END)]
 
 
 def test_a_topic_has_one_number_a_day_with_zeros_on_quiet_days():
-    store = FakeData([day(1, START, 5), day(1, END, 2)], [topic(1)])
+    data = FakeData([day(1, START, 5), day(1, END, 2)], [topic(1)])
 
-    [only] = explore(store).topics(DAYS)
+    [only] = explore(data).topics(DAYS)
 
     assert only.daily == [5, 0, 2]
     assert (only.engagement, only.posts) == (7, 2)
@@ -103,35 +103,35 @@ def test_a_topic_has_one_number_a_day_with_zeros_on_quiet_days():
 
 def test_topics_come_busiest_first_and_quiet_ones_are_left_out():
     days = [day(1, START, 2), day(2, START, 9), day(3, date(2026, 10, 10), 4)]
-    store = FakeData(days, [topic(1), topic(2), topic(3)])
+    data = FakeData(days, [topic(1), topic(2), topic(3)])
 
-    assert [t.id for t in explore(store).topics(DAYS)] == [2, 1]
+    assert [t.id for t in explore(data).topics(DAYS)] == [2, 1]
 
 
 def test_each_topic_is_badged_against_the_period_before():
     days = [day(1, date(2026, 10, 10), 10), day(1, START, 20), day(2, START, 3)]
-    store = FakeData(days, [topic(1), topic(2, first_seen=END)])
+    data = FakeData(days, [topic(1), topic(2, first_seen=END)])
 
-    badges = {t.id: t.direction for t in explore(store).topics(DAYS)}
+    badges = {t.id: t.direction for t in explore(data).topics(DAYS)}
 
     assert badges == {1: "rising", 2: "new"}
 
 
 def test_the_map_places_every_post_with_its_topic():
-    store = FakeData(posts=[map_post("a"), map_post("b", topic_id=None)])
+    data = FakeData(posts=[map_post("a"), map_post("b", topic_id=None)])
 
-    points = explore(store).map(DAYS).points
+    points = explore(data).map(DAYS).points
 
     assert [(p.id, p.x, p.thread_topic_id) for p in points] == [("a", 0.0, 1), ("b", 1.0, None)]
 
 
 def test_a_range_is_flattened_once_until_a_new_day_is_loaded():
-    store, flatten, cache = FakeData(posts=[map_post("a")]), CountingFlatten(), FakeCache()
-    service = explore(store, flatten, cache)
+    data, flatten, cache = FakeData(posts=[map_post("a")]), CountingFlatten(), FakeCache()
+    service = explore(data, flatten, cache)
 
     service.map(DAYS)
     service.map(DAYS)
-    store.latest = date(2026, 10, 19)
+    data.latest = date(2026, 10, 19)
     service.map(DAYS)
 
     assert flatten.calls == 2

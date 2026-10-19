@@ -25,3 +25,10 @@ def test_a_single_day_is_a_range():
 def test_a_range_that_ends_before_it_starts_is_refused():
     with pytest.raises(InvalidRange):
         DayRange(date(2026, 10, 14), date(2026, 10, 12))
+
+
+def test_a_range_holds_its_first_and_last_day_and_nothing_after():
+    days = DayRange(date(2026, 10, 12), date(2026, 10, 14))
+
+    assert date(2026, 10, 12) in days and date(2026, 10, 14) in days
+    assert date(2026, 10, 15) not in days

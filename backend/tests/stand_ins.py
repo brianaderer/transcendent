@@ -28,8 +28,8 @@ def map_point(n, day):
 class FakeExplore:
     """Answers the Explore reads with fixed data, remembering the range it was asked for."""
 
-    def __init__(self, points=1):
-        self.asked, self.points = None, points
+    def __init__(self, point_count=1):
+        self.asked, self.point_count = None, point_count
 
     def days(self):
         return Days(days=[DayCount(day=date(2026, 10, 12), posts=4)], latest_day=date(2026, 10, 12))
@@ -50,4 +50,4 @@ class FakeExplore:
 
     def map(self, days):
         self.asked = days
-        return Map(points=[map_point(n, days.start) for n in range(self.points)])
+        return Map(points=[map_point(n, days.start) for n in range(self.point_count)])

@@ -145,6 +145,7 @@ class RetrievalEvent(Base):
 
 
 DAY_RUNNING, DAY_DONE, DAY_FAILED = "running", "done", "failed"  # an ingested day's status
+DAY_STATUSES = (DAY_RUNNING, DAY_DONE, DAY_FAILED)
 
 
 class IngestedDay(Base):
@@ -152,7 +153,10 @@ class IngestedDay(Base):
 
     __tablename__ = "ingested_days"
     __table_args__ = (
-        CheckConstraint("status IN ('running', 'done', 'failed')", name="ingested_day_status"),
+        CheckConstraint(
+            f"status IN ({', '.join(repr(status) for status in DAY_STATUSES)})",
+            name="ingested_day_status",
+        ),
     )
 
     day: Mapped[date] = mapped_column(Date, primary_key=True)
