@@ -3,10 +3,11 @@ their badges, and the range's map, kept in a cache until a new day is loaded."""
 
 from collections import defaultdict
 from collections.abc import Callable, Sequence
-from datetime import date, timedelta
+from datetime import date
 from typing import Protocol
 
-from voices.explore.direction import direction
+from voices.explore.day_range import DayRange
+from voices.explore.direction import direction, is_new
 from voices.explore.projection import Point
 from voices.explore.shapes import (
     DayCount,
@@ -14,15 +15,15 @@ from voices.explore.shapes import (
     Map,
     MapPoint,
     MapPost,
-    Topic,
     TopicDay,
     TopicInfo,
+    TopicInRange,
 )
 
 Flatten = Callable[[Sequence[Sequence[float]]], list[Point]]
 
 
-class ExploreStore(Protocol):
+class ExploreData(Protocol):
     def posts_per_day(self) -> list[DayCount]: ...
     def latest_day(self) -> date | None: ...
     def topic_days(self, first_day: date, last_day: date) -> list[TopicDay]: ...
@@ -35,38 +36,31 @@ class MapCache(Protocol):
     def put(self, key: str, value: str) -> None: ...
 
 
-class InvalidRange(Exception):
-    pass
-
-
 class Explore:
-    def __init__(self, store: ExploreStore, cache: MapCache, flatten: Flatten):
-        self.store = store
+    def __init__(self, data: ExploreData, cache: MapCache, flatten: Flatten):
+        self.data = data
         self.cache = cache
         self.flatten = flatten
 
     def days(self) -> Days:
-        return Days(days=self.store.posts_per_day(), latest_day=self.store.latest_day())
+        return Days(days=self.data.posts_per_day(), latest_day=self.data.latest_day())
 
-    def topics(self, start: date, end: date) -> list[Topic]:
+    def topics(self, days: DayRange) -> list[TopicInRange]:
         """The topics with engagement in the range, busiest first."""
-        _check(start, end)
-        length = (end - start).days + 1
-        rows = self.store.topic_days(start - timedelta(days=length), end)
+        rows = self.data.topic_days(days.period_before().start, days.end)
         by_topic = _by_topic(rows)
-        info = {t.id: t for t in self.store.topics(sorted(by_topic))}
-        topics = [_topic(info[i], days, start, end) for i, days in by_topic.items()]
+        info = {t.id: t for t in self.data.topics(sorted(by_topic))}
+        topics = [_topic(info[i], topic_rows, days) for i, topic_rows in by_topic.items()]
         active = [t for t in topics if t.engagement > 0]
         return sorted(active, key=lambda t: (-t.engagement, t.id))
 
-    def map(self, start: date, end: date) -> Map:
+    def map(self, days: DayRange) -> Map:
         """Every post and comment written in the range, placed on the range's own map."""
-        _check(start, end)
-        key = f"map:{start}:{end}:{self.store.latest_day()}"
+        key = _map_key(days, self.data.latest_day())
         cached = self.cache.get(key)
         if cached:
             return Map.model_validate_json(cached)
-        drawn = self._draw(self.store.posts_in(start, end))
+        drawn = self._draw(self.data.posts_in(days.start, days.end))
         self.cache.put(key, drawn.model_dump_json())
         return drawn
 
@@ -75,9 +69,10 @@ class Explore:
         return Map(points=[_point(post, place) for post, place in zip(posts, places, strict=True)])
 
 
-def _check(start: date, end: date) -> None:
-    if end < start:
-        raise InvalidRange(f"the range ends before it starts ({start} to {end})")
+def _map_key(days: DayRange, latest_day: date | None) -> str:
+    """The latest loaded day is part of the key, so a new day starts a new map and the old
+    ones simply age out of the cache."""
+    return f"map:{days.start}:{days.end}:{latest_day or 'nothing-loaded'}"
 
 
 def _by_topic(rows: list[TopicDay]) -> dict[int, list[TopicDay]]:
@@ -87,23 +82,22 @@ def _by_topic(rows: list[TopicDay]) -> dict[int, list[TopicDay]]:
     return grouped
 
 
-def _topic(info: TopicInfo, rows: list[TopicDay], start: date, end: date) -> Topic:
-    in_range = [r for r in rows if r.day >= start]
-    before = sum(r.engagement for r in rows if r.day < start)
+def _topic(info: TopicInfo, rows: list[TopicDay], days: DayRange) -> TopicInRange:
+    in_range = [r for r in rows if r.day in days]
+    before = sum(r.engagement for r in rows if r.day < days.start)
     engagement = sum(r.engagement for r in in_range)
-    return Topic(
+    return TopicInRange(
         **info.model_dump(),
         engagement=engagement,
         posts=sum(r.posts for r in in_range),
-        daily=_daily(in_range, start, end),
-        direction=direction(info.first_seen, start, engagement, before),
+        daily=_daily(in_range, days),
+        direction=direction(is_new(info.first_seen, days), engagement, before),
     )
 
 
-def _daily(rows: list[TopicDay], start: date, end: date) -> list[int]:
+def _daily(rows: list[TopicDay], days: DayRange) -> list[int]:
     by_day = {r.day: r.engagement for r in rows}
-    days = (end - start).days + 1
-    return [by_day.get(start + timedelta(days=n), 0) for n in range(days)]
+    return [by_day.get(day, 0) for day in days.days()]
 
 
 def _point(post: MapPost, place: Point) -> MapPoint:

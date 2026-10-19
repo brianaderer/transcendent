@@ -20,7 +20,18 @@ from sqlalchemy.dialects.postgresql import Insert, insert
 from sqlalchemy.orm import InstrumentedAttribute
 
 from voices.db.address import sqlalchemy_url
-from voices.db.models import Base, IngestedDay, NoiseThread, Post, PostUpvotesDaily, Thread
+from voices.db.day_ledger import latest_day_with_status
+from voices.db.models import (
+    DAY_DONE,
+    DAY_FAILED,
+    DAY_RUNNING,
+    Base,
+    IngestedDay,
+    NoiseThread,
+    Post,
+    PostUpvotesDaily,
+    Thread,
+)
 from voices.ingestion.day import DayBatch, EmbeddedItem, NewThread
 
 
@@ -60,27 +71,27 @@ class Store:
     def done_days(self) -> set[date]:
         with self.engine.connect() as connection:
             return set(
-                connection.scalars(select(IngestedDay.day).where(IngestedDay.status == "done"))
+                connection.scalars(select(IngestedDay.day).where(IngestedDay.status == DAY_DONE))
             )
 
     def mark_running(self, day: date) -> None:
-        self._record_day(day, status="running", started_at=_now(), finished_at=None, error=None)
+        self._record_day(day, status=DAY_RUNNING, started_at=_now(), finished_at=None, error=None)
 
     def mark_done(self, day: date, counts: dict[str, int]) -> None:
-        self._record_day(day, status="done", counts=counts, finished_at=_now())
+        self._record_day(day, status=DAY_DONE, counts=counts, finished_at=_now())
 
     def mark_failed(self, day: date, error: str) -> None:
-        self._record_day(day, status="failed", error=error, finished_at=_now())
+        self._record_day(day, status=DAY_FAILED, error=error, finished_at=_now())
 
     def ingestion_status(self) -> dict:
         """Days done, posts stored (comments included), and the latest day in each state."""
         with self.engine.connect() as connection:
             return {
-                "days_done": connection.scalar(_count_days("done")),
+                "days_done": connection.scalar(_count_days(DAY_DONE)),
                 "posts": connection.scalar(select(func.count()).select_from(Post)),
-                "latest_day": _iso(connection.scalar(_latest_day("done"))),
-                "running_day": _iso(connection.scalar(_latest_day("running"))),
-                "failed_day": _iso(connection.scalar(_latest_day("failed"))),
+                "latest_day": _iso(connection.scalar(latest_day_with_status(DAY_DONE))),
+                "running_day": _iso(connection.scalar(latest_day_with_status(DAY_RUNNING))),
+                "failed_day": _iso(connection.scalar(latest_day_with_status(DAY_FAILED))),
                 "failed_reason": connection.scalar(_latest_failure_reason()),
             }
 
@@ -156,12 +167,8 @@ def _count_days(status: str) -> Select:
     return select(func.count()).select_from(IngestedDay).where(IngestedDay.status == status)
 
 
-def _latest_day(status: str) -> Select:
-    return select(func.max(IngestedDay.day)).where(IngestedDay.status == status)
-
-
 def _latest_failure_reason() -> Select:
-    failed = IngestedDay.status == "failed"
+    failed = IngestedDay.status == DAY_FAILED
     return select(IngestedDay.error).where(failed).order_by(IngestedDay.day.desc()).limit(1)
 
 

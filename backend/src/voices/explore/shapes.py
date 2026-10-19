@@ -18,32 +18,18 @@ class Days(BaseModel):
     latest_day: date | None  # the latest fully loaded day
 
 
-class Topic(BaseModel):
+class TopicInfo(BaseModel):
     id: int
     label: str
     description: str
     first_seen: date
+
+
+class TopicInRange(TopicInfo):
     engagement: int  # posts, comments and upvotes in the range
     posts: int  # posts and comments in the range
     daily: list[int]  # engagement on each day of the range, in order
     direction: Direction
-
-
-class MapPoint(BaseModel):
-    id: str
-    thread_id: str
-    kind: str  # post or comment
-    author: str
-    day: date
-    title: str  # the thread's
-    excerpt: str
-    topic_id: int | None  # the thread's; none while it waits for a decision
-    x: float
-    y: float
-
-
-class Map(BaseModel):
-    points: list[MapPoint]
 
 
 class TopicDay(BaseModel):
@@ -53,20 +39,27 @@ class TopicDay(BaseModel):
     posts: int
 
 
-class TopicInfo(BaseModel):
-    id: int
-    label: str
-    description: str
-    first_seen: date
+class PostSummary(BaseModel):
+    """A post or comment as the dot plot's hover card shows it."""
 
-
-class MapPost(BaseModel):
     id: str
     thread_id: str
-    kind: str
+    kind: str  # post or comment
     author: str
     day: date
-    title: str
+    thread_title: str
     excerpt: str
-    topic_id: int | None
+    thread_topic_id: int | None  # none while the thread waits for a decision
+
+
+class MapPost(PostSummary):
     embedding: list[float]
+
+
+class MapPoint(PostSummary):
+    x: float
+    y: float
+
+
+class Map(BaseModel):
+    points: list[MapPoint]

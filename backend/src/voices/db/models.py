@@ -144,6 +144,9 @@ class RetrievalEvent(Base):
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+DAY_RUNNING, DAY_DONE, DAY_FAILED = "running", "done", "failed"  # an ingested day's status
+
+
 class IngestedDay(Base):
     """One row per day the catch-up has processed (atlas plate 40)."""
 

@@ -1,16 +1,12 @@
 from fastapi.testclient import TestClient
 
+from tests.stand_ins import FakeExplore, no_events
 from voices.api.main import ApiServices, create_app
-
-
-async def no_events(_stream):
-    return
-    yield  # never reached; its presence makes this an (empty) async generator
 
 
 def services_with(checks):
     return ApiServices(
-        health_checks=checks, ingestion_status=dict, event_stream=no_events, explore=None
+        health_checks=checks, ingestion_status=dict, event_stream=no_events, explore=FakeExplore()
     )
 
 

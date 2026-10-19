@@ -7,7 +7,16 @@ from sqlalchemy import delete, insert
 
 from voices.config import load_settings
 from voices.db.explore_store import EXCERPT_CHARACTERS, ExploreStore
-from voices.db.models import EMBEDDING_DIMENSIONS, Post, Thread, Topic, TopicDailyEngagement
+from voices.db.models import (
+    DAY_DONE,
+    DAY_RUNNING,
+    EMBEDDING_DIMENSIONS,
+    IngestedDay,
+    Post,
+    Thread,
+    Topic,
+    TopicDailyEngagement,
+)
 from voices.db.store import connect_store
 
 pytestmark = pytest.mark.database
@@ -15,6 +24,8 @@ pytestmark = pytest.mark.database
 DAY = date(1999, 1, 4)  # far outside any real history, so the test can't touch real rows
 AT = datetime(1999, 1, 4, 23, 30, tzinfo=UTC)
 NEXT = datetime(1999, 1, 5, 0, 30, tzinfo=UTC)
+# Ledger days later than any real one, so they decide the latest day while the test runs.
+LEDGER_DONE, LEDGER_RUNNING = date(2999, 1, 4), date(2999, 1, 5)
 VECTOR = [1.0] + [0.0] * (EMBEDDING_DIMENSIONS - 1)
 
 
@@ -69,12 +80,22 @@ def store():
             insert(TopicDailyEngagement),
             [{"topic_id": topic_id, "day": DAY, "posts": 1, "comments": 2, "upvotes": 3}],
         )
+        connection.execute(
+            insert(IngestedDay),
+            [
+                {"day": LEDGER_DONE, "status": DAY_DONE},
+                {"day": LEDGER_RUNNING, "status": DAY_RUNNING},
+            ],
+        )
     yield ExploreStore(engine), topic_id
     with engine.begin() as connection:
         connection.execute(delete(TopicDailyEngagement).where(TopicDailyEngagement.day == DAY))
         connection.execute(delete(Post).where(Post.source_id.like("test-%")))
         connection.execute(delete(Thread).where(Thread.source_id.like("test-%")))
         connection.execute(delete(Topic).where(Topic.label.like("test-%")))
+        connection.execute(
+            delete(IngestedDay).where(IngestedDay.day.in_([LEDGER_DONE, LEDGER_RUNNING]))
+        )
 
 
 def test_posts_are_counted_by_the_day_they_were_written_in_utc(store):
@@ -99,7 +120,7 @@ def test_a_ranges_posts_come_with_their_thread_and_topic_and_end_with_its_last_d
     posts = explore.posts_in(DAY, DAY)
 
     assert [p.id for p in posts] == ["test-c", "test-t"]  # same time: by id
-    assert {p.topic_id for p in posts} == {topic_id}
+    assert {p.thread_topic_id for p in posts} == {topic_id}
     assert len(posts[0].embedding) == EMBEDDING_DIMENSIONS
 
 
@@ -118,3 +139,9 @@ def test_topics_are_read_by_id(store):
     [info] = explore.topics([topic_id])
 
     assert (info.label, info.first_seen) == ("test-impellers", DAY)
+
+
+def test_the_latest_day_counts_only_finished_days(store):
+    explore, _ = store
+
+    assert explore.latest_day() == LEDGER_DONE

@@ -1,6 +1,6 @@
 # explore
 
-**Source:** `backend/src/voices/explore/` (`explore.py`, `direction.py`, `projection.py`, `cache.py`, `shapes.py`), `backend/src/voices/db/explore_store.py`   ·   **Tests:** `backend/tests/explore/`, `backend/tests/test_explore_routes.py`, `backend/tests/test_explore_store.py` (needs a database)
+**Source:** `backend/src/voices/explore/` (`explore.py`, `day_range.py`, `direction.py`, `projection.py`, `cache.py`, `shapes.py`), `backend/src/voices/db/explore_store.py`   ·   **Tests:** `backend/tests/explore/`, `backend/tests/test_explore_routes.py`, `backend/tests/test_explore_store.py` (needs a database)
 
 ## Purpose
 The reads behind the Explore page ([atlas plate 31](../atlas/30-frontend/31-screens.md),
@@ -9,31 +9,37 @@ range and which way each is moving, and a two-dimensional map of the range's pos
 dot plot, recomputed for each range (atlas OPEN-20).
 
 ## Public interface
-- `explore.Explore(store, cache, flatten)` — the service the API calls:
+- `day_range.DayRange(start, end)` — a range of whole days, both ends included: `length`,
+  `days()` (each date in order), `period_before()` (the range of the same length just before),
+  and `day in range`. Building one that ends before it starts raises `InvalidRange`, which the
+  API turns into a 422 saying why.
+- `explore.Explore(data, cache, flatten)` — the service the API calls:
   - `days()` — a `Days`: posts and comments per day (UTC) across the history, and the latest
     fully loaded day.
-  - `topics(start, end)` — a list of `Topic`: every topic with engagement in the range,
+  - `topics(days)` — a list of `TopicInRange` (a `TopicInfo` with the range's numbers): every topic with engagement in the range,
     busiest first (ties by id), with its range's `engagement` (posts, comments and upvotes),
     `posts` (posts and comments), `daily` (engagement on each day of the range, zeros on
     quiet days) and `direction`.
-  - `map(start, end)` — a `Map`: every embedded post and comment written in the range, oldest
+  - `map(days)` — a `Map`: every embedded post and comment written in the range, oldest
     first, each with its place (`x`, `y`, in the square from −1 to 1), thread, author, day,
-    thread title, a short excerpt and its thread's topic (`null` while the thread waits for a
+    `thread_title`, a short excerpt and `thread_topic_id` (`null` while the thread waits for a
     decision).
-  - Both range reads raise `InvalidRange` when the range ends before it starts.
-- `direction.direction(first_seen, start, now, before)` — `new` when the topic was first seen
-  on or after `start`; otherwise `rising` or `fading` when the range's engagement is more than a
+- `direction.is_new(first_seen, days)` — first seen on or after the range's first day.
+  `direction.direction(new, now, before)` — `new` when `new`; otherwise `rising` or `fading` when the range's engagement is more than a
   quarter (`CHANGE_THAT_COUNTS`) above or below the period of the same length just before it,
   and `steady` in between. A topic silent before the range and active in it is `rising`.
 - `projection.flatten(vectors)` — one point per vector, near in meaning near on the map.
 - `cache.RedisMapCache(redis)` — `get(key)`, `put(key, value)`; each map is kept two days
   (`KEPT_SECONDS`).
-- `shapes` — the response shapes (`Days`, `DayCount`, `Topic`, `Map`, `MapPoint`) and the rows
-  the store hands the service (`TopicDay`, `TopicInfo`, `MapPost`), as Pydantic models, so the
+- `shapes` — the response shapes (`Days`, `DayCount`, `TopicInRange`, `Map`, `MapPoint`) and the rows
+  the store hands the service (`TopicDay`, `TopicInfo`, `MapPost`); `MapPost` and `MapPoint`
+  share `PostSummary`, the fields the hover card shows, as Pydantic models, so the
   API's OpenAPI description names every field.
 - `voices.db.explore_store.ExploreStore(engine)` — `posts_per_day`, `latest_day`,
   `topic_days(first, last)`, `topics(ids)`, `posts_in(first, last)`. `Explore` depends only on
-  the small `ExploreStore` and `MapCache` interfaces, so tests pass stand-ins.
+  the small `ExploreData` and `MapCache` interfaces, so tests pass stand-ins. Its latest day
+  is the latest day with status done, read by the query the ingestion store uses too
+  (`voices.db.day_ledger`).
 
 ## How it works
 - **Topics.** For a range of N days the store is asked for the topics' daily engagement over
@@ -46,7 +52,8 @@ dot plot, recomputed for each range (atlas OPEN-20).
   ranges, and fewer than five posts are laid out in a row. The result is centred and scaled
   into the square from −1 to 1. Measured on the real data: about 9 seconds for a week
   (1,097 posts, including the read), 26 for all eight weeks.
-- **Caching.** Each map is kept in Redis under `map:<start>:<end>:<latest loaded day>`, so a
+- **Caching.** Each map is kept in Redis under `map:<start>:<end>:<latest loaded day>`
+  (`nothing-loaded` before the first day), so a
   range is flattened once and flattened again only after a new day is loaded. A repeat read
   of a week took 0.02 seconds.
 - The map is computed in the API process, not the worker, so it doesn't wait behind a

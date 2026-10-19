@@ -6,7 +6,8 @@ from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import Date, Engine, cast, func, select
 
-from voices.db.models import IngestedDay, Post, Thread, Topic, TopicDailyEngagement
+from voices.db.day_ledger import latest_day_with_status
+from voices.db.models import DAY_DONE, Post, Thread, Topic, TopicDailyEngagement
 from voices.explore.shapes import DayCount, MapPost, TopicDay, TopicInfo
 
 EXCERPT_CHARACTERS = 160  # enough for the hover card
@@ -24,9 +25,8 @@ class ExploreStore:
             return [DayCount(day=d, posts=n) for d, n in connection.execute(query)]
 
     def latest_day(self) -> date | None:
-        query = select(func.max(IngestedDay.day)).where(IngestedDay.status == "done")
         with self.engine.connect() as connection:
-            return connection.scalar(query)
+            return connection.scalar(latest_day_with_status(DAY_DONE))
 
     def topic_days(self, first_day: date, last_day: date) -> list[TopicDay]:
         """Each topic's engagement (posts, comments and upvotes) on each day it had any."""
@@ -57,9 +57,9 @@ class ExploreStore:
                 Post.kind,
                 Post.author,
                 Post.created_at,
-                Thread.title,
+                Thread.title.label("thread_title"),
                 _excerpt(),
-                Thread.topic_id,
+                Thread.topic_id.label("thread_topic_id"),
                 Post.embedding,
             )
             .join(Thread, Thread.source_id == Post.thread_source_id)

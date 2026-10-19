@@ -21,7 +21,7 @@ The web API the frontend calls. Every route lives under `/api`.
 - `GET /api/openapi.json` — the API description the frontend's typed client will be
   generated from (atlas OPEN-1).
 - `create_app(services)` — builds the app around `ApiServices` (the health checks, the
-  ingestion status, the event stream and the Explore reads, `ExploreReads`), so tests pass
+  ingestion status, the event stream and the Explore reads, `ExploreReads`, which take a `DayRange`), so tests pass
   stand-ins. Responses over 1,000 bytes are gzip-compressed when the browser accepts it
   (a range's map runs to megabytes).
   `create_production_app()` wires in the real ones.

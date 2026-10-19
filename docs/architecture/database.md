@@ -1,6 +1,6 @@
 # database
 
-**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/src/voices/db/explore_store.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py`, `backend/tests/test_tagging_store.py` and `backend/tests/test_explore_store.py` (these four need a database)
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/src/voices/db/explore_store.py`, `backend/src/voices/db/day_ledger.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py`, `backend/tests/test_tagging_store.py` and `backend/tests/test_explore_store.py` (these four need a database)
 
 ## Purpose
 Describes the tables and keeps the database in step with them. The tables follow
@@ -22,7 +22,9 @@ Describes the tables and keeps the database in step with them. The tables follow
   latest failed day; the API adds how many days are wanted).
 - `voices.db.models` — the tables as SQLAlchemy classes (`Thread`, `Topic`,
   `ClusterDecision`, `Post`, `PostUpvotesDaily`, `TopicDailyEngagement`,
-  `RetrievalEvent`, `IngestedDay`) on `Base.metadata`. This is the one description of
+  `RetrievalEvent`, `IngestedDay`, `NoiseThread`) on `Base.metadata`, and an ingested day's
+  statuses as `DAY_RUNNING`, `DAY_DONE`, `DAY_FAILED`. `voices.db.day_ledger.latest_day_with_status`
+  is the one query for the latest day in a status, used by both `Store` and `ExploreStore`. This is the one description of
   the database; migrations are generated from it.
 - `python -m voices.db.setup` — waits for Postgres, then runs every migration not yet
   applied (`alembic upgrade head`). Run by the `setup` service on every start; a second
@@ -61,7 +63,7 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the forty-nine tests that need a running
+`docker compose run --rm api pytest -m database` runs the fifty tests that need a running
 database: one checks that the models and the applied migrations agree; eight check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
@@ -75,7 +77,7 @@ first day's topic, and one that had none is expired, its thread gone), threads w
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
-posts), search with recorded retrievals, and looking up an unknown post; and five check the Explore store: posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post with no text shown by its title and long text cut, and topics read by id. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+posts), search with recorded retrievals, and looking up an unknown post; and six check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post with no text shown by its title and long text cut, and topics read by id. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through

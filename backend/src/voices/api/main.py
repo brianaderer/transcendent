@@ -18,9 +18,10 @@ from voices.db.explore_store import ExploreStore
 from voices.db.store import connect_store
 from voices.events import server_sent_events
 from voices.explore.cache import RedisMapCache
-from voices.explore.explore import Explore, InvalidRange
+from voices.explore.day_range import DayRange, InvalidRange
+from voices.explore.explore import Explore
 from voices.explore.projection import flatten
-from voices.explore.shapes import Days, Map, Topic
+from voices.explore.shapes import Days, Map, TopicInRange
 from voices.health import database_is_reachable, queue_is_reachable
 from voices.log import configure_logging, log_event, tracing
 
@@ -31,8 +32,8 @@ SMALLEST_RESPONSE_TO_COMPRESS = 1000  # bytes; a range's map runs to megabytes
 
 class ExploreReads(Protocol):
     def days(self) -> Days: ...
-    def topics(self, start: date, end: date) -> list[Topic]: ...
-    def map(self, start: date, end: date) -> Map: ...
+    def topics(self, days: DayRange) -> list[TopicInRange]: ...
+    def map(self, days: DayRange) -> Map: ...
 
 
 @dataclass(frozen=True)
@@ -83,14 +84,14 @@ def create_app(services: ApiServices) -> FastAPI:
         return services.explore.days()
 
     @app.get("/api/topics")
-    def report_topics(start: date, end: date) -> list[Topic]:
+    def report_topics(start: date, end: date) -> list[TopicInRange]:
         """The topics with engagement in the range, busiest first, each with its badge."""
-        return services.explore.topics(start, end)
+        return services.explore.topics(DayRange(start, end))
 
     @app.get("/api/map")
     def report_map(start: date, end: date) -> Map:
         """Every post and comment written in the range, placed on the range's own map."""
-        return services.explore.map(start, end)
+        return services.explore.map(DayRange(start, end))
 
     return app
 
