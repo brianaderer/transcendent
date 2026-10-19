@@ -195,7 +195,8 @@ with each model's score, time and cost. It uses the key from step 3 and costs ab
 docker compose run --rm -T --no-deps api python -m voices.bakeoff > bakeoff-results.md
 ```
 
-It takes about two minutes and prints nothing in the terminal; when it returns, open
+It takes about two and a half minutes and prints only a short `Fetching 5 files` progress line
+in the terminal; when it returns, open
 `bakeoff-results.md` in this folder and you should see a table with a column per model (rows
 for right answers, each kind of mistake, time, tokens and cost), then every case. If the app has
 never been started (step 4), the first run also downloads the 130 MB embedding model, which
@@ -207,8 +208,9 @@ model the app uses still gets at least eight cases in ten right:
 docker compose run --rm --no-deps api pytest -m bakeoff
 ```
 
-It should end with `1 passed` and a count of deselected tests (all the others), in about a
-minute, for about one cent. If it fails, the
+It should end with `1 passed`, a count of deselected tests (all the others) and a count of
+warnings from a library (that's fine), in about a minute and a half, for about one cent. Answers
+can differ by a case or so from run to run. If it fails, the
 message is the results page for that model.
 
 See [bakeoff](docs/architecture/bakeoff.md) for how the cases are built and scored.
