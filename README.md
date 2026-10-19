@@ -236,8 +236,8 @@ docker compose run --rm --no-deps frontend npm test
 ```
 
 Each should end with every test passed (a `warning` line from a library is fine). The backend
-line also says `90 deselected`: eighty-nine tests that need a running database and one that calls the
-real model (step 6), which the default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
+line also gives a count of deselected tests: the ones that need a running database, and one that
+calls the real model (step 6), which the default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline: about a minute for the backend and fifteen seconds for the frontend.
 
 ### 6. Compare tagging models (optional; spends a little money)
