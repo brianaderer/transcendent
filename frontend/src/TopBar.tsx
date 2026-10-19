@@ -1,6 +1,7 @@
 import { Link, useSearch } from "@tanstack/react-router";
 
 import { BackendStatus } from "./BackendStatus";
+import { CommunityHeadline } from "./CommunityHeadline";
 import { IngestionStatus } from "./IngestionStatus";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -13,6 +14,7 @@ export function TopBar() {
     <header className="border-b border-slate-200 dark:border-slate-800">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-1 px-4 py-3">
         <h1 className="font-serif text-lg font-semibold">Community Voices</h1>
+        <CommunityHeadline />
         <nav className="flex gap-4 text-sm">
           <Link
             to="/"
