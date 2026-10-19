@@ -107,7 +107,7 @@ OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
 The app needs the key from its first start: as it loads the r/sailing history it sorts
-each day's posts into topics, and that uses the AI model. Without the key the app still
+each day's threads (a post and its replies) into topics, and that uses the AI model. Without the key the app still
 starts, but loading stops at the first day and the page says
 **Loading stopped at** a date, then **OPENROUTER_API_KEY is not set in .env**. If that
 happens, add the key to `.env`, press `Ctrl+C` in the terminal running the app, and start
@@ -146,9 +146,10 @@ the 130 MB model that prepares posts for search. Then it reads, for example,
 **Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
 is loaded and sorted into topics. The first start fetches eight weeks of posts from the
 Arctic Shift archive (a public archive of Reddit, so your computer needs an internet
-connection), prepares each one for search, and then has the AI model sort each day's posts
+connection), prepares each one for search, and then has the AI model sort each day's threads
 into topics through OpenRouter. Fetching and preparing alone took about 40–45 minutes on a
-laptop; sorting into topics adds about ten model calls per day and hasn't been timed yet,
+laptop; sorting into topics adds about forty decisions by the model per day (each thread is
+decided on its first day and again on its third) and hasn't been timed yet,
 so allow longer. The worker uses about 1 GB of memory while it runs. You can leave it
 running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are

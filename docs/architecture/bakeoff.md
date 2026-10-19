@@ -20,7 +20,7 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
 - `sample_store.SampleStore(sample, embedder)` — the sample behind the tagging tools' store
   interface (`search_posts`, `lookup_post`, `search_topics`, `record_retrievals`), searched
   by meaning with the real embedding model; `brief(case)` builds the case's brief the way
-  production builds a cluster's; `tools_for(case)` gives the production `TaggingTools`
+  production builds a group's; `tools_for(case)` gives the production `TaggingTools`
   reading the store, as on the case's day (`case_day(case)`). The store keeps the embedder
   it was given, and embeds everything once when it is built.
   Each thread is embedded as one text with tagging's `thread_text`: its post and its five
@@ -52,7 +52,7 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
 ## How it works
 `SampleStore` embeds every post and comment, every thread as one text and every topic's
 label and description once, at the start. For each case it builds a brief exactly as the
-tagging step does for a cluster: the six threads closest to the case's centre as typical
+tagging step does for a group of threads: the six threads closest to the case's centre as typical
 posts, and the five topics closest to it as candidates (the same `TYPICAL_POSTS_SHOWN` and
 `CANDIDATE_TOPICS_SHOWN` production uses). The production decision then runs on that
 brief with the production tools, which read the sample instead of the database. The

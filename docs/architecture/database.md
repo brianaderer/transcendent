@@ -34,7 +34,10 @@ Describes the tables and keeps the database in step with them. The tables follow
 ## How it works
 Alembic records which migrations have run in its own `alembic_version` table and applies
 the rest in order. `migrations/versions/0001_initial_tables.py` creates the pgvector
-extension and every table; `0002` adds `ingested_days.error`, why a day failed. Embeddings are `vector(768)`, the size nomic-embed-text
+extension and every table; `0002` adds `ingested_days.error`, why a day failed; `0003` makes the thread the unit of
+tagging (atlas OPEN-29): threads gain `embedding`, `topic_id`, `cluster_decision_id` and
+`stage`, posts lose `status`, `topic_id`, `topic_similarity` and `cluster_decision_id`, and
+`topic_daily_engagement` gains `revived_threads`. Embeddings are `vector(768)`, the size nomic-embed-text
 produces (atlas OPEN-5).
 
 Tables: `threads` (the unit of tagging: the thread's own embedding of its post and top
@@ -69,7 +72,8 @@ posts), search with recorded retrievals, and looking up an unknown post. They ar
 [logging](logging.md), [environment](environment.md) (settings, through
 `voices.config.load_settings`), [ingestion](ingestion.md) (the store saves its `DayBatch`,
 with its `EmbeddedItem`s and `NewThread`s), [tagging](tagging.md) (`tagging_store` returns
-its `WindowPost`, `TypicalPost` and `CandidateTopic` and applies its `DecidedCluster`s),
+its `DueThread`s with their `Reply`s, its `TypicalPost`s and `CandidateTopic`s, applies its
+`DecidedCluster`s, and uses its `window_start` for the three days ending on a day),
 Postgres with pgvector,
 SQLAlchemy, Alembic.
 
