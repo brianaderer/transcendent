@@ -43,7 +43,7 @@ store by meaning (atlas OPEN-39).
   day given (a day outside the window, or not a date, is explained instead), each with its
   author, date and thread title, in the fixed shuffle the seed (the run's name) gives, never
   ranked by meaning, and never a post already given. One `ReadingTools` serves one phase, and
-  it hands out `READ_BUDGET` (35) posts in all, and they are shared evenly over the window's days (`_even_shares`: 35 split by the number of days, the first few taking one more), and the tool holds each day to its share: a read with no day takes the day with the most share left, and a day whose share is spent is refused, naming the days still unread; after that every call answers
+  it hands out `READ_BUDGET` (35) posts in all, and they are shared evenly over the window's days (`_even_shares`: 35 split by the number of days, the first few taking one more), and the tool holds each day to its share: a read with no day takes the day with the most share left, a day that gives back fewer posts than were asked for has none left, so its share is closed at once (`_spend_share`) and the next read moves on to another day; and a day whose share is spent is refused, naming the days still unread; after that every call answers
   `NOTHING_LEFT_TO_READ` ("No posts left to read; answer now with what you have.") without
   asking the store. Reads are not retrieval, so they are not counted in `retrieval_events`.
   `schemas` is `READING_SCHEMAS`; `ids_given` lists the posts handed out so far. `reader` is
