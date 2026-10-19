@@ -134,7 +134,7 @@ Redis (the progress record),
 [logging](logging.md) (`seed.loaded`, `seed.skipped`), SQLAlchemy, Postgres.
 
 ## Used by
-The seed migration, once written ([database](database.md)), calls `load_seed`; the export is
+The seed migration, `0008_seed_snapshot.py` ([database](database.md)), calls `load_seed`; the export is
 run by hand. [worker](worker.md) builds the `Backfill` and runs it before every catch-up;
 [api](api.md) reads `RedisBackfillProgress` for `GET /api/ingestion`.
 
