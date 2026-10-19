@@ -79,4 +79,5 @@ def _utc_timestamp(created: float) -> str:
 
 def _extra_fields(record: logging.LogRecord) -> dict[str, object]:
     extras = {k: v for k, v in vars(record).items() if k not in _STANDARD_ATTRIBUTES}
-    return {**extras, **extras.pop(_CLASHING_FIELDS, {})}
+    clashing = extras.pop(_CLASHING_FIELDS, {})
+    return {**extras, **clashing}

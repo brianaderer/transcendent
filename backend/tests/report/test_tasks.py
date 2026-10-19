@@ -20,3 +20,9 @@ def test_the_prediction_is_made_as_of_the_day_before_the_range():
     assert "11 October 2026" in task.instructions
     assert "7 days" in task.instructions
     assert task.answer.__name__ == "Prediction"
+
+
+def test_both_tasks_say_to_answer_even_without_tools_or_data():
+    for task in (write_task(DAYS), predict_task(DAYS)):
+        assert "even with no tools" in task.instructions
+        assert "what you know" in task.instructions

@@ -104,3 +104,15 @@ def test_a_field_named_like_a_log_record_attribute_is_logged_as_given(field):
     [line] = lines(stream)
     assert line[field] == "topics_found"
     assert line["event"] == "measurement.done"
+
+
+def test_a_line_carries_only_the_fields_it_was_given():
+    logger, stream = capture()
+    standard = {"time", "service", "level", "event", "trace_id"}
+
+    log_event(logger, "plain", run_id="r")
+    log_event(logger, "clashing", name="n")
+
+    plain, clashing = lines(stream)
+    assert set(plain) == standard | {"run_id"}
+    assert set(clashing) == standard | {"name"}

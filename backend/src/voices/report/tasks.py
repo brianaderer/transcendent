@@ -52,7 +52,9 @@ about sailing, for {_spoken(days.start)} to {_spoken(days.end)}.
 Say what the community talked about in those days: name the {TOPICS_TO_NAME} main topics in
 order of how much they were discussed, and for each, whether it was rising, steady, fading or
 new compared with the same number of days just before. Be specific to this community and these
-days. If you have tools, use them to ground what you write in the community's own posts.
+days. Write the document even with no tools or data: draw on what you know about this
+community and this time of year. If you have tools, use them to ground what you write in the
+community's own posts.
 
 Answer by calling Report once, with the document and its list of topics."""
     return Task("write", instructions, Report)
@@ -64,8 +66,9 @@ def predict_task(days: DayRange) -> Task:
 about sailing, will discuss most in the next {days.length} days ({_spoken(days.start)} to
 {_spoken(days.end)}): name the {TOPICS_TO_NAME} topics you expect to lead, and for each, whether it
 will be rising, steady, fading or new compared with the {days.length} days before. Brand-new
-conversations can't be foreseen; forecast the ones already in motion. If you have tools, use
-them: they show the community only up to today.
+conversations can't be foreseen; forecast the ones already in motion. Answer even with no tools
+or data, from what you know about this community and the season. If you have tools, use them:
+they show the community only up to today.
 
 Answer by calling Prediction once."""
     return Task("predict", instructions, Prediction)
