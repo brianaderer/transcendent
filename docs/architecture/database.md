@@ -78,7 +78,52 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the sixty-nine tests that need a running
+**Writing the seed migration** (the last build step, atlas plate 07; the seed's code is
+described in [seed](seed.md)). With the stack running and the history the seed should carry
+loaded, from the repository root, write the data file beside the migrations:
+
+```bash
+docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
+  api python -m voices.db.seed_export /srv/migrations/versions/0008_seed_snapshot.json.gz
+```
+
+then add `backend/migrations/versions/0008_seed_snapshot.py` (the next free number, revising
+the latest migration) holding only:
+
+```python
+"""seed snapshot
+
+Revision ID: 0008
+Revises: 0007
+"""
+
+from pathlib import Path
+
+from alembic import op
+
+from voices.db.seed_load import load_seed
+
+revision = "0008"
+down_revision = "0007"
+branch_labels = None
+depends_on = None
+
+
+def upgrade() -> None:
+    load_seed(op.get_bind(), Path(__file__).with_name("0008_seed_snapshot.json.gz"))
+
+
+def downgrade() -> None:
+    """The seeded rows stay: they are data the app has since built on."""
+```
+
+The image copies `backend/migrations/` whole, so the data file goes with it. A database
+that already has days (yours) records the migration as run and loads nothing; an empty one
+(a reviewer's) loads the seed. This exact file and a real data file were run through
+`python -m voices.db.setup` on an empty scratch database on 19 October 2026 and loaded every
+row.
+
+`docker compose run --rm api pytest -m database` runs the eighty-one tests that need a running
 database: one checks that the models and the applied migrations agree; eleven check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
@@ -92,7 +137,7 @@ first day's topic, and one that had none is expired, its thread gone), threads w
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
-posts), search with recorded retrievals, and looking up an unknown post; and seven check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post's embedding coming back as the list of floats it was saved as, a post with no text shown by its title and long text cut, and topics read by id. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+posts), search with recorded retrievals, and looking up an unknown post; and seven check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post's embedding coming back as the list of floats it was saved as, a post with no text shown by its title and long text cut, and topics read by id; and twelve check the [seed](seed.md) in scratch schemas of their own (so they never touch the real rows): the export leaves out embeddings, centres, prompts and topics with no threads (with their engagement), keeps rows in a fixed order and tables in load order, and loads back as it was; the loader keeps ids and types, moves every id counter past the loaded rows, leaves a database with days alone (so a second load adds nothing), and refuses a name that isn't plain. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
@@ -108,6 +153,7 @@ Postgres with pgvector,
 SQLAlchemy, Alembic.
 
 ## Used by
+[seed](seed.md) reads every table for the export and fills them in the seed migration.
 [environment](environment.md): the `setup` service in `compose.yaml` runs setup.
 [worker](worker.md) builds the store and hands it to the [ingestion](ingestion.md)
 catch-up, which saves each day and keeps the day ledger through it; the worker also builds
