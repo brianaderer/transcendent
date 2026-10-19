@@ -86,7 +86,8 @@ Screens and parts:
   or "Not answering:" with each service that isn't, or "Backend unreachable" when the API
   itself doesn't answer; rechecked every five seconds. `fetchHealth()` and
   `describeHealth(health)` in `src/health.ts`.
-- `IngestionStatus` — with a small spinner (`role="status"`, "Working") beside its line
+- `IngestionStatus` — with the shared `Spinner` (`src/Spinner.tsx`: a small turning ring,
+  `role="status"`, "Working", also used by `runs/RunProgress` while scoring) beside its line
   whenever a day is loading or the seed is being prepared, and the Sync now button saying
   "Syncing…" while its request is out; how far the history has loaded, as one line for the whole first boot:
   on a first boot from the seed, "Preparing the history: 4,120 of 12,682 posts" (then
@@ -126,7 +127,7 @@ Screens and parts:
   "Predicting the range: done (41s)") and each tool call with how many posts it returned
   (version A's `read_posts`, version B's searches and lookups), from the run's live events (`runStream(runId)`, `run-<id>`). While the run is going it also rereads
   the run's state (`GET /api/runs/{run_id}`) every three seconds, in case an event was
-  missed; it shows "Measuring…" or the reason a run stopped, and when the run has finished
+  missed; it shows "Scoring both versions…" or the reason a run stopped, and when the run has finished
   it links to **Read the report** and **See the comparison**.
 - `runs/ReportPage` — the Document screen, `/runs/<id>/report`: the masthead (the range,
   which version, the model, a link to the comparison), the document's Markdown, and beside

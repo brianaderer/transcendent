@@ -65,7 +65,8 @@ It also runs each comparison run the page starts ([report](report.md)).
   context, so their log lines carry the same trace id. Progress
   is announced on the run's own stream, `run-<id>`. `compare_now` only builds the parts;
   `run_and_keep_result` does the rest. When it finishes, the result is kept in
-  Redis for a day; if anything fails, the run is marked failed with the reason (which the
+  Redis for a day and only then is `run.finished` announced, so the page, rereading the run
+  when it hears it, finds the result; if anything fails, the run is marked failed with the reason (which the
   page shows), `run.failed` is emitted and logged, and the error is raised for the worker's
   log. The database connection and the embedding model are loaded once per worker process
   (both stores the run reads, `ExploreStore` and `TaggingStore`, share the one connection);
