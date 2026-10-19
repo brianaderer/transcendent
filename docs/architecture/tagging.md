@@ -92,8 +92,10 @@ reaches step 4; the day's loaded posts stay `pending`, the day is marked failed 
 message, and the page shows it ([frontend](frontend.md)).
 
 **Cost estimate:** about ten decisions a day, so roughly 560 for a first start, well under
-$5 at Haiku 5.5's OpenRouter price ($0.10 per million tokens in, $0.50 out). Not yet
-measured.
+$5 at Haiku 5.5's OpenRouter price ($0.10 per million tokens in, $0.50 out). The
+[bakeoff](bakeoff.md) measured about $0.0005 a decision on Haiku over its 25 sample cases,
+which puts a first start well under $1; real days may look things up more, and a whole first
+start has not been timed or costed yet.
 
 ## Uses
 [database](database.md) (`tagging_store` reads and writes the tables in `voices.db.models`),
@@ -106,7 +108,9 @@ LangChain, scikit-learn (HDBSCAN), numpy, Postgres with pgvector.
 
 ## Used by
 [worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `TaggingAgent` and `DayTagging`, and tags each day of the catch-up right after
-loading it); [bakeoff](bakeoff.md) (runs `ToolLoopDecider` with `TaggingTools` on sample cases).
+loading it); [bakeoff](bakeoff.md) (runs `ToolLoopDecider` with `TaggingTools` on sample cases, connects
+models through `connect_model`, and builds briefs with `ClusterBrief`, `TypicalPost`,
+`CandidateTopic` and the sizes `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`).
 
 ## Configuration and data
 `OPENROUTER_API_KEY` (required for tagging), `TAGGING_MODEL_NAME` (default

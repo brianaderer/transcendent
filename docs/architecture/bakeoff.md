@@ -39,19 +39,22 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
 ## How it works
 `SampleStore` embeds every post and comment, every thread as one text and every topic's
 label and description once, at the start. For each case it builds a brief exactly as the
-tagging step does for a cluster: the threads closest to the case's centre as typical posts,
-and the five topics closest to it as candidates. The production decision then runs on that
+tagging step does for a cluster: the six threads closest to the case's centre as typical
+posts, and the five topics closest to it as candidates (the same `TYPICAL_POSTS_SHOWN` and
+`CANDIDATE_TOPICS_SHOWN` production uses). The production decision then runs on that
 brief with the production tools, which read the sample instead of the database. The
 decision is judged against the case's right answer and the meter's counts are kept with it.
 Cases run one after another, so the time per decision is not affected by other decisions.
 
 ## Uses
 [tagging](tagging.md) (`ToolLoopDecider`, `NoDecision`, `TaggingTools`, `Decision`,
-`ClusterBrief`, and the brief sizes `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`),
+`ClusterBrief`, `TypicalPost`, `CandidateTopic`, `connect_model`, and the brief sizes
+`TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`),
 [database](database.md) (`PostNotFound` and the excerpt lengths from `tagging_store`),
 [ingestion](ingestion.md) (`load_embedder`, the real embedding model),
-[environment](environment.md) (`OPENROUTER_API_KEY`, `TAGGING_MODEL_NAME`, `MODEL_DIR`),
-OpenRouter (through `connect_model`), numpy.
+[environment](environment.md) (`load_settings()`: `OPENROUTER_API_KEY` and `MODEL_DIR`, plus
+`TAGGING_MODEL_NAME` in the marked test), OpenRouter (through tagging's `connect_model`),
+LangChain (`langchain_core` message types, in `metering.py`), numpy.
 
 ## Used by
 Nothing in the app. Run by hand (`python -m voices.bakeoff`) and by the `bakeoff`-marked

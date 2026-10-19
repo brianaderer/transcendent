@@ -1,7 +1,7 @@
 """python -m voices.bakeoff [model ...] runs the bake-off and prints the results page.
 
 With no models named it compares Claude Haiku 5.5 and Claude Sonnet 5.5. It calls the real
-models through OpenRouter, so it needs OPENROUTER_API_KEY and spends money (about $1).
+models through OpenRouter, so it needs OPENROUTER_API_KEY and spends money (about 20 cents for the two default models).
 """
 
 import sys

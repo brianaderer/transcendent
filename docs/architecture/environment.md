@@ -31,7 +31,9 @@ at once and cleanly. The four backend services are all built from the same `back
 in the command they run. Backend tests run with pytest's cache turned off
 (`backend/pyproject.toml`), because the ordinary user can't write one inside the container
 and the containers are thrown away after each run anyway. The same settings leave out tests
-marked `database` (they need a running Postgres; run them with `pytest -m database`). For the same reason the backend
+marked `database` (they need a running Postgres; run them with `pytest -m database`) and
+the one test marked `bakeoff` (it calls the real tagging model and spends money; run it with
+`pytest -m bakeoff`, see [bakeoff](bakeoff.md)). For the same reason the backend
 image points Ruff's cache at `/tmp/ruff-cache` (`RUFF_CACHE_DIR` in `backend/Dockerfile`), so
 linting works inside the container. The image also carries `alembic.ini` and `migrations/`,
 which the `setup` service needs.
@@ -43,6 +45,8 @@ which the `setup` service needs.
 - [api](api.md), [worker](worker.md) and [database](database.md) (setup) read their
   settings through `voices.config.load_settings()`; the worker passes
   `OPENROUTER_API_KEY` and `TAGGING_MODEL_NAME` on to [tagging](tagging.md).
+- [bakeoff](bakeoff.md) reads `OPENROUTER_API_KEY` and `MODEL_DIR` through
+  `load_settings()`; its `bakeoff`-marked test also reads `TAGGING_MODEL_NAME`.
 - [ingestion](ingestion.md) (the catch-up) and [api](api.md) (`GET /api/ingestion`) read
   `voices.config.HISTORY_DAYS`.
 - The README's install and run steps.
