@@ -4,20 +4,23 @@
 
 ## Purpose
 The web app the reviewer clicks through ([atlas plates 30](../atlas/30-frontend.md) and
-[31](../atlas/30-frontend/31-screens.md)). Today it is the Explore page (build step 4): one
-date range governs a dot plot of the range's posts and a list of its topics. A top bar
+[31](../atlas/30-frontend/31-screens.md)). The Explore page: one date range governs a dot
+plot of the range's posts and a list of its topics, and starts a report for the range; the
+Document and Comparison screens show a finished run ([report](report.md)). A top bar
 shows whether the backend is running and how far the r/sailing history has loaded.
 
 ## Public interface
 Screens and parts:
-- **The router** (`src/router.tsx`, TanStack Router): `buildRouter(history?)` builds the one
-  route, `/`, the Explore page, inside a layout with the top bar. The range lives in the
-  address as `?start=YYYY-MM-DD&end=YYYY-MM-DD`; anything else in those fields is dropped.
+- **The router** (`src/router.tsx`, TanStack Router): `buildRouter(history?)` builds the
+  routes inside a layout with the top bar: `/`, the Explore page, whose address holds the
+  range (`?start=YYYY-MM-DD&end=YYYY-MM-DD`) and a started run (`&run=<id>`), anything else in
+  those fields dropped; `/runs/<id>/report` (`?version=A` for version A) and
+  `/runs/<id>/comparison` ([report](report.md)).
 - `explore/ExplorePage` — reads the history (`GET /api/days`, days up to the latest loaded
   one), takes the range from the address (`rangeFrom`: kept if it fits inside the history,
   otherwise the last seven days, atlas OPEN-26), and shows the range in words, the slider,
-  the dot plot, the topics panel and a **Generate report for …** button that is drawn
-  disabled until reports are built. While a new range loads, the previous range's map and topics
+  the dot plot, the topics panel and a **Generate report for …** button, which starts a run
+  (`POST /api/runs`), puts its id in the address and shows `RunProgress` below the plot. While a new range loads, the previous range's map and topics
   stay on screen. It listens to the live `ingestion` events (`useLiveEvents`) and, on each
   `day.finished`, refetches everything it shows (see *How it works*).
 - `explore/RangeSlider` — two handles over the history with each day's posts as a bar behind

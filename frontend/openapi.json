@@ -205,6 +205,85 @@
           }
         }
       }
+    },
+    "/api/runs": {
+      "post": {
+        "summary": "Start Run",
+        "description": "Starts a comparison for the range: both versions, then their scores (plate 70).",
+        "operationId": "start_run",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunStarted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}": {
+      "get": {
+        "summary": "Report Run",
+        "description": "A run's state: running, finished with both versions and their scores, or failed.",
+        "operationId": "report_run",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -269,6 +348,50 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "KeyTopic": {
+        "properties": {
+          "topic_id": {
+            "type": "integer",
+            "title": "Topic Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "engagement": {
+            "type": "integer",
+            "title": "Engagement"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "new",
+              "rising",
+              "steady",
+              "fading"
+            ],
+            "title": "Direction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic_id",
+          "label",
+          "description",
+          "rank",
+          "engagement",
+          "direction"
+        ],
+        "title": "KeyTopic"
       },
       "Map": {
         "properties": {
@@ -351,6 +474,260 @@
           "y"
         ],
         "title": "MapPoint"
+      },
+      "NamedTopic": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "new",
+              "rising",
+              "steady",
+              "fading"
+            ],
+            "title": "Direction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "rank",
+          "direction"
+        ],
+        "title": "NamedTopic"
+      },
+      "PredictedTopic": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "new",
+              "rising",
+              "steady",
+              "fading"
+            ],
+            "title": "Direction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "direction"
+        ],
+        "title": "PredictedTopic"
+      },
+      "RunRequest": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "RunRequest"
+      },
+      "RunResult": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "main_topics": {
+            "items": {
+              "$ref": "#/components/schemas/KeyTopic"
+            },
+            "type": "array",
+            "title": "Main Topics"
+          },
+          "instructions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Instructions"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionResult"
+            },
+            "type": "array",
+            "title": "Versions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "start",
+          "end",
+          "model",
+          "main_topics",
+          "instructions",
+          "versions"
+        ],
+        "title": "RunResult"
+      },
+      "RunStarted": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "stream": {
+            "type": "string",
+            "title": "Stream"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "stream"
+        ],
+        "title": "RunStarted"
+      },
+      "RunState": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "running",
+              "finished",
+              "failed"
+            ],
+            "title": "State"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "RunState"
+      },
+      "Scores": {
+        "properties": {
+          "main_topics": {
+            "type": "integer",
+            "title": "Main Topics"
+          },
+          "topics_found": {
+            "type": "integer",
+            "title": "Topics Found"
+          },
+          "topics_invented": {
+            "type": "integer",
+            "title": "Topics Invented"
+          },
+          "order_agreement": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Agreement"
+          },
+          "directions_named": {
+            "type": "integer",
+            "title": "Directions Named"
+          },
+          "directions_right": {
+            "type": "integer",
+            "title": "Directions Right"
+          },
+          "predicted_named": {
+            "type": "integer",
+            "title": "Predicted Named"
+          },
+          "predicted_prominent": {
+            "type": "integer",
+            "title": "Predicted Prominent"
+          },
+          "predicted_never_came_up": {
+            "type": "integer",
+            "title": "Predicted Never Came Up"
+          },
+          "predicted_direction_right": {
+            "type": "integer",
+            "title": "Predicted Direction Right"
+          },
+          "prediction_score": {
+            "type": "number",
+            "title": "Prediction Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "main_topics",
+          "topics_found",
+          "topics_invented",
+          "order_agreement",
+          "directions_named",
+          "directions_right",
+          "predicted_named",
+          "predicted_prominent",
+          "predicted_never_came_up",
+          "predicted_direction_right",
+          "prediction_score"
+        ],
+        "title": "Scores"
       },
       "TopicInRange": {
         "properties": {
@@ -442,6 +819,111 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VersionResult": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B"
+            ],
+            "title": "Version"
+          },
+          "document": {
+            "type": "string",
+            "title": "Document"
+          },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/NamedTopic"
+            },
+            "type": "array",
+            "title": "Topics"
+          },
+          "predicted": {
+            "items": {
+              "$ref": "#/components/schemas/PredictedTopic"
+            },
+            "type": "array",
+            "title": "Predicted"
+          },
+          "prediction_reasoning": {
+            "type": "string",
+            "title": "Prediction Reasoning"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/Scores"
+          },
+          "report_matches": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Report Matches"
+          },
+          "prediction_matches": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Prediction Matches"
+          },
+          "tool_calls": {
+            "type": "integer",
+            "title": "Tool Calls"
+          },
+          "posts_seen": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Posts Seen"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "seconds": {
+            "type": "number",
+            "title": "Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "document",
+          "topics",
+          "predicted",
+          "prediction_reasoning",
+          "scores",
+          "report_matches",
+          "prediction_matches",
+          "tool_calls",
+          "posts_seen",
+          "input_tokens",
+          "output_tokens",
+          "seconds"
+        ],
+        "title": "VersionResult"
       }
     }
   }

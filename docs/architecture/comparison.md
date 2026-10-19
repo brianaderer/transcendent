@@ -65,7 +65,7 @@ All shapes are Pydantic models, so the API can return them.
 [ingestion](ingestion.md)'s `NomicEmbedder`, passed in.
 
 ## Used by
-The report run, build step 5, in progress.
+[report](report.md) (`comparison_run` builds the marking and scores both versions).
 
 ## Configuration and data
 Fixed in code: `MAIN_TOPICS = 10`, `MATCH_SIMILARITY = 0.7` (a starting default, to be

@@ -4,15 +4,18 @@
  * Community Voices
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
@@ -37,6 +40,24 @@ export interface HTTPValidationError {
   detail?: ValidationError[];
 }
 
+export type KeyTopicDirection = (typeof KeyTopicDirection)[keyof typeof KeyTopicDirection];
+
+export const KeyTopicDirection = {
+  new: "new",
+  rising: "rising",
+  steady: "steady",
+  fading: "fading",
+} as const;
+
+export interface KeyTopic {
+  topic_id: number;
+  label: string;
+  description: string;
+  rank: number;
+  engagement: number;
+  direction: KeyTopicDirection;
+}
+
 export interface MapPoint {
   id: string;
   thread_id: string;
@@ -52,6 +73,113 @@ export interface MapPoint {
 
 export interface Map {
   points: MapPoint[];
+}
+
+export type NamedTopicDirection = (typeof NamedTopicDirection)[keyof typeof NamedTopicDirection];
+
+export const NamedTopicDirection = {
+  new: "new",
+  rising: "rising",
+  steady: "steady",
+  fading: "fading",
+} as const;
+
+export interface NamedTopic {
+  name: string;
+  rank: number;
+  direction: NamedTopicDirection;
+}
+
+export type PredictedTopicDirection =
+  (typeof PredictedTopicDirection)[keyof typeof PredictedTopicDirection];
+
+export const PredictedTopicDirection = {
+  new: "new",
+  rising: "rising",
+  steady: "steady",
+  fading: "fading",
+} as const;
+
+export interface PredictedTopic {
+  name: string;
+  direction: PredictedTopicDirection;
+}
+
+export interface RunRequest {
+  start: string;
+  end: string;
+}
+
+export type RunResultInstructions = { [key: string]: string };
+
+export type VersionResultVersion = (typeof VersionResultVersion)[keyof typeof VersionResultVersion];
+
+export const VersionResultVersion = {
+  A: "A",
+  B: "B",
+} as const;
+
+export interface Scores {
+  main_topics: number;
+  topics_found: number;
+  topics_invented: number;
+  order_agreement: number | null;
+  directions_named: number;
+  directions_right: number;
+  predicted_named: number;
+  predicted_prominent: number;
+  predicted_never_came_up: number;
+  predicted_direction_right: number;
+  prediction_score: number;
+}
+
+export type VersionResultReportMatches = { [key: string]: number | null };
+
+export type VersionResultPredictionMatches = { [key: string]: number | null };
+
+export interface VersionResult {
+  version: VersionResultVersion;
+  document: string;
+  topics: NamedTopic[];
+  predicted: PredictedTopic[];
+  prediction_reasoning: string;
+  scores: Scores;
+  report_matches: VersionResultReportMatches;
+  prediction_matches: VersionResultPredictionMatches;
+  tool_calls: number;
+  posts_seen: string[];
+  input_tokens: number;
+  output_tokens: number;
+  seconds: number;
+}
+
+export interface RunResult {
+  run_id: string;
+  start: string;
+  end: string;
+  model: string;
+  main_topics: KeyTopic[];
+  instructions: RunResultInstructions;
+  versions: VersionResult[];
+}
+
+export interface RunStarted {
+  run_id: string;
+  stream: string;
+}
+
+export type RunStateState = (typeof RunStateState)[keyof typeof RunStateState];
+
+export const RunStateState = {
+  running: "running",
+  finished: "finished",
+  failed: "failed",
+} as const;
+
+export interface RunState {
+  state: RunStateState;
+  result?: RunResult | null;
+  reason?: string | null;
 }
 
 export type TopicInRangeDirection =
@@ -819,6 +947,243 @@ export function useReportMap<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getReportMapQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getStartRunUrl = () => {
+  return `/api/runs`;
+};
+
+/**
+ * Starts a comparison for the range: both versions, then their scores (plate 70).
+ * @summary Start Run
+ */
+export const startRun = async (
+  runRequest: RunRequest,
+  options?: RequestInit,
+): Promise<RunStarted> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  const res = await fetch(getStartRunUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+    body: JSON.stringify(runRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: RunStarted = body ? JSON.parse(body) : {};
+  return data;
+};
+
+export const getStartRunMutationKey = () => ["startRun"] as const;
+
+export const getStartRunMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startRun>>,
+    TError,
+    StartRunMutationVariables,
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startRun>>,
+  TError,
+  StartRunMutationVariables,
+  TContext
+> => {
+  const mutationKey = getStartRunMutationKey();
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startRun>>,
+    StartRunMutationVariables
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return startRun(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartRunMutationResult = NonNullable<Awaited<ReturnType<typeof startRun>>>;
+export type StartRunMutationBody = RunRequest;
+export type StartRunMutationError = HTTPValidationError;
+export type StartRunMutationVariables = { data: RunRequest };
+
+/**
+ * @summary Start Run
+ */
+export const useStartRun = <TError = HTTPValidationError, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof startRun>>,
+      TError,
+      StartRunMutationVariables,
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof startRun>>,
+  TError,
+  StartRunMutationVariables,
+  TContext
+> => {
+  return useMutation(getStartRunMutationOptions(options), queryClient);
+};
+
+export const getReportRunUrl = (runId: string) => {
+  return `/api/runs/${runId}`;
+};
+
+/**
+ * A run's state: running, finished with both versions and their scores, or failed.
+ * @summary Report Run
+ */
+export const reportRun = async (runId: string, options?: RequestInit): Promise<RunState> => {
+  const res = await fetch(getReportRunUrl(runId), {
+    ...options,
+    method: "GET",
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: RunState = body ? JSON.parse(body) : {};
+  return data;
+};
+
+export const getReportRunQueryKey = (runId: string) => {
+  return [`/api/runs/${runId}`] as const;
+};
+
+export const getReportRunQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportRun>>,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportRunQueryKey(runId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportRun>>> = ({ signal }) =>
+    reportRun(runId, { signal, ...fetchOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: runId !== null && runId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type ReportRunQueryResult = NonNullable<Awaited<ReturnType<typeof reportRun>>>;
+export type ReportRunQueryError = HTTPValidationError;
+
+export function useReportRun<
+  TData = Awaited<ReturnType<typeof reportRun>>,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportRun>>,
+          TError,
+          Awaited<ReturnType<typeof reportRun>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportRun<
+  TData = Awaited<ReturnType<typeof reportRun>>,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportRun>>,
+          TError,
+          Awaited<ReturnType<typeof reportRun>>
+        >,
+        "initialData"
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportRun<
+  TData = Awaited<ReturnType<typeof reportRun>>,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Report Run
+ */
+
+export function useReportRun<
+  TData = Awaited<ReturnType<typeof reportRun>>,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>>;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportRunQueryOptions(runId, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;

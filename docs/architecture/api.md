@@ -18,6 +18,11 @@ The web API the frontend calls. Every route lives under `/api`.
   `GET /api/map?start=…&end=…` — the Explore page's reads ([explore](explore.md)): posts per
   day, the range's topics with their badges, and the range's map. Both ends of a range are
   required (422 otherwise); a range that ends before it starts is a 422 saying so.
+- `POST /api/runs` (`{start, end}`) — starts a comparison run ([report](report.md)) and answers
+  `{run_id, stream}`; a backwards range is a 422. `GET /api/runs/{run_id}` — the run's state:
+  `running`, `finished` with both versions and their scores, or `failed` with the reason; 404
+  for a run never started or older than a day. A run's live events come on
+  `GET /api/streams/run-<id>/events`.
 - `GET /api/openapi.json` — the API description the frontend's typed client is generated
   from (atlas OPEN-1). Each operation is named after its route function
   (`name_operation_after_its_function`), so the generated calls read `reportTopics`,

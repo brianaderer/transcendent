@@ -2,7 +2,14 @@ import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 
-import { type DayCount, useReportDays, useReportMap, useReportTopics } from "../api/generated";
+import {
+  type DayCount,
+  useReportDays,
+  useReportMap,
+  useReportTopics,
+  useStartRun,
+} from "../api/generated";
+import { RunProgress } from "../runs/RunProgress";
 import { type LiveEvent, useLiveEvents } from "../useLiveEvents";
 import { topicColours } from "./colours";
 import { DotPlot } from "./DotPlot";
@@ -32,7 +39,7 @@ function ExploreRange({ history }: { history: DayCount[] }) {
   const map = useReportMap(range, { query: { placeholderData: keepPreviousData } });
   const shownTopics = useMemo(() => topics.data ?? [], [topics.data]);
   const colours = useMemo(() => topicColours(shownTopics.map((t) => t.id)), [shownTopics]);
-  const choose = (chosen: DayRange) => navigate({ search: chosen });
+  const choose = (chosen: DayRange) => navigate({ search: chosen }); // a new range drops the run
 
   return (
     <div className="space-y-4">
@@ -48,7 +55,11 @@ function ExploreRange({ history }: { history: DayCount[] }) {
             colours={colours}
             recomputing={map.isFetching}
           />
-          <GenerateReport range={range} />
+          <GenerateReport
+            range={range}
+            onStarted={(run) => navigate({ search: { ...range, run } })}
+          />
+          {asked.run && <RunProgress runId={asked.run} />}
         </section>
         <section aria-label="Topics in the range">
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -61,14 +72,25 @@ function ExploreRange({ history }: { history: DayCount[] }) {
   );
 }
 
-/** Will start a report and its comparison for the range (atlas plate 70); off for now. */
-function GenerateReport({ range }: { range: DayRange }) {
+/** Starts a report and its comparison for the range (atlas plate 70); its progress shows below. */
+function GenerateReport({
+  range,
+  onStarted,
+}: {
+  range: DayRange;
+  onStarted: (runId: string) => void;
+}) {
+  const start = useStartRun({ mutation: { onSuccess: (started) => onStarted(started.run_id) } });
   return (
     <div className="mt-3 flex items-center justify-end gap-3">
+      {start.isError && (
+        <span className="text-xs text-red-600">The report couldn't be started.</span>
+      )}
       <button
         type="button"
-        disabled
-        className="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white opacity-50"
+        disabled={start.isPending}
+        onClick={() => start.mutate({ data: range })}
+        className="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-50"
       >
         Generate report for {shortRange(range)}
       </button>

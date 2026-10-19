@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.stand_ins import FakeExplore, no_events
+from tests.stand_ins import FakeExplore, FakeRuns, no_events
 from voices.api.main import SMALLEST_RESPONSE_TO_COMPRESS, ApiServices, create_app
 from voices.explore.day_range import DayRange
 
@@ -11,7 +11,7 @@ SMALLEST_POINT_BYTES = 100  # one map point's JSON is longer than this
 
 
 def client(explore=None):
-    services = ApiServices({}, dict, no_events, explore or FakeExplore())
+    services = ApiServices({}, dict, no_events, explore or FakeExplore(), FakeRuns())
     return TestClient(create_app(services))
 
 

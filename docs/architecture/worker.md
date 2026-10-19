@@ -9,6 +9,8 @@ catch-up that fills the database from the archive and sorts each day into topics
 
 ## Public interface
 - `celery_app` — the Celery application.
+- Task `voices.compare(run_id, start, end)` — one comparison run for a date range
+  ([report](report.md)), queued by `POST /api/runs`.
 - Task `voices.catch_up` — loads and tags every complete day not yet done; returns whether
   it ran (it does nothing while another catch-up is running); on failure, retries itself
   ten minutes later.

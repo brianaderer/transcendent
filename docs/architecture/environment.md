@@ -59,7 +59,8 @@ which the `setup` service needs.
   model; without it loading stops at the first day with the reason on the page).
   `TAGGING_MODEL_NAME` (default `anthropic/claude-haiku-5.5`, set in `voices/config.py`)
   is not in `.env.example`; adding a `TAGGING_MODEL_NAME=` line to `.env` switches tagging
-  to another OpenRouter model. Both reach the backend containers through `env_file: .env` in `compose.yaml`,
+  to another OpenRouter model. `REPORT_MODEL_NAME` (default `anthropic/claude-sonnet-5.5`,
+  atlas OPEN-5) does the same for the report agent ([report](report.md)). All reach the backend containers through `env_file: .env` in `compose.yaml`,
   which is read when a container is created: after editing `.env`, run `docker compose up`
   again (it re-creates the containers whose settings changed); `docker compose restart`
   keeps the old values.

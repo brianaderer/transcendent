@@ -3,6 +3,8 @@
 from datetime import date
 
 from voices.explore.shapes import DayCount, Days, Map, MapPoint, TopicDay, TopicInfo, TopicInRange
+from voices.report.launcher import RunStarted
+from voices.report.runs import RunNotFound, RunState
 
 
 async def no_events(_stream):
@@ -75,3 +77,19 @@ def topic_info(topic_id, first_seen=date(2026, 8, 1), label=None):
 
 def topic_day(topic_id, on, engagement):
     return TopicDay(topic_id=topic_id, day=on, engagement=engagement, posts=1)
+
+
+class FakeRuns:
+    """Starts nothing; remembers the range asked for and answers one known run."""
+
+    def __init__(self):
+        self.started = None
+
+    def start(self, days):
+        self.started = days
+        return RunStarted(run_id="0123456789ab", stream="run-0123456789ab")
+
+    def state(self, run_id):
+        if run_id != "0123456789ab":
+            raise RunNotFound(run_id)
+        return RunState(state="running")

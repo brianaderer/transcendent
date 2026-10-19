@@ -37,8 +37,12 @@ export function rangeFrom(asked: Partial<DayRange>, history: string[]): DayRange
 
 /** "12 Oct – 18 Oct 2026 · 1,097 posts" */
 export function describeRange(range: DayRange, posts: number): string {
-  const year = range.end.slice(0, 4);
-  return `${dayAndMonth(range.start)} – ${dayAndMonth(range.end)} ${year} · ${posts.toLocaleString("en-US")} posts`;
+  return `${describeDays(range)} · ${posts.toLocaleString("en-US")} posts`;
+}
+
+/** "12 Oct – 18 Oct 2026" */
+export function describeDays(range: DayRange): string {
+  return `${dayAndMonth(range.start)} – ${dayAndMonth(range.end)} ${range.end.slice(0, 4)}`;
 }
 
 /** "12–18 Oct", or "28 Sept – 4 Oct" across a month: for the Generate report button. */

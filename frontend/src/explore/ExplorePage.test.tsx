@@ -19,6 +19,7 @@ const DAYS = Array.from({ length: 56 }, (_, n) => ({ day: addDays("2026-08-24", 
 let latestDay: string | null = "2026-10-18";
 let daysServed = DAYS;
 const asked: string[] = [];
+const started: unknown[] = [];
 const NAVIGATION_SETTLES_MS = 50; // long enough for a navigation, had one been made
 
 function topic(id: number, label: string, direction: TopicInRange["direction"]): TopicInRange {
@@ -56,6 +57,13 @@ standInBackend(
     return HttpResponse.json([topic(1, "Impellers", "rising"), topic(2, "Anchoring", "new")]);
   }),
   http.get("*/api/map", () => HttpResponse.json(MAP)),
+  http.post("*/api/runs", async ({ request }) => {
+    started.push(await request.json());
+    return HttpResponse.json({ run_id: "0123456789ab", stream: "run-0123456789ab" });
+  }),
+  http.get("*/api/runs/:runId", () =>
+    HttpResponse.json({ state: "running", result: null, reason: null }),
+  ),
   http.get("*/api/health", () => HttpResponse.json({ status: "ok", checks: {} })),
   http.get("*/api/ingestion", () =>
     HttpResponse.json({ days_done: 56, days_wanted: 56, posts: 560, latest_day: "2026-10-18" }),
@@ -84,6 +92,7 @@ beforeEach(() => {
   latestDay = "2026-10-18";
   daysServed = DAYS;
   asked.length = 0;
+  started.length = 0;
   shown.length = 0;
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -192,9 +201,12 @@ test("when a day finishes loading, the page takes it in without a reload", async
   expect(await screen.findByText(/12 Oct – 18 Oct/)).toBeInTheDocument();
 });
 
-test("the Generate report button names the range and waits for the next build step", async () => {
-  openExplore();
+test("Generate report starts a run for the range and shows its progress in place", async () => {
+  const router = openExplore();
 
-  const button = await screen.findByRole("button", { name: "Generate report for 12–18 Oct" });
-  expect(button).toBeDisabled();
+  fireEvent.click(await screen.findByRole("button", { name: "Generate report for 12–18 Oct" }));
+
+  expect(await screen.findByRole("region", { name: "Report progress" })).toBeInTheDocument();
+  expect(started).toEqual([{ start: "2026-10-12", end: "2026-10-18" }]);
+  expect(router.state.location.search).toMatchObject({ run: "0123456789ab" });
 });

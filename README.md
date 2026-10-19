@@ -173,9 +173,20 @@ takes a few seconds the first time (**Recomputing map…** shows meanwhile; a we
 read the post, click it to open it on Reddit. The **Topics** list beside it has the range's
 topics, busiest first, each with a line of its daily activity, its post count and a badge:
 **New**, **Rising**, **Steady** or **Fading** against the same number of days before. Hover a
-topic to pick out its dots. **Generate report** is shown but switched off, because reports
-aren't built yet. The **Dark** (or **Light**) button at the right of the top bar switches
-between dark and light colours.
+topic to pick out its dots. The **Dark** (or **Light**) button at the right of the top bar
+switches between dark and light colours.
+
+**The report, with and without retrieval.** Click **Generate report for …** below the plot.
+The same model writes the Community Voices Document for the range twice: version A on its
+own, version B with tools that search the stored posts. Each also predicts the range from
+what was known the day before it began. A panel below the plot shows both versions working
+live: each step, and every search version B makes with how many posts it found. It takes a
+minute or two and a few cents of OpenRouter credit. When it finishes, **Read the report**
+opens version B's document (with its list of topics beside it), and **See the comparison**
+puts the two side by side: a scoreboard (main topics found, topics invented, order of
+importance, directions right, prediction score, tokens and time), the range's real topics
+against what each version said, and both documents. Results are kept for a day; nothing
+else is stored.
 
 Ignore the `Local:` and `Network:` addresses the frontend prints in the log; they're inside
 Docker. Use http://localhost:5173 (or the `PORT` you set).

@@ -1,6 +1,7 @@
 """The web API. Every route lives under /api, which the frontend's server passes through."""
 
 import logging
+import re
 import time
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -9,10 +10,12 @@ from datetime import date
 from typing import Protocol
 
 import redis
+from celery import Celery
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
+from pydantic import BaseModel
 
 from voices.config import HISTORY_DAYS, load_settings
 from voices.db.explore_store import ExploreStore
@@ -25,10 +28,23 @@ from voices.explore.projection import flatten
 from voices.explore.shapes import Days, Map, TopicInRange
 from voices.health import database_is_reachable, queue_is_reachable
 from voices.log import configure_logging, log_event, tracing
+from voices.report.launcher import RunLauncher, RunStarted
+from voices.report.runs import RunNotFound, RunState, RunStore
 
 HealthChecks = dict[str, Callable[[], bool]]
-STREAMS = {"ingestion"}  # report runs get their own streams in build step 5
+STREAMS = {"ingestion"}
+RUN_STREAM = re.compile(r"run-[0-9a-f]{12}")  # each comparison run has its own (plate 41)
 SMALLEST_RESPONSE_TO_COMPRESS = 1000  # bytes; a range's map runs to megabytes
+
+
+class RunRequest(BaseModel):
+    start: date
+    end: date
+
+
+class Runs(Protocol):
+    def start(self, days: DayRange) -> RunStarted: ...
+    def state(self, run_id: str) -> RunState: ...
 
 
 class ExploreReads(Protocol):
@@ -45,6 +61,7 @@ class ApiServices:
     ingestion_status: Callable[[], dict]
     event_stream: Callable[[str], AsyncIterator[str]]
     explore: ExploreReads
+    runs: Runs
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +96,7 @@ def create_app(services: ApiServices) -> FastAPI:
     @app.get("/api/streams/{stream}/events")
     def stream_events(stream: str) -> StreamingResponse:
         """Live events as server-sent events (atlas plate 41)."""
-        if stream not in STREAMS:
+        if stream not in STREAMS and not RUN_STREAM.fullmatch(stream):
             raise HTTPException(status_code=404, detail=f"no stream named {stream}")
         return StreamingResponse(services.event_stream(stream), media_type="text/event-stream")
 
@@ -97,6 +114,19 @@ def create_app(services: ApiServices) -> FastAPI:
     def report_map(start: date, end: date) -> Map:
         """Every post and comment written in the range, placed on the range's own map."""
         return services.explore.map(DayRange(start, end))
+
+    @app.post("/api/runs")
+    def start_run(request: RunRequest) -> RunStarted:
+        """Starts a comparison for the range: both versions, then their scores (plate 70)."""
+        return services.runs.start(DayRange(request.start, request.end))
+
+    @app.get("/api/runs/{run_id}")
+    def report_run(run_id: str) -> RunState:
+        """A run's state: running, finished with both versions and their scores, or failed."""
+        try:
+            return services.runs.state(run_id)
+        except RunNotFound as error:
+            raise HTTPException(status_code=404, detail=f"no run {run_id}") from error
 
     return app
 
@@ -145,7 +175,8 @@ def create_production_app() -> FastAPI:
     configure_logging(settings.service_name, settings.log_dir)
     log_event(logger, "api.started")
     store = connect_store(settings.database_url)
-    map_cache = RedisMapCache(redis.Redis.from_url(settings.redis_url))
+    redis_client = redis.Redis.from_url(settings.redis_url)
+    map_cache = RedisMapCache(redis_client)
     return create_app(
         ApiServices(
             health_checks={
@@ -155,5 +186,12 @@ def create_production_app() -> FastAPI:
             ingestion_status=store.ingestion_status,
             event_stream=lambda stream: server_sent_events(settings.redis_url, stream),
             explore=Explore(ExploreStore(store.engine), map_cache, flatten),
+            runs=RunLauncher(RunStore(redis_client), queue_on(settings.redis_url)),
         )
     )
+
+
+def queue_on(redis_url: str) -> Callable[[str, list[str]], object]:
+    """Sends a task to the worker by name, so the API doesn't import the worker's code."""
+    celery = Celery(broker=redis_url)
+    return lambda name, arguments: celery.send_task(name, args=arguments)

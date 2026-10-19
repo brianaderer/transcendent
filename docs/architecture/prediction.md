@@ -48,7 +48,7 @@ before the range is used, never anything from inside it (OPEN-11).
 `rows_by_topic`, the `TopicDay` and `TopicInfo` rows), Pydantic.
 
 ## Used by
-The report run, build step 5, in progress.
+[report](report.md) (version B's `topic_trends` tool when predicting a range).
 
 ## Configuration and data
 Fixed in code: `PERIODS_SHOWN = 4`, `LEVEL_SMOOTHING = 0.7`, `TREND_SMOOTHING = 0.5`,

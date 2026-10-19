@@ -1,6 +1,7 @@
 """The Celery worker and its Beat schedule (atlas plate 40)."""
 
 import logging
+from datetime import date
 
 import redis
 from celery import Celery, Task
@@ -11,6 +12,7 @@ from voices.config import load_settings
 from voices.log import configure_logging, log_event
 from voices.tagging.model import MissingModelKey
 from voices.worker.catch_up_task import catch_up_now, forget_stale_catch_up
+from voices.worker.report_task import compare_now
 
 RETRY_FAILED_CATCH_UP_SECONDS = 10 * 60
 
@@ -54,6 +56,12 @@ def catch_up(self: Task) -> bool:
         return False
     except Exception as error:
         raise self.retry(exc=error, countdown=RETRY_FAILED_CATCH_UP_SECONDS) from error
+
+
+@celery_app.task(name="voices.compare")
+def compare(run_id: str, start: str, end: str) -> None:
+    """One comparison run for a date range (atlas plate 70), started from the page."""
+    compare_now(run_id, date.fromisoformat(start), date.fromisoformat(end))
 
 
 @celery_app.task(name="voices.ping")
