@@ -90,3 +90,10 @@ def test_a_topic_is_compared_as_its_label_and_description():
     )
 
     assert topic_texts([topic]) == {7: "Winterizing: haul-out"}
+
+
+def test_a_name_close_in_meaning_but_not_worded_alike_still_matches():
+    """B's "Club events, festivals and social ideas" scored 0.77 against "Sailing festivals and
+    local events"; Brian set the cutoff to 0.70 so it counts (atlas OPEN-42)."""
+    assert MATCH_SIMILARITY == 0.70
+    assert match(["festivals"], {"festivals": at_similarity(0.77)}) == {"festivals": 1}
