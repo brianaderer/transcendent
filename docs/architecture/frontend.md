@@ -187,7 +187,8 @@ Logic, each in its own small module with its own tests:
 
 ## How it works
 React with TanStack Query and TanStack Router, styled with Tailwind (dark mode by a class
-on `<html>`), built by Vite and served by `vite preview` on port 5173 inside its container
+on `<html>`; a base rule in `src/index.css` gives everything clickable the hand cursor,
+which Tailwind 4 otherwise leaves as the arrow on buttons), built by Vite and served by `vite preview` on port 5173 inside its container
 (published on your computer as `PORT`, see [environment](environment.md)), which passes
 `/api` through to the API container.
 
