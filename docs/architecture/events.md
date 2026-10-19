@@ -1,6 +1,6 @@
 # events
 
-**Source:** `backend/src/voices/events.py`, `frontend/src/useLiveEvents.ts`   ·   **Tests:** `backend/tests/test_events.py`, `frontend/src/IngestionStatus.test.tsx`
+**Source:** `backend/src/voices/events.py`, `frontend/src/useLiveEvents.ts`   ·   **Tests:** `backend/tests/test_events.py`, `frontend/src/IngestionStatus.test.tsx`, `frontend/src/explore/ExplorePage.test.tsx`
 
 ## Purpose
 Live events from the backend's jobs to the browser, as server-sent events (atlas
@@ -30,7 +30,9 @@ Redis, [logging](logging.md).
 [worker](worker.md) (`catch_up_task.py` builds `RedisEvents` and hands its `emit` to the
 [ingestion](ingestion.md) catch-up and to [tagging](tagging.md), which sends
 `decision.made` through it); [api](api.md) (the stream route uses
-`server_sent_events`); [frontend](frontend.md) (`IngestionStatus` uses `useLiveEvents`).
+`server_sent_events`); [frontend](frontend.md) (two parts listen to the `ingestion` stream through
+`useLiveEvents`: `IngestionStatus`, which refetches the loading line on every event, and
+`ExplorePage`, which refetches everything it shows on each `day.finished`).
 
 ## Configuration and data
 `REDIS_URL`.

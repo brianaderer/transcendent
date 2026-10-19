@@ -61,7 +61,7 @@ function ExploreRange({ history }: { history: DayCount[] }) {
   );
 }
 
-/** Starts a report and its comparison for the range (atlas plate 70). */
+/** Will start a report and its comparison for the range (atlas plate 70); off for now. */
 function GenerateReport({ range }: { range: DayRange }) {
   return (
     <div className="mt-3 flex items-center justify-end gap-3">

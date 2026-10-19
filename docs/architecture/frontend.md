@@ -18,17 +18,21 @@ Screens and parts:
   otherwise the last seven days, atlas OPEN-26), and shows the range in words, the slider,
   the dot plot, the topics panel and a **Generate report for …** button that is drawn
   disabled until reports are built. While a new range loads, the previous range's map and topics
-  stay on screen.
+  stay on screen. It listens to the live `ingestion` events (`useLiveEvents`) and, on each
+  `day.finished`, refetches everything it shows (see *How it works*).
 - `explore/RangeSlider` — two handles over the history with each day's posts as a bar behind
-  them, and the presets **Last 7 days**, **Last 14 days**, **All 8 weeks**. A handle changes
-  the range only when it is let go (pointer up or key up), so the map isn't recomputed
-  mid-drag.
+  them, and the presets **Last 7 days**, **Last 14 days**, **All 8 weeks** (the first and last
+  labels are built from `DEFAULT_DAYS` and `HISTORY_WEEKS`). Each handle is a `RangeHandle`
+  and the presets are `PresetButtons`, both inside the same file. A handle changes the range
+  only when it is let go (pointer up or key up), so the map isn't recomputed mid-drag.
 - `explore/DotPlot` — every post and comment in the range as a dot (`GET /api/map`), coloured
   by its thread's topic, "Recomputing map…" while a new map is fetched. Each new map is lined
   up with the one shown before (`alignTo`) so staying dots glide. Hovering shows a card
-  (author, day, thread title, excerpt, topic), every part HTML-escaped because people wrote
-  it; clicking opens the post or comment on Reddit (`redditLink`). Hovering a topic in the
-  panel fades every other topic's dots.
+  (author, day, thread title, excerpt, topic), every part HTML-escaped (`escapeHtml`) because
+  people wrote it; a dot whose topic isn't in the range's topics list reads "A smaller
+  topic", and one whose thread has no topic yet reads "No topic yet"; clicking opens the post
+  or comment on Reddit (`redditLink`). Hovering a topic in the panel fades every other
+  topic's dots.
 - `explore/TopicsPanel` — the range's topics busiest first (`GET /api/topics`): colour, label
   (the description on hover), a sparkline of the daily engagement, posts and comments, and
   the badge **New**, **Rising**, **Steady** or **Fading**. Hovering a row, or moving the
@@ -102,5 +106,6 @@ The reviewer's browser.
 React 18.3.1, TanStack Query 5.62.8 and Router 1.170.38, Zustand 5.0.15, ECharts 6.1.0,
 Tailwind 4.3.3; orval 8.34.0 and MSW 2.15.0 for development. Tests: `npm test` (Vitest,
 offline: the Explore page runs against MSW, a stand-in backend, in `src/test/standInBackend.ts`,
-with the chart swapped for a recorder; the status parts replace `fetch` and `EventSource`).
+with the chart swapped for a recorder and `EventSource` for a stand-in that can announce a
+finished day; the status parts replace `fetch` and `EventSource`).
 Lint: `npm run lint` (ESLint + Prettier).

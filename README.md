@@ -161,8 +161,9 @@ step 3 says, then run `docker compose up --build` again. Stopping and starting t
 that is tried again is fetched from the start, and nothing in it is counted twice.
 
 **Exploring.** Until the first day has loaded, the page says **No days are loaded yet; the
-first start fills them in.** It takes in each day as it finishes loading, without a reload. Once days have loaded, the
-page shows them: it opens on the last seven days, with the range written out (for example
+first start fills them in.** The page takes in each day as it finishes loading, without a
+reload. Once days have loaded, the page shows them: it opens on the last seven days, with
+the range written out (for example
 **12 Oct – 18 Oct 2026 · 1,097 posts**). Drag either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
 when you let go, and the address changes with it, so you can share exactly what you see.
 The large plot shows every post in the range as a dot, coloured by topic, with posts that
@@ -172,8 +173,8 @@ takes a few seconds the first time (**Recomputing map…** shows meanwhile; a we
 read the post, click it to open it on Reddit. The **Topics** list beside it has the range's
 topics, busiest first, each with a line of its daily activity, its post count and a badge:
 **New**, **Rising**, **Steady** or **Fading** against the same number of days before. Hover a
-topic to pick out its dots. **Generate report** is shown but switched off: reports arrive in
-the next build step. The **Dark** (or **Light**) button at the right of the top bar switches
+topic to pick out its dots. **Generate report** is shown but switched off, because reports
+aren't built yet. The **Dark** (or **Light**) button at the right of the top bar switches
 between dark and light colours.
 
 Ignore the `Local:` and `Network:` addresses the frontend prints in the log; they're inside
