@@ -73,11 +73,15 @@ TOOLS = [
     Decision,
 ]
 
+# The last turn offers only the decision rather than forcing it: some models, Claude Sonnet
+# 5.5 among them, refuse a forced tool choice.
+DECISION_ONLY = [Decision]
+
 logger = logging.getLogger(__name__)
 
 
 class ChatModel(Protocol):
-    def bind_tools(self, tools: list, tool_choice: str | None = None) -> "ChatModel": ...
+    def bind_tools(self, tools: list) -> "ChatModel": ...
     def invoke(self, messages: list[BaseMessage]) -> AIMessage: ...
 
 
@@ -102,12 +106,13 @@ class ToolLoopDecider:
         """Lets the agent make up to max_look_ups tool calls, then makes it decide."""
         conversation = _Conversation(self.model, self.tools, brief, self.max_look_ups)
         while conversation.has_look_ups_left():
-            reply = conversation.take_turn(tool_choice=None)
+            reply = conversation.take_turn(TOOLS)
             decision = _decision_in(reply)
             if decision:
                 return conversation.decided(decision, self.model_name)
             conversation.answer(reply)
-        decision = _decision_in(conversation.take_turn(tool_choice=DECIDE))
+        conversation.tell(f"No look-ups left; decide now by calling {DECIDE}.")
+        decision = _decision_in(conversation.take_turn(DECISION_ONLY))
         if not decision:
             raise NoDecision(f"cluster {brief.name}: no decision when made to decide")
         return conversation.decided(decision, self.model_name)
@@ -124,11 +129,14 @@ class _Conversation:
         self.prompt = render_brief(brief)
         self.messages: list[BaseMessage] = [SystemMessage(INSTRUCTIONS), HumanMessage(self.prompt)]
 
-    def take_turn(self, tool_choice: str | None) -> AIMessage:
-        reply = self.model.bind_tools(TOOLS, tool_choice=tool_choice).invoke(self.messages)
+    def take_turn(self, tools: list) -> AIMessage:
+        reply = self.model.bind_tools(tools).invoke(self.messages)
         self._log("tagging.turn", reply=reply.content, tool_calls=reply.tool_calls)
         self.messages.append(reply)
         return reply
+
+    def tell(self, text: str) -> None:
+        self._say(HumanMessage(text))
 
     def has_look_ups_left(self) -> bool:
         return self.look_ups_left > 0

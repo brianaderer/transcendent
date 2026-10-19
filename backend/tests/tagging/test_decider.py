@@ -2,7 +2,7 @@ import pytest
 from langchain_core.messages import AIMessage
 
 from voices.tagging.decider import NoDecision, ToolLoopDecider
-from voices.tagging.decisions import ClusterBrief, TypicalPost
+from voices.tagging.decisions import ClusterBrief, Decision, TypicalPost
 
 
 class ScriptedModel:
@@ -13,10 +13,10 @@ class ScriptedModel:
     def __init__(self, replies):
         self.replies = list(replies)
         self.seen = []
-        self.tool_choice = None
+        self.offered = None
 
-    def bind_tools(self, tools, tool_choice=None):
-        self.tool_choice = tool_choice
+    def bind_tools(self, tools):
+        self.offered = tools
         return self
 
     def invoke(self, messages):
@@ -67,7 +67,7 @@ def test_at_the_look_up_limit_the_agent_must_decide():
 
     ToolLoopDecider(model, "scripted", tools, max_look_ups=1).decide(BRIEF)
 
-    assert model.tool_choice == "Decision"
+    assert model.offered == [Decision]
 
 
 def test_a_malformed_decision_is_answered_and_the_agent_tries_again():
@@ -97,7 +97,17 @@ def test_by_default_the_agent_gets_three_look_ups_then_must_decide():
     ToolLoopDecider(model, "scripted", tools).decide(BRIEF)
 
     assert len(tools.calls) == 3
-    assert model.tool_choice == "Decision"
+    assert model.offered == [Decision]
+
+
+def test_the_last_turn_offers_only_the_decision_without_forcing_it():
+    # Some models, Claude Sonnet 5.5 among them, refuse a forced tool choice.
+    model = ScriptedModel([call("search", {"term": "x"}), call("Decision", DECIDE, "2")])
+
+    ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=1).decide(BRIEF)
+
+    assert model.offered == [Decision]
+    assert "decide now" in str(model.seen[-1][-1].content)
 
 
 def test_several_look_ups_in_one_turn_count_toward_the_limit():
@@ -112,7 +122,7 @@ def test_several_look_ups_in_one_turn_count_toward_the_limit():
 
     assert len(tools.calls) == 3
     assert "No look-ups left" in str(model.seen[-1][-1].content)
-    assert model.tool_choice == "Decision"
+    assert model.offered == [Decision]
 
 
 def test_a_turn_that_looks_nothing_up_still_spends_a_look_up():
@@ -122,11 +132,11 @@ def test_a_turn_that_looks_nothing_up_still_spends_a_look_up():
 
     ToolLoopDecider(model, "scripted", tools, max_look_ups=2).decide(BRIEF)
 
-    assert model.tool_choice == "Decision"
+    assert model.offered == [Decision]
     assert tools.calls == []
 
 
-def test_no_decision_even_when_forced_stops_with_an_error():
+def test_no_decision_even_when_made_to_decide_stops_with_an_error():
     model = ScriptedModel([AIMessage(content="thinking"), AIMessage(content="still thinking")])
 
     with pytest.raises(NoDecision):
