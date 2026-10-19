@@ -3,12 +3,12 @@ import { COMMUNITY_URL, HISTORY_WEEKS, SUBREDDIT } from "./community";
 /** Says which community the app is reading, in the top bar on every screen. */
 export function CommunityHeadline() {
   return (
-    <p className="text-sm text-slate-600 dark:text-slate-300">
+    <p className="text-xs text-slate-500 dark:text-slate-400">
       <a
         href={COMMUNITY_URL}
         target="_blank"
         rel="noreferrer"
-        className="font-semibold text-teal-700 hover:underline dark:text-teal-400"
+        className="font-medium text-teal-700 hover:underline dark:text-teal-400"
       >
         r/{SUBREDDIT}
       </a>{" "}
