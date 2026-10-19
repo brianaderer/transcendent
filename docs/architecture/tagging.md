@@ -32,8 +32,8 @@ both have happened.
 - `decider.ToolLoopDecider(model, model_name, tools, max_look_ups=3).decide(brief)` — the agent's
   decision for one group, as a `DecidedCluster` with the exact prompt it saw and the model's name.
   `max_look_ups` is how many tool calls it may make, counted across turns, before it is made to
-  decide (default `MAX_LOOK_UPS_BEFORE_DECIDING`). Raises `NoDecision` if the agent never gives a
-  valid decision, which stops the day.
+  decide (default `MAX_LOOK_UPS_BEFORE_DECIDING`). Raises `NoDecision` if the agent still gives no
+  valid decision after one correction on its last turn, which stops the day.
 - `graph.decide_all(decider, briefs)` — every group decided in parallel (a LangGraph
   fan-out), returned in the briefs' order.
 - `decisions.Decision` (attach / mint / noise, with topic id, label, description, reason;
@@ -76,7 +76,9 @@ For day D (atlas OPEN-29):
    `Decision`. It gets three look-ups (tool calls, counted across turns; a turn with no look-up still
    spends one, and calls beyond the limit are answered "No look-ups left"); then it is
    told to decide and offered only `Decision` (not forced: Claude Sonnet 5.5 refuses a
-   forced tool choice), and if that answer still isn't a valid decision the day fails.
+   forced tool choice). If that answer isn't a valid decision (a required field left out, say),
+   it is told what was wrong and offered `Decision` once more (`CORRECTIONS_ON_LAST_TURN`);
+   if the second answer isn't valid either, the day fails.
    If one reply calls `Decision` more than once, the first valid call is used and a malformed
    one is skipped; when a reply has no valid decision, each `Decision` call in it is answered
    with what was wrong with it.
@@ -140,7 +142,7 @@ models through `connect_model`, takes its list of right actions from `Action`, a
 `anthropic/claude-haiku-5.5`). Fixed in code: `THREAD_DAYS = 3` (`window.py`),
 `GROUPING_DISTANCE = 0.3` (`grouping.py`), `TOP_REPLIES_IN_THREAD_TEXT = 5` and
 `THREAD_TEXT_CHARACTERS = 3000` (`threads.py`), `REVIVAL_DAYS = 7`, `TYPICAL_POSTS_SHOWN = 6`, `CANDIDATE_TOPICS_SHOWN = 5`,
-`MAX_LOOK_UPS_BEFORE_DECIDING = 3`, `MAX_PARALLEL_DECISIONS = 8`, `SEARCH_RESULTS = 20`,
+`MAX_LOOK_UPS_BEFORE_DECIDING = 3`, `CORRECTIONS_ON_LAST_TURN = 1`, `MAX_PARALLEL_DECISIONS = 8`, `SEARCH_RESULTS = 20`,
 `TAG_RESULTS = 10`, `SAME_NEW_TOPIC_SIMILARITY = 0.90`, `KEYWORDS_PER_TOPIC = 8`,
 `MIN_WORD_LENGTH = 4`, `RECENT_DAYS = 7`, `EXCERPT_CHARACTERS = 300`,
 `TYPICAL_POST_CHARACTERS = 600`, `UNKNOWN_AUTHOR = "unknown"` (`tagging_store.py`); the model call uses temperature 0, a 120-second timeout

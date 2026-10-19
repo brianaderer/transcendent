@@ -19,6 +19,9 @@ from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 MAX_LOOK_UPS_BEFORE_DECIDING = 3
 DECIDE = "Decision"
 NO_LOOK_UPS_LEFT = f"No look-ups left; decide now by calling {DECIDE}."
+# Once look-ups run out, a reply without a valid decision is answered (why it was malformed,
+# or a reminder) this many times before giving up: a dropped field shouldn't fail the day.
+CORRECTIONS_ON_LAST_TURN = 1
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.
 
@@ -107,7 +110,7 @@ class ToolLoopDecider:
 
     def decide(self, brief: ClusterBrief) -> DecidedCluster:
         """Lets the agent make up to max_look_ups tool calls, then offers it only the Decision
-        tool and asks it to decide."""
+        tool and asks it to decide, correcting it up to CORRECTIONS_ON_LAST_TURN times."""
         conversation = _Conversation(self.model, self.tools, brief, self.max_look_ups)
         while conversation.has_look_ups_left():
             reply = conversation.take_turn(TOOLS)
@@ -116,10 +119,19 @@ class ToolLoopDecider:
                 return conversation.decided(decision, self.model_name)
             conversation.answer(reply)
         conversation.tell(NO_LOOK_UPS_LEFT)
-        decision = _decision_in(conversation.take_turn(DECISION_ONLY))
+        return conversation.decided(self._made_to_decide(conversation), self.model_name)
+
+    def _made_to_decide(self, conversation: "_Conversation") -> Decision:
+        reply = conversation.take_turn(DECISION_ONLY)
+        for _ in range(CORRECTIONS_ON_LAST_TURN):
+            if _decision_in(reply):
+                break
+            conversation.answer(reply)
+            reply = conversation.take_turn(DECISION_ONLY)
+        decision = _decision_in(reply)
         if not decision:
-            raise NoDecision(f"cluster {brief.name}: no decision when made to decide")
-        return conversation.decided(decision, self.model_name)
+            raise NoDecision(f"cluster {conversation.brief.name}: no decision when made to decide")
+        return decision
 
 
 class _Conversation:

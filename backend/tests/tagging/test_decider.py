@@ -137,8 +137,41 @@ def test_a_turn_that_looks_nothing_up_still_spends_a_look_up():
     assert tools.calls == []
 
 
+def test_a_malformed_decision_on_the_last_turn_is_answered_and_offered_once_more():
+    no_reason = {"action": "mint", "label": "Rig additions", "description": "Adding runners."}
+    model = ScriptedModel(
+        [
+            call("search", {"term": "x"}),
+            call("Decision", no_reason, "2"),
+            call("Decision", DECIDE, "3"),
+        ]
+    )
+
+    decided = ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=1).decide(BRIEF)
+
+    assert decided.decision.topic_id == 3
+    assert "malformed" in str(model.seen[-1][-1].content)
+    assert model.offered == [Decision]
+
+
+def test_a_second_malformed_decision_on_the_last_turn_stops_with_an_error():
+    malformed = {"action": "maybe", "reason": "?"}
+    model = ScriptedModel(
+        [
+            call("search", {"term": "x"}),
+            call("Decision", malformed, "2"),
+            call("Decision", malformed, "3"),
+        ]
+    )
+
+    with pytest.raises(NoDecision):
+        ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=1).decide(BRIEF)
+
+
 def test_no_decision_even_when_made_to_decide_stops_with_an_error():
-    model = ScriptedModel([AIMessage(content="thinking"), AIMessage(content="still thinking")])
+    model = ScriptedModel(
+        [AIMessage(content="thinking"), AIMessage(content="still"), AIMessage(content="still")]
+    )
 
     with pytest.raises(NoDecision):
         ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=1).decide(BRIEF)
