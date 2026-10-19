@@ -12,7 +12,9 @@ from pydantic import BaseModel, ValidationError
 from voices.report.tasks import Task
 from voices.report.tools import TOOL_SCHEMAS, ToolResult
 
-MAX_TOOL_CALLS = 20  # a cap per call, so a model that keeps searching ends with what it has
+# A cap per call on the turns before only the answer is offered: each tool call spends one, and
+# so does a reply that calls nothing, so a model that keeps searching or talking ends.
+MAX_TOOL_CALLS = 20
 # Once tools run out, a reply without a valid answer is corrected this many times.
 CORRECTIONS = 1
 
@@ -61,7 +63,7 @@ class ReportWriter:
         return call.written
 
     def _answer_with_tools(self, call: "_Call") -> BaseModel | None:
-        while call.written.tool_calls < MAX_TOOL_CALLS:
+        while call.turns_spent < MAX_TOOL_CALLS:
             reply = call.take_turn([*TOOL_SCHEMAS, call.task.answer])
             answer = call.answer_in(reply)
             if answer:
@@ -91,6 +93,11 @@ class _Call:
         self.answer_name = task.answer.__name__
         self.messages: list[BaseMessage] = [HumanMessage(task.instructions)]
         self.written = Written(answer=task.answer.model_construct())
+        self.empty_turns = 0  # replies that called nothing
+
+    @property
+    def turns_spent(self) -> int:
+        return self.written.tool_calls + self.empty_turns
 
     def take_turn(self, offered: list) -> AIMessage:
         reply = self.model.bind_tools(offered).invoke(self.messages)
@@ -111,6 +118,7 @@ class _Call:
         """Answers a reply that gave no valid answer: tool results, why an answer was
         malformed, or a reminder when it called nothing."""
         if not reply.tool_calls:
+            self.empty_turns += 1
             self.tell(f"Answer by calling {self.answer_name}.")
         for call in reply.tool_calls:
             text = self._result_of(call, tools)

@@ -16,7 +16,8 @@ only difference is whether the model gets tools that read our store.
   tools; their lists are the comparison's committed lists (atlas OPEN-25).
 - `writer.ReportWriter(model, tools, emit).write(task)` — one call of the agent. With
   `tools=None` (version A) the model is offered only the answer tool. With tools (version B)
-  it may call them up to `MAX_TOOL_CALLS` times, then is offered only the answer; a reply
+  it may take up to `MAX_TOOL_CALLS` turns (each tool call spends one, and so does a reply that
+  calls nothing, so a model that keeps talking still ends), then is offered only the answer; a reply
   without a valid answer is told why (or reminded) `CORRECTIONS` times before `NoAnswer` is
   raised. Returns a `Written`: the answer, tool calls made, posts seen, tokens in and out,
   seconds. Each tool call is announced as `tool.called` and `tool.returned`.

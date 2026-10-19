@@ -126,3 +126,12 @@ def test_no_answer_after_the_corrections_stops_with_an_error():
 
     with pytest.raises(NoAnswer):
         ReportWriter(model, None, Events()).write(write_task(DAYS))
+
+
+def test_a_model_that_keeps_replying_in_plain_text_with_tools_still_stops():
+    model = ScriptedModel([said(f"thinking {n}") for n in range(MAX_TOOL_CALLS + 5)])
+
+    with pytest.raises(NoAnswer):
+        ReportWriter(model, FakeTools(), Events()).write(write_task(DAYS))
+
+    assert len(model.replies) > 0  # stopped before using every scripted reply
