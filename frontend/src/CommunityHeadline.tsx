@@ -1,6 +1,4 @@
-import { HISTORY_WEEKS, SUBREDDIT } from "./community";
-
-const COMMUNITY_URL = `https://www.reddit.com/r/${SUBREDDIT}/`;
+import { COMMUNITY_URL, HISTORY_WEEKS, SUBREDDIT } from "./community";
 
 /** Says which community the app is reading, in the top bar on every screen. */
 export function CommunityHeadline() {
