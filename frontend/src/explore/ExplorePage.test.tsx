@@ -18,6 +18,7 @@ vi.mock("./chart", () => ({
 const DAYS = Array.from({ length: 56 }, (_, n) => ({ day: addDays("2026-08-24", n), posts: 10 }));
 let latestDay: string | null = "2026-10-18";
 let daysServed = DAYS;
+let mapServed: PostMap;
 const asked: string[] = [];
 const started: unknown[] = [];
 const NAVIGATION_SETTLES_MS = 50; // long enough for a navigation, had one been made
@@ -57,7 +58,7 @@ standInBackend(
     asked.push(new URL(request.url).search);
     return HttpResponse.json([topic(1, "Impellers", "rising"), topic(2, "Anchoring", "new")]);
   }),
-  http.get("*/api/map", () => HttpResponse.json(MAP)),
+  http.get("*/api/map", () => HttpResponse.json(mapServed)),
   http.post("*/api/runs", async ({ request }) => {
     started.push(await request.json());
     return HttpResponse.json({ run_id: "0123456789ab", stream: "run-0123456789ab" });
@@ -92,6 +93,7 @@ beforeEach(() => {
   useUiState.setState({ highlightedTopic: null });
   latestDay = "2026-10-18";
   daysServed = DAYS;
+  mapServed = MAP;
   asked.length = 0;
   started.length = 0;
   shown.length = 0;
@@ -200,6 +202,17 @@ test("when a day finishes loading, the page takes it in without a reload", async
   act(() => announce({ type: "day.finished", day: "2026-10-18" }));
 
   expect(await screen.findByText(/12 Oct – 18 Oct/)).toBeInTheDocument();
+});
+
+test("when the seeded posts are ready for search, the map fills in without moving the slider", async () => {
+  mapServed = { points: [] };
+  openExplore();
+  await vi.waitFor(() => expect(shown.at(-1)).toHaveLength(0));
+
+  mapServed = MAP;
+  act(() => announce({ type: "backfill.finished" }));
+
+  await vi.waitFor(() => expect(shown.at(-1)).toHaveLength(2));
 });
 
 test("Generate report starts a run for the range and shows its progress in place", async () => {

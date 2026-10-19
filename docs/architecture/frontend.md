@@ -31,7 +31,7 @@ Screens and parts:
   the dot plot, the topics panel and a **Generate report for …** button, which starts a run
   (`POST /api/runs`), puts its id in the address and shows `RunProgress` below the plot. While a new range loads, the previous range's map and topics
   stay on screen. It listens to the live `ingestion` events (`useLiveEvents`) and, on each
-  `day.finished`, refetches everything it shows (see *How it works*).
+  `day.finished` and on `backfill.finished`, refetches everything it shows (see *How it works*).
 - `explore/RangeSlider` — two handles over the history with each day's posts as a bar behind
   them, and the presets **Last 7 days**, **Last 14 days**, **All 8 weeks** (the first and last
   labels are built from `DEFAULT_DAYS` and `HISTORY_WEEKS`). Each handle is a `RangeHandle`
@@ -191,9 +191,10 @@ on `<html>`), built by Vite and served by `vite preview` on port 5173 inside its
 (published on your computer as `PORT`, see [environment](environment.md)), which passes
 `/api` through to the API container.
 
-The Explore page also listens to the live `ingestion` events: each `day.finished` refetches
-everything it shows, so during a first start the history widens and the topics fill in
-without a reload.
+The Explore page also listens to the live `ingestion` events: each `day.finished`, and the
+`backfill.finished` that ends the seeded first start, refetches everything it shows, so
+during a first start the history widens, the topics fill in, and the map is drawn once the
+seeded posts are searchable, all without a reload or moving the slider.
 
 The API calls and their types are **generated** from the backend's OpenAPI description
 (atlas OPEN-1) by orval into `src/api/generated.ts` (React Query hooks such as
