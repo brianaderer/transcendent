@@ -1,6 +1,6 @@
 # api
 
-**Source:** `backend/src/voices/api/main.py`, `backend/src/voices/health.py`   ·   **Tests:** `backend/tests/test_health_route.py`, `backend/tests/test_health.py`, `backend/tests/test_ingestion_route.py`, `backend/tests/test_explore_routes.py`
+**Source:** `backend/src/voices/api/main.py`, `backend/src/voices/health.py`   ·   **Tests:** `backend/tests/test_health_route.py`, `backend/tests/test_health.py`, `backend/tests/test_ingestion_route.py`, `backend/tests/test_explore_routes.py` (the three route tests share their stand-ins, a fixed `FakeExplore` and an empty event stream, from `backend/tests/stand_ins.py`)
 
 ## Purpose
 The web API the frontend calls. Every route lives under `/api`.
