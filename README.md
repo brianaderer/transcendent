@@ -114,8 +114,8 @@ happens, add the key to `.env`, press `Ctrl+C` in the terminal running the app, 
 it again with `docker compose up --build` (step 4). Docker notices that `.env` changed and
 starts the app with the key; `docker compose restart` would not, because it keeps the
 settings the app first started with. Sorting the eight weeks of history on first start
-uses Claude Haiku 5.5, a low-cost model, and costs under $5 of model use on that key (an
-estimate; not yet measured).
+uses Claude Haiku 5.5, a low-cost model; measured on two first starts, it used about $1.30
+to $1.70 of model use on that key.
 
 The `.env` file stays on your machine. Git is set to ignore it, so the key can't be
 committed by accident.
@@ -160,9 +160,11 @@ step 3 says, then run `docker compose up --build` again. Stopping and starting t
 (below) also picks up from that day. A day
 that is tried again is fetched from the start, and nothing in it is counted twice.
 
-**Exploring.** Once days have loaded, the page shows them: it opens on the last seven
-days, with the range written out (for example **12 Oct – 18 Oct 2026 · 1,097 posts**). Drag
-either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
+**Exploring.** Until the first day has loaded, the page says **No days are loaded yet; the
+first start fills them in.** This part of the page doesn't refresh itself as days arrive, so
+reload the page to include the days loaded since you opened it. Once days have loaded, the
+page shows them: it opens on the last seven days, with the range written out (for example
+**12 Oct – 18 Oct 2026 · 1,097 posts**). Drag either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
 when you let go, and the address changes with it, so you can share exactly what you see.
 The large plot shows every post in the range as a dot, coloured by topic, with posts that
 mean similar things close together. The map is worked out afresh for each range, which
@@ -172,7 +174,8 @@ read the post, click it to open it on Reddit. The **Topics** list beside it has 
 topics, busiest first, each with a line of its daily activity, its post count and a badge:
 **New**, **Rising**, **Steady** or **Fading** against the same number of days before. Hover a
 topic to pick out its dots. **Generate report** is shown but switched off: reports arrive in
-the next build step.
+the next build step. The **Dark** (or **Light**) button at the right of the top bar switches
+between dark and light colours.
 
 Ignore the `Local:` and `Network:` addresses the frontend prints in the log; they're inside
 Docker. Use http://localhost:5173 (or the `PORT` you set).

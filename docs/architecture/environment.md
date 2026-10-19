@@ -73,6 +73,9 @@ which the `setup` service needs.
   `scikit-learn` groups threads by meaning (agglomerative clustering) and flattens a range's
   posts to the Explore map (t-SNE), and `langgraph`, `langchain-core` and
   `langchain-openai` run the tagging agent against OpenRouter.
+- The frontend's dependencies are pinned in `frontend/package.json` and
+  `frontend/package-lock.json`, installed by `npm ci` when `frontend/Dockerfile` builds the
+  image (Node 22.12); the list and what each is for is in [frontend](frontend.md).
 - The first start needs an internet connection (the worker fetches from the Arctic Shift
   archive, downloads the embedding model, and calls the tagging model on OpenRouter) and
   about 1 GB of memory for the worker (give Docker at least 4 GB).

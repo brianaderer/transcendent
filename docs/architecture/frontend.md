@@ -31,7 +31,8 @@ Screens and parts:
   panel fades every other topic's dots.
 - `explore/TopicsPanel` — the range's topics busiest first (`GET /api/topics`): colour, label
   (the description on hover), a sparkline of the daily engagement, posts and comments, and
-  the badge **New**, **Rising**, **Steady** or **Fading**.
+  the badge **New**, **Rising**, **Steady** or **Fading**. Hovering a row, or moving the
+  keyboard focus onto it, highlights that topic on the dot plot.
 - `TopBar` — the app's name, the Explore link, `IngestionStatus`, `BackendStatus` and
   `ThemeToggle` (light or dark, starting from the system's choice).
 - `BackendStatus` — "Checking the backend…" until the first answer, then "Backend running",
@@ -56,7 +57,8 @@ Logic, each in its own small module with its own tests:
   (`PALETTE`), the rest share `OTHER_TOPIC`; `NO_TOPIC` for posts whose thread waits for a
   decision.
 - `explore/links.ts` — `redditLink(post)`, `escapeHtml(text)`.
-- `explore/uiState.ts` — the browser-only state (Zustand): which topic is highlighted.
+- `explore/uiState.ts` — the browser-only state (Zustand): which topic is highlighted. The
+  theme is not here; `ThemeToggle` keeps it itself and sets the `dark` class on `<html>`.
 - `explore/chart.ts` — `createScatter(element, open)`: ECharts behind a small interface of
   our own (`show(dots)`, `resize()`, `dispose()`), so tests swap it for a stand-in.
 
@@ -66,11 +68,17 @@ on `<html>`), built by Vite and served by `vite preview` on port 5173 inside its
 (published on your computer as `PORT`, see [environment](environment.md)), which passes
 `/api` through to the API container.
 
+Only the top bar's loading line listens to the live `ingestion` events. The Explore page
+reads `GET /api/days` once (and again only when TanStack Query refetches it, for example when
+the browser tab regains focus), so days loaded after the page opened appear when it is
+reloaded; the README says so.
+
 The API calls and their types are **generated** from the backend's OpenAPI description
 (atlas OPEN-1) by orval into `src/api/generated.ts` (React Query hooks such as
 `useReportTopics`, named after the backend's route functions). The description is kept in
 `frontend/openapi.json`. After changing a route or a response shape, refresh both with the
-app running:
+app running. This runs on your own computer, not in Docker, and needs Node 22 and
+`npm ci` run once in `frontend/`:
 
 ```bash
 curl -s http://localhost:5173/api/openapi.json | python3 -m json.tool > frontend/openapi.json
