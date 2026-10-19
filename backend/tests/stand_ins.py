@@ -1,8 +1,8 @@
-"""Stand-ins shared by the API route tests."""
+"""Stand-ins shared across tests: the API routes' services, and topic data read by day."""
 
 from datetime import date
 
-from voices.explore.shapes import DayCount, Days, Map, MapPoint, TopicInRange
+from voices.explore.shapes import DayCount, Days, Map, MapPoint, TopicDay, TopicInfo, TopicInRange
 
 
 async def no_events(_stream):
@@ -51,3 +51,27 @@ class FakeExplore:
     def map(self, days):
         self.asked = days
         return Map(points=[map_point(n, days.start) for n in range(self.point_count)])
+
+
+class RecordingTopicData:
+    """Topics' daily engagement held in memory, remembering every span of days asked for."""
+
+    def __init__(self, topic_days=(), topics=()):
+        self._topic_days, self._topics, self.asked = list(topic_days), list(topics), []
+
+    def topic_days(self, first_day, last_day):
+        self.asked.append((first_day, last_day))
+        return [d for d in self._topic_days if first_day <= d.day <= last_day]
+
+    def topics(self, ids):
+        return [t for t in self._topics if t.id in ids]
+
+
+def topic_info(topic_id, first_seen=date(2026, 8, 1), label=None):
+    return TopicInfo(
+        id=topic_id, label=label or f"t{topic_id}", description="d", first_seen=first_seen
+    )
+
+
+def topic_day(topic_id, on, engagement):
+    return TopicDay(topic_id=topic_id, day=on, engagement=engagement, posts=1)

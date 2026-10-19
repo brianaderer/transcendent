@@ -1,6 +1,6 @@
 # explore
 
-**Source:** `backend/src/voices/explore/` (`explore.py`, `day_range.py`, `direction.py`, `projection.py`, `cache.py`, `shapes.py`), `backend/src/voices/db/explore_store.py`   ·   **Tests:** `backend/tests/explore/`, `backend/tests/test_explore_routes.py`, `backend/tests/test_explore_store.py` (needs a database)
+**Source:** `backend/src/voices/explore/` (`explore.py`, `range_topics.py`, `day_range.py`, `direction.py`, `projection.py`, `cache.py`, `shapes.py`), `backend/src/voices/db/explore_store.py`   ·   **Tests:** `backend/tests/explore/`, `backend/tests/test_explore_routes.py`, `backend/tests/test_explore_store.py` (needs a database)
 
 ## Purpose
 The reads behind the Explore page ([atlas plate 31](../atlas/30-frontend/31-screens.md),
@@ -29,6 +29,11 @@ dot plot, recomputed for each range (atlas OPEN-20).
   than a quarter (`CHANGE_THAT_COUNTS`) above or below the period of the same length just
   before it, and `steady` in between; a topic silent before the range and active in it is
   `rising`. A topic's badge (`direction`) is `new` when `is_new`, otherwise its trend.
+- `range_topics.topics_in_range(data, days)` — what `Explore.topics` returns, as a function
+  of anything with the two reads in `range_topics.TopicData` (`topic_days`, `topics`), so the
+  [comparison](comparison.md)'s answer key measures topics exactly as the page does.
+  `range_topics.rows_by_topic(rows)` groups daily rows by topic (also used by
+  [prediction](prediction.md)). `ExploreData` extends `TopicData` with the page's other reads.
 - `projection.flatten(vectors)` — one point per vector, near in meaning near on the map.
 - `cache.RedisMapCache(redis)` — `get(key)`, `put(key, value)`; each map is kept two days
   (`KEPT_SECONDS`).
@@ -66,7 +71,9 @@ dot plot, recomputed for each range (atlas OPEN-20).
 
 ## Used by
 [api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`), which the
-[frontend](frontend.md)'s Explore page calls.
+[frontend](frontend.md)'s Explore page calls; [comparison](comparison.md) (the answer key
+calls `topics_in_range`); [prediction](prediction.md) (`DayRange`, `direction.trend`,
+`TopicData`, `rows_by_topic`).
 
 ## Configuration and data
 `REDIS_URL` (read by the API, which builds the cache). Fixed in code: `CHANGE_THAT_COUNTS =
