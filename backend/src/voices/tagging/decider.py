@@ -15,7 +15,8 @@ from pydantic import ValidationError
 from voices.log import log_event
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
-MAX_LOOK_UPS_BEFORE_DECIDING = 3  # tool calls allowed before it must decide; capped for cost
+# Look-ups allowed before it must decide (a turn with none still spends one); capped for cost.
+MAX_LOOK_UPS_BEFORE_DECIDING = 3
 DECIDE = "Decision"
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.
@@ -100,7 +101,7 @@ class ToolLoopDecider:
     def decide(self, brief: ClusterBrief) -> DecidedCluster:
         """Lets the agent make up to max_look_ups tool calls, then makes it decide."""
         conversation = _Conversation(self.model, self.tools, brief, self.max_look_ups)
-        while conversation.may_look_around():
+        while conversation.has_look_ups_left():
             reply = conversation.take_turn(tool_choice=None)
             decision = _decision_in(reply)
             if decision:
@@ -129,7 +130,7 @@ class _Conversation:
         self.messages.append(reply)
         return reply
 
-    def may_look_around(self) -> bool:
+    def has_look_ups_left(self) -> bool:
         return self.look_ups_left > 0
 
     def answer(self, reply: AIMessage) -> None:
@@ -138,19 +139,19 @@ class _Conversation:
         calls gets a reminder. A turn that looks nothing up still spends one, so the loop ends."""
         if not reply.tool_calls:
             self._say(HumanMessage(f"Decide now by calling {DECIDE}."))
-        look_ups_before = self.look_ups_left
+        if not _looks_anything_up(reply):
+            self.look_ups_left -= 1
         for call in reply.tool_calls:
             self._say(
-                ToolMessage(self._answer_to(call), tool_call_id=call["id"]), tool=call["name"]
+                ToolMessage(self._answer_spending_a_look_up(call), tool_call_id=call["id"]),
+                tool=call["name"],
             )
-        if self.look_ups_left == look_ups_before:
-            self.look_ups_left -= 1
 
-    def _answer_to(self, call: dict) -> str:
+    def _answer_spending_a_look_up(self, call: dict) -> str:
         """A reply being answered made no valid decision, so a Decision call here is malformed."""
         if call["name"] == DECIDE:
             return _why_malformed(call["args"])
-        if not self.may_look_around():
+        if not self.has_look_ups_left():
             return f"No look-ups left; decide now by calling {DECIDE}."
         self.look_ups_left -= 1
         return self.tools.run(call["name"], call["args"])
@@ -174,6 +175,10 @@ class NoDecision(Exception):
 
 class MalformedDecision(Exception):
     pass
+
+
+def _looks_anything_up(reply: AIMessage) -> bool:
+    return any(call["name"] != DECIDE for call in reply.tool_calls)
 
 
 def _decision_in(reply: AIMessage) -> Decision | None:

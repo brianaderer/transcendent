@@ -115,6 +115,17 @@ def test_several_look_ups_in_one_turn_count_toward_the_limit():
     assert model.tool_choice == "Decision"
 
 
+def test_a_turn_that_looks_nothing_up_still_spends_a_look_up():
+    tools = FakeTools()
+    malformed = call("Decision", {"action": "maybe", "reason": "?"})
+    model = ScriptedModel([AIMessage(content="thinking"), malformed, call("Decision", DECIDE, "2")])
+
+    ToolLoopDecider(model, "scripted", tools, max_look_ups=2).decide(BRIEF)
+
+    assert model.tool_choice == "Decision"
+    assert tools.calls == []
+
+
 def test_no_decision_even_when_forced_stops_with_an_error():
     model = ScriptedModel([AIMessage(content="thinking"), AIMessage(content="still thinking")])
 
