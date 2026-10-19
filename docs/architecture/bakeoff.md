@@ -34,8 +34,11 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
   every model has a price before calling any, then runs each case through the production
   `ToolLoopDecider` and `TaggingTools`. `ModelResult` gives `right`, `share_right`,
   `count(verdict)`, `tokens_in`, `tokens_out`, `cost`, `look_ups_per_decision`,
-  `model_calls_per_decision`, `seconds_per_decision` and every `CaseResult` (its `verdict`,
-  `answer` and `judged` reason).
+  `model_calls_per_decision`, `seconds_per_decision` and every `CaseResult`. A `CaseResult`
+  holds the case, its `judged` answer (a `JudgedAnswer`: the verdict, the model's answer in
+  readable form such as `attach: Stolen boats`, and the model's reason, or why it gave no
+  decision), the seconds taken and the meter's counts; `verdict` and `answer` read straight
+  from the judged answer.
 - `metering.MeteredModel`, `metering.CountingTools`, `metering.Meter` — wrap a chat model and
   the tools to count model calls, tokens read and written, and look-ups. A reply without token
   counts raises `MissingUsage`.

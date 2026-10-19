@@ -28,8 +28,9 @@ both have happened.
   valid decision, which stops the day.
 - `graph.decide_all(decider, briefs)` — every cluster decided in parallel (a LangGraph
   fan-out), returned in the briefs' order.
-- `decisions.Decision` (attach / mint / noise, the `decisions.Action` type, with topic id, label, description, reason),
-  `ClusterBrief`, `CandidateTopic`, `TypicalPost`, `DecidedCluster`, `settle_mints(...)`.
+- `decisions.Decision` (attach / mint / noise, with topic id, label, description, reason;
+  the three action names are the `decisions.Action` type), `ClusterBrief`, `CandidateTopic`,
+  `TypicalPost`, `DecidedCluster`, `settle_mints(...)`.
 - `tools.TaggingTools(store, embedder, day).run(name, arguments)` — `search`, `lookup`,
   `search_tags`; returns what the agent reads back, as JSON text (or a sentence naming the
   real tools when asked for one that doesn't exist). `TOOL_ARGUMENT` lists each tool with
@@ -109,7 +110,7 @@ LangChain, scikit-learn (HDBSCAN), numpy, Postgres with pgvector.
 ## Used by
 [worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `TaggingAgent` and `DayTagging`, and tags each day of the catch-up right after
 loading it); [bakeoff](bakeoff.md) (runs `ToolLoopDecider` with `TaggingTools` on sample cases, connects
-models through `connect_model`, and builds briefs with `ClusterBrief`, `TypicalPost`,
+models through `connect_model`, takes its list of right actions from `Action`, and builds briefs with `ClusterBrief`, `TypicalPost`,
 `CandidateTopic` and the sizes `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`).
 
 ## Configuration and data
