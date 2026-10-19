@@ -50,7 +50,7 @@ class Written:
 
 
 class ReportWriter:
-    def __init__(self, model: ChatModel, tools: Tools | None, emit: Emit):
+    def __init__(self, model: ChatModel, tools: Tools, emit: Emit):
         self.model = model
         self.tools = tools
         self.emit = emit
@@ -59,19 +59,18 @@ class ReportWriter:
         """Runs the task to its answer; raises NoAnswer if none comes after the corrections."""
         started = time.perf_counter()
         call = _Call(self.model, task, self.emit)
-        answer = self._answer_with_tools(call, self.tools) if self.tools else None
-        answer = answer or self._insist_on_an_answer(call)
+        answer = self._answer_with_tools(call) or self._insist_on_an_answer(call)
         call.written.answer = answer
         call.written.seconds = round(time.perf_counter() - started, 1)
         return call.written
 
-    def _answer_with_tools(self, call: "_Call", tools: Tools) -> BaseModel | None:
+    def _answer_with_tools(self, call: "_Call") -> BaseModel | None:
         while call.turns_spent < MAX_TOOL_CALLS:
-            reply = call.take_turn([*tools.schemas, call.task.answer])
+            reply = call.take_turn([*self.tools.schemas, call.task.answer])
             answer = call.answer_in(reply)
             if answer:
                 return answer
-            call.respond(reply, tools)
+            call.respond(reply, self.tools)
         call.tell(f"No more tool calls; answer now by calling {call.answer_name}.")
         return None
 

@@ -22,10 +22,17 @@ def test_the_prediction_is_made_as_of_the_day_before_the_range():
     assert task.answer.__name__ == "Prediction"
 
 
-def test_both_tasks_say_to_answer_even_without_tools_or_data():
+def test_both_tasks_say_to_work_from_the_posts_the_tools_show_and_be_honest_where_thin():
     for task in (write_task(DAYS), predict_task(DAYS)):
-        assert "even with no tools" in task.instructions
-        assert "what you know" in task.instructions
+        assert "what you can see in the community's posts with your tools" in task.instructions
+        assert "what you know of this community and the season" in task.instructions
+        assert "say plainly where your evidence is thin" in task.instructions
+
+
+def test_neither_task_suggests_the_model_might_have_no_tools():
+    for task in (write_task(DAYS), predict_task(DAYS)):
+        assert "no tools" not in task.instructions
+        assert "If you have tools" not in task.instructions
 
 
 def test_the_report_asks_where_each_topic_is_heading_next_and_why():

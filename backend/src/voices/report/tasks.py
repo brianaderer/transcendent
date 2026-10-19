@@ -46,6 +46,14 @@ class Task:
     answer: type[BaseModel]  # the tool the answer comes back through
 
 
+# The same promise for both tasks and both versions: write concretely from whatever the tools
+# show (A's reading, B's searches) and be honest about how much that is.
+FROM_WHAT_YOU_CAN_SEE = (
+    "what you can see in the community's posts with your tools, and from what you know of "
+    "this community and the season; say plainly where your evidence is thin"
+)
+
+
 def write_task(days: DayRange) -> Task:
     instructions = f"""You write the Community Voices Document for {COMMUNITY}, the Reddit community
 about sailing, for {_spoken(days.start)} to {_spoken(days.end)}.
@@ -54,9 +62,7 @@ Say what the community talked about in those days: name the {TOPICS_TO_NAME} mai
 order of how much they were discussed, and for each, whether it was rising, steady, fading or
 new compared with the same number of days just before. For each topic, also say
 where it looks to be heading next, and why. Be specific to this community and these days.
-Write the document even with no tools or data: draw on what you know about this community and
-this time of year. If you have tools, use them to ground what you write in the community's own
-posts.
+Write the document from {FROM_WHAT_YOU_CAN_SEE}.
 
 Answer by calling Report once, with the document and its list of topics."""
     return Task("write", instructions, Report)
@@ -68,9 +74,8 @@ def predict_task(days: DayRange) -> Task:
 about sailing, will discuss most in the next {days.length} days ({_spoken(days.start)} to
 {_spoken(days.end)}): name the {TOPICS_TO_NAME} topics you expect to lead, and for each, whether it
 will be rising, steady, fading or new compared with the {days.length} days before. Brand-new
-conversations can't be foreseen; forecast the ones already in motion. Answer even with no tools
-or data, from what you know about this community and the season. If you have tools, use them:
-they show the community only up to today.
+conversations can't be foreseen; forecast the ones already in motion. Your tools show the
+community only up to today. Make the prediction from {FROM_WHAT_YOU_CAN_SEE}.
 
 Answer by calling Prediction once."""
     return Task("predict", instructions, Prediction)

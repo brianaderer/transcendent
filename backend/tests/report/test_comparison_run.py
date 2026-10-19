@@ -84,8 +84,8 @@ class FakeData:
     def lookup_post(self, post_id):
         return {"post_id": post_id, "date": date(2026, 10, 14)}
 
-    def sample_posts(self, first_day, last_day, limit, seed, exclude_ids):
-        self.read_windows.append((first_day, last_day))
+    def sample_posts(self, days, limit, seed, exclude_ids):
+        self.read_windows.append((days.start, days.end))
         return [{"post_id": "p9", "text": "Hauled out today."}]
 
     def record_retrievals(self, post_ids, run, agent, tool):

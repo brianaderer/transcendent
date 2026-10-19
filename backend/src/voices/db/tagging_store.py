@@ -28,6 +28,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
 from voices.db.models import ClusterDecision, NoiseThread, Post, RetrievalEvent, Thread, Topic
+from voices.explore.day_range import DayRange
 from voices.tagging.decisions import CandidateTopic, DecidedCluster, TypicalPost
 from voices.tagging.threads import DueThread, Reply
 from voices.tagging.window import window_start
@@ -143,22 +144,10 @@ class TaggingStore:
             row = connection.execute(query).first()
         if row is None:
             raise PostNotFound(post_id)
-        return {
-            "post_id": row.source_id,
-            "author": row.author,
-            "date": row.created_at.date(),
-            "thread": row.title,
-            "text": row.body,
-            "replies_to": row.parent_source_id,
-        }
+        return {**_whole_post(row), "replies_to": row.parent_source_id}
 
     def sample_posts(
-        self,
-        first_day: date,
-        last_day: date,
-        limit: int,
-        seed: str,
-        exclude_ids: Sequence[str],
+        self, days: DayRange, limit: int, seed: str, exclude_ids: Sequence[str]
     ) -> list[dict]:
         """Whole posts written in the days, in a shuffle fixed by the seed (never by meaning),
         leaving out the ones already given: version A's reading (atlas OPEN-39)."""
@@ -166,7 +155,7 @@ class TaggingStore:
         query = (
             select(Post.source_id, Post.author, Post.created_at, Thread.title, Post.body)
             .join(Thread, Thread.source_id == Post.thread_source_id)
-            .where(*_created_between(first_day, last_day), Post.source_id.not_in(exclude_ids))
+            .where(*_created_between(days.start, days.end), Post.source_id.not_in(exclude_ids))
             .order_by(shuffle)
             .limit(limit)
         )

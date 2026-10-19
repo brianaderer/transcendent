@@ -21,7 +21,7 @@ from voices.db.address import sqlalchemy_url
 from voices.db.seed_snapshot import SeedTable, Snapshot, write_snapshot
 
 PROMPT_LEFT_OUT = "(left out of the seed)"  # the column can't be empty, and this says why
-SEEDED_TOPICS = "SELECT topic_id FROM threads WHERE topic_id IS NOT NULL"
+TOPICS_WITH_THREADS = "SELECT topic_id FROM threads WHERE topic_id IS NOT NULL"
 
 
 def published_author(author: str) -> str:
@@ -50,13 +50,13 @@ SEED_TABLES = (
     TableExport(
         "topics",
         _as_stored("id", "label", "description", "keywords", "first_seen", "last_seen"),
-        f"FROM topics WHERE id IN ({SEEDED_TOPICS}) ORDER BY id",
+        f"FROM topics WHERE id IN ({TOPICS_WITH_THREADS}) ORDER BY id",
     ),
     TableExport(
         "cluster_decisions",
         {
             **_as_stored("id", "day", "decision"),
-            "topic_id": f"CASE WHEN topic_id IN ({SEEDED_TOPICS}) THEN topic_id END",
+            "topic_id": f"CASE WHEN topic_id IN ({TOPICS_WITH_THREADS}) THEN topic_id END",
             **_as_stored("reason", "candidate_tags"),
             "prompt": f"'{PROMPT_LEFT_OUT}'",
             **_as_stored("model"),
@@ -110,7 +110,8 @@ SEED_TABLES = (
             "revived_threads",
             "unanswered_questions",
         ),
-        f"FROM topic_daily_engagement WHERE topic_id IN ({SEEDED_TOPICS}) ORDER BY topic_id, day",
+        f"FROM topic_daily_engagement WHERE topic_id IN ({TOPICS_WITH_THREADS}) "
+        "ORDER BY topic_id, day",
     ),
     TableExport(
         "retrieval_events",
@@ -144,11 +145,11 @@ def _table_snapshot(connection: Connection, table: TableExport) -> SeedTable:
     selected = ", ".join(f"{sql} AS {name}" for name, sql in table.columns.items())
     rows = connection.execute(text(f"SELECT {selected} {table.rows}")).mappings()
     columns = list(table.columns)
-    return SeedTable(table.name, columns, [_published_row(table, row, columns) for row in rows])
+    return SeedTable(table.name, columns, [_published_row(table, row) for row in rows])
 
 
-def _published_row(table: TableExport, row, columns: list[str]) -> list:
-    return [table.published.get(column, _unchanged)(row[column]) for column in columns]
+def _published_row(table: TableExport, row) -> list:
+    return [table.published.get(column, _unchanged)(row[column]) for column in table.columns]
 
 
 def _unchanged(value):

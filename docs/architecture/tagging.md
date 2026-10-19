@@ -56,8 +56,8 @@ both have happened.
   `threads_due`, `threads_as_of(day, ids)` (the same read for the given threads as they
   stood at the end of a day, which the [seed](seed.md) backfill encodes them from), `save_thread_embeddings`, `typical_threads`, `nearest_topics`, the tools'
   searches and lookups (`search_posts`, `lookup_post`, `search_topics`), `record_retrievals`,
-  `sample_posts(first_day, last_day, limit, seed, exclude_ids)` (whole posts written in the
-  days, in a shuffle fixed by the seed, `md5(source_id || seed)`, never by meaning, leaving
+  `sample_posts(days, limit, seed, exclude_ids)` (whole posts written in the `DayRange`
+  `days`, in a shuffle fixed by the seed, `md5(source_id || seed)`, never by meaning, leaving
   out the ids given; version A of the report reads through it, [report](report.md)),
   `apply_decisions`, `expire_noise`, `rebuild_engagement`. `DayTagging` and `TaggingTools` each
   depend only on a small interface (`DayTaggingStore`, `ToolStore`) so tests pass stand-ins.

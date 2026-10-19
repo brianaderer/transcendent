@@ -1,6 +1,8 @@
 from datetime import date
 
-from voices.backfill.backfill import Backfill, PostText, Tally, UnencodedThread
+import pytest
+
+from voices.backfill.backfill import Backfill, PostText, Tally, ThreadsNotFound, UnencodedThread
 from voices.tagging.threads import DueThread, Reply, thread_text
 
 FIRST_SEEN = date(1999, 1, 2)
@@ -179,6 +181,21 @@ def test_a_thread_still_waiting_for_its_third_day_is_encoded_as_it_stood_on_its_
     Harness(store).run()
 
     assert ("threads_as_of", FIRST_SEEN, ["t2"]) in store.calls
+
+
+class LosingStore(FakeStore):
+    """Can't find one of the threads it is asked for, as a thread deleted mid-run would be."""
+
+    def threads_as_of(self, day, ids):
+        return super().threads_as_of(day, ids)[1:]
+
+
+def test_a_thread_the_store_cannot_find_stops_the_backfill_instead_of_looping():
+    threads = {"t1": [FIRST_SEEN, "settled", None], "t2": [FIRST_SEEN, "settled", None]}
+    store = LosingStore(threads=threads)
+
+    with pytest.raises(ThreadsNotFound, match="t1"):
+        Harness(store).run()
 
 
 def test_topic_centres_are_rebuilt_after_every_thread_has_its_embedding():

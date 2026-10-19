@@ -20,6 +20,7 @@ from voices.db.models import (
 )
 from voices.db.store import connect_store
 from voices.db.tagging_store import UNKNOWN_AUTHOR, PostNotFound, TaggingStore
+from voices.explore.day_range import DayRange
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
 pytestmark = pytest.mark.database
@@ -27,6 +28,8 @@ pytestmark = pytest.mark.database
 DAY = date(1999, 1, 3)
 AT = datetime(1999, 1, 3, 12, tzinfo=UTC)
 THIRD_DAY = DAY + timedelta(days=2)
+ONE_DAY = DayRange(DAY, DAY)
+THIRD_DAY_ONLY = DayRange(THIRD_DAY, THIRD_DAY)
 
 
 def vector(lead):
@@ -403,8 +406,8 @@ def ours_of(posts):
 
 
 def test_sampling_posts_gives_whole_posts_from_the_days_in_a_repeatable_shuffle(store):
-    first = store.sample_posts(DAY, DAY, limit=50, seed="test-seed", exclude_ids=[])
-    again = store.sample_posts(DAY, DAY, limit=50, seed="test-seed", exclude_ids=[])
+    first = store.sample_posts(ONE_DAY, limit=50, seed="test-seed", exclude_ids=[])
+    again = store.sample_posts(ONE_DAY, limit=50, seed="test-seed", exclude_ids=[])
 
     assert sorted(ours_of(first)) == ["test-1", "test-2", "test-3", "test-4"]
     assert ours_of(first) == ours_of(again)
@@ -421,8 +424,8 @@ def test_sampling_posts_gives_whole_posts_from_the_days_in_a_repeatable_shuffle(
 def test_sampling_posts_skips_the_ones_already_given_and_stays_inside_the_days(store):
     given = ["test-1", "test-2"]
 
-    rest = store.sample_posts(DAY, DAY, limit=50, seed="test-seed", exclude_ids=given)
-    later = store.sample_posts(THIRD_DAY, THIRD_DAY, limit=50, seed="test-seed", exclude_ids=[])
+    rest = store.sample_posts(ONE_DAY, limit=50, seed="test-seed", exclude_ids=given)
+    later = store.sample_posts(THIRD_DAY_ONLY, limit=50, seed="test-seed", exclude_ids=[])
 
     assert sorted(ours_of(rest)) == ["test-3", "test-4"]
     assert ours_of(later) == []
@@ -430,7 +433,7 @@ def test_sampling_posts_skips_the_ones_already_given_and_stays_inside_the_days(s
 
 def test_sampling_posts_orders_by_the_seed_not_by_meaning(store):
     orders = {
-        tuple(ours_of(store.sample_posts(DAY, DAY, limit=50, seed=f"test-{n}", exclude_ids=[])))
+        tuple(ours_of(store.sample_posts(ONE_DAY, limit=50, seed=f"test-{n}", exclude_ids=[])))
         for n in range(20)
     }
 

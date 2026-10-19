@@ -20,6 +20,11 @@ ROWS_PER_BATCH = 256  # each batch is saved before the next, so a restart loses 
 SETTLED = "settled"  # a thread decided on its third day, for the last time
 
 
+class ThreadsNotFound(Exception):
+    """The store didn't give back exactly the threads it had just listed as missing their
+    vector; carrying on would ask for the missing ones forever."""
+
+
 @dataclass(frozen=True)
 class Tally:
     """How many rows have their vector, of how many."""
@@ -45,7 +50,7 @@ class UnencodedThread:
     stage: str
 
 
-class BackfillStore(Protocol):
+class VectorBackfillStore(Protocol):
     def posts_tally(self) -> Tally: ...
     def threads_tally(self) -> Tally: ...
     def topics_tally(self) -> Tally: ...
@@ -72,7 +77,7 @@ class Progress(Protocol):
 class Backfill:
     def __init__(
         self,
-        store: BackfillStore,
+        store: VectorBackfillStore,
         embedder: DocumentEmbedder,
         progress: Progress,
         emit: Emit,
@@ -122,6 +127,7 @@ class Backfill:
         unencoded = self.store.threads_without_embeddings(self.batch_size)
         for day, ids in _ids_by_day_last_decided(unencoded).items():
             threads = self.store.threads_as_of(day, ids)
+            _check_exactly_these(ids, threads)
             texts = [thread_text(thread.post, thread.replies) for thread in threads]
             vectors = self.embedder.embed_documents(texts)
             self.store.save_thread_embeddings(_by_id([t.source_id for t in threads], vectors))
@@ -155,6 +161,12 @@ def _ids_by_day_last_decided(threads: list[UnencodedThread]) -> dict[date, list[
 
 def _day_last_decided(thread: UnencodedThread) -> date:
     return third_day(thread.first_seen_on) if thread.stage == SETTLED else thread.first_seen_on
+
+
+def _check_exactly_these(ids: list[str], threads: list[DueThread]) -> None:
+    given = {thread.source_id for thread in threads}
+    if given != set(ids):
+        raise ThreadsNotFound(f"asked for threads {sorted(ids)}, given {sorted(given)}")
 
 
 def _by_id(ids: list[str], vectors: list[list[float]]) -> dict[str, list[float]]:

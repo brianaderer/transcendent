@@ -6,7 +6,7 @@ from langchain_core.messages import AIMessage
 from voices.explore.day_range import DayRange
 from voices.report.tasks import write_task
 from voices.report.tools import ToolResult
-from voices.report.writer import MAX_TOOL_CALLS, NoAnswer, ReportWriter
+from voices.report.writer import CORRECTIONS, MAX_TOOL_CALLS, NoAnswer, ReportWriter
 
 DAYS = DayRange(date(2026, 10, 12), date(2026, 10, 18))
 REPORT = {
@@ -42,6 +42,11 @@ class FakeTools:
         return ToolResult(f"result of {name}", ["p1", "p2"])
 
 
+def no_tools():
+    """A tools object that offers nothing, so the model is offered only the answer."""
+    return FakeTools(offered=())
+
+
 def call(name, arguments, call_id="1", tokens=(100, 20)):
     return AIMessage(
         content="",
@@ -68,10 +73,10 @@ class Events:
         self.seen.append((event_type, body))
 
 
-def test_without_tools_the_model_is_offered_only_the_answer():
+def test_a_tools_object_offering_nothing_leaves_only_the_answer_on_offer():
     model = ScriptedModel([call("Report", REPORT)])
 
-    written = ReportWriter(model, None, Events()).write(write_task(DAYS))
+    written = ReportWriter(model, no_tools(), Events()).write(write_task(DAYS))
 
     assert model.offered == [["Report"]]
     assert written.answer.topics[0].name == "Winterizing"
@@ -120,7 +125,7 @@ def test_after_the_tool_call_cap_only_the_answer_is_offered():
 def test_a_malformed_answer_is_explained_and_asked_for_once_more():
     model = ScriptedModel([call("Report", {"document": "x"}), call("Report", REPORT, "2")])
 
-    written = ReportWriter(model, None, Events()).write(write_task(DAYS))
+    written = ReportWriter(model, no_tools(), Events()).write(write_task(DAYS))
 
     assert written.answer.document.startswith("## The period")
     assert "malformed" in model.seen[-1].content
@@ -129,16 +134,19 @@ def test_a_malformed_answer_is_explained_and_asked_for_once_more():
 def test_a_reply_in_plain_text_is_reminded_to_answer():
     model = ScriptedModel([said("Here is my report..."), call("Report", REPORT, "2")])
 
-    ReportWriter(model, None, Events()).write(write_task(DAYS))
+    ReportWriter(model, no_tools(), Events()).write(write_task(DAYS))
 
     assert "Report" in model.seen[-1].content
 
 
 def test_no_answer_after_the_corrections_stops_with_an_error():
-    model = ScriptedModel([said("no"), said("still no"), said("never")])
+    turns_allowed = MAX_TOOL_CALLS + 1 + CORRECTIONS
+    model = ScriptedModel([said(f"no {n}") for n in range(turns_allowed)])
 
     with pytest.raises(NoAnswer):
-        ReportWriter(model, None, Events()).write(write_task(DAYS))
+        ReportWriter(model, no_tools(), Events()).write(write_task(DAYS))
+
+    assert model.replies == []
 
 
 def test_a_model_that_keeps_replying_in_plain_text_with_tools_still_stops():

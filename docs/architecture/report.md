@@ -14,14 +14,17 @@ store by meaning (atlas OPEN-39).
 - `tasks.write_task(days)` and `tasks.predict_task(days)` — what the model is asked, as a
   `Task` (phase, instructions, answer tool). The words are the same for both versions. The report
   asks for each topic's direction and, for each topic, where it looks to be heading next and
-  why.
+  why. Both tasks say to work from what the model can see in the community's posts with its
+  tools (A's reading, B's searches) and from what it knows of the community and the season,
+  and to say plainly where its evidence is thin (`FROM_WHAT_YOU_CAN_SEE`); the prediction
+  adds that the tools show the community only up to the day before the range.
   `Report` (the document in Markdown, and its `topics`: name, rank, direction) and
   `Prediction` (`predicted` topics with directions, and a short `reasoning`) are the answer
   tools; their lists are the comparison's committed lists (atlas OPEN-25).
 - `writer.ReportWriter(model, tools, emit).write(task)` — one call of the agent. The model
   is offered exactly the schemas its tools object carries (`Tools.schemas`) and the answer
-  tool, so version A is offered only `read_posts` and version B its four tools; with
-  `tools=None` it is offered only the answer tool. With tools it may take up to `MAX_TOOL_CALLS` turns (each tool call spends one, and so does a reply that
+  tool, so version A is offered only `read_posts` and version B its four tools; a tools
+  object offering no schemas leaves only the answer tool. It may take up to `MAX_TOOL_CALLS` turns (each tool call spends one, and so does a reply that
   calls nothing, so a model that keeps talking still ends), then is offered only the answer; a reply
   without a valid answer is told why (or reminded) `CORRECTIONS` times before `NoAnswer` is
   raised. Returns a `Written`: the answer, tool calls made, posts seen, tokens in and out,
@@ -42,7 +45,8 @@ store by meaning (atlas OPEN-39).
   it hands out `READ_BUDGET` (10) posts in all; after that every call answers
   `NOTHING_LEFT_TO_READ` ("No posts left to read; answer now with what you have.") without
   asking the store. Reads are not retrieval, so they are not counted in `retrieval_events`.
-  `schemas` is `READING_SCHEMAS`. `reader` is anything with `sample_posts` (`PostReader`).
+  `schemas` is `READING_SCHEMAS`; `ids_given` lists the posts handed out so far. `reader` is
+  anything with `sample_posts(days, limit, seed, exclude_ids)` (`PostReader`).
 - `versions` — `Version` (`"A"` or `"B"`) and `VERSIONS`, the order they are shown in.
 - `graph.every_version_at_once(work)` — runs `work(version)` for every version at once, as a
   LangGraph fan-out (atlas plate 60): `START` sends one branch per version to a `version`
