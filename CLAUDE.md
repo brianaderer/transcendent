@@ -339,7 +339,7 @@ core feature, not an afterthought:
 
 - **Both versions are produced by one code path.** A single document generator takes
   a switch: retrieval off (version A, which may read a few of the range's posts, at most
-  ten per step, picked without regard to meaning, but cannot search them) or retrieval on
+  thirty-five per step, spread evenly over the days and picked without regard to meaning, but cannot search them) or retrieval on
   (version B, which searches our store by meaning; atlas OPEN-39). Everything else — model,
   settings, prompt wording, the week covered, output format — is identical, so the
   only difference between the two documents is the retrieval.

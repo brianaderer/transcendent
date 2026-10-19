@@ -43,7 +43,7 @@ store by meaning (atlas OPEN-39).
   day given (a day outside the window, or not a date, is explained instead), each with its
   author, date and thread title, in the fixed shuffle the seed (the run's name) gives, never
   ranked by meaning, and never a post already given. One `ReadingTools` serves one phase, and
-  it hands out `READ_BUDGET` (10) posts in all; after that every call answers
+  it hands out `READ_BUDGET` (35) posts in all, and its description asks the model to spread its reads evenly over the days, about the same number from each; after that every call answers
   `NOTHING_LEFT_TO_READ` ("No posts left to read; answer now with what you have.") without
   asking the store. Reads are not retrieval, so they are not counted in `retrieval_events`.
   `schemas` is `READING_SCHEMAS`; `ids_given` lists the posts handed out so far. `reader` is
@@ -96,7 +96,9 @@ version; inside each branch the writer's tool loop (`ReportWriter`) stays a plai
 LangChain, the same design as the tagging agent's decision loop inside its own fan-out.
 Events go out on the run's stream: `run.started`, per version `step.started` /
 `step.finished` / `usage` / `tool.called` / `tool.returned`, then a `measurement.done` per
-score and `run.finished` (or `run.failed` with the reason). The result is kept in Redis for a
+score, then `run.finished` (or `run.failed` with the reason). `run.finished` is sent by the
+worker task (`run_and_keep_result`) only after the result is saved, so a page that rereads the
+run on hearing it finds the result. The result is kept in Redis for a
 day so the Document and Comparison pages can read it; nothing else is kept.
 
 ## Uses
@@ -115,6 +117,6 @@ lookup of an unknown post), [ingestion](ingestion.md) (the embedder and its
 ## Configuration and data
 `OPENROUTER_API_KEY`, `REPORT_MODEL_NAME` (default `anthropic/claude-sonnet-5.5`). Fixed in
 code: `MAX_TOOL_CALLS = 20`, `CORRECTIONS = 1`, `SEARCH_RESULTS = 20`, `EVENT_RESULTS = 15`,
-`READ_BATCH = 5`, `READ_BUDGET = 10`,
+`READ_BATCH = 5`, `READ_BUDGET = 35`,
 `DAYS_SEEN_BEFORE_A_PREDICTION = 28`, `KEPT_SECONDS` (a day). Writes `retrieval_events`
 (agent `report`, version B's tools only) and the run's state in Redis.

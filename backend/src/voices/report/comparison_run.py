@@ -78,7 +78,6 @@ class ComparisonRun:
         one_run = _OneRun(self.parts, run_id, days)
         versions = every_version_at_once(lambda v: one_run.version(v, self.emit))
         self._announce_measurements(versions)
-        self.emit("run.finished")
         return RunResult(
             run_id=run_id,
             start=days.start,

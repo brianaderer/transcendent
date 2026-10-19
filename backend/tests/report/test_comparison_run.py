@@ -176,7 +176,8 @@ def test_the_run_is_announced_live_from_start_to_scores():
     run(events=events)
 
     kinds = [kind for kind, _ in events]
-    assert kinds[0] == "run.started" and kinds[-1] == "run.finished"
+    assert kinds[0] == "run.started" and kinds[-1] == "measurement.done"
+    assert "run.finished" not in kinds  # announced once the result is kept (report_task)
     assert "measurement.done" in kinds
     tool_calls = [body for kind, body in events if kind == "tool.called"]
     assert {body["version"] for body in tool_calls} == {"A", "B"}

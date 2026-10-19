@@ -97,3 +97,24 @@ test("each version's bar moves as its live events arrive", async () => {
   expect(Number(b.getAttribute("aria-valuenow"))).toBeGreaterThan(0);
   expect(screen.getByText("Writing the report · 1 tool call")).toBeInTheDocument();
 });
+
+test("once both versions are done, the panel says it is scoring them", async () => {
+  await showProgress();
+
+  act(() => {
+    announce({ type: "step.finished", version: "A", phase: "predict", seconds: 7 });
+    announce({ type: "step.finished", version: "B", phase: "predict", seconds: 9 });
+  });
+
+  expect(await screen.findByText("Scoring both versions…")).toBeInTheDocument();
+});
+
+test("the links appear as soon as the run says it has finished, without waiting to check", async () => {
+  await showProgress();
+  await screen.findByRole("region", { name: "Report progress" });
+  runState = FINISHED_RUN;
+
+  act(() => announce({ type: "run.finished" }));
+
+  expect(await screen.findByText("See the comparison", {}, { timeout: 1000 })).toBeInTheDocument();
+});

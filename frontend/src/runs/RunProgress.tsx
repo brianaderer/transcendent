@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useReducer } from "react";
 
-import { useReportRun } from "../api/generated";
+import { getReportRunQueryKey, useReportRun } from "../api/generated";
+import { Spinner } from "../Spinner";
 import { type LiveEvent, useLiveEvents } from "../useLiveEvents";
 import {
   folded,
   type Lane,
+  type Progress,
   laneProgress,
   runStream,
   STARTING,
@@ -18,7 +21,17 @@ const STATE_CHECK_MS = 3000; // in case a live event was missed, the run's state
 /** Both versions' work as it happens, then links to the results (atlas plate 31, screen 1). */
 export function RunProgress({ runId }: { runId: string }) {
   const [progress, fold] = useReducer(folded, STARTING);
-  const onEvent = useCallback((event: LiveEvent) => fold(event), []);
+  const queryClient = useQueryClient();
+  const onEvent = useCallback(
+    (event: LiveEvent) => {
+      fold(event);
+      if (event.type === "run.finished" || event.type === "run.failed") {
+        // The result is kept before this is announced, so read it now rather than at the next check.
+        queryClient.invalidateQueries({ queryKey: getReportRunQueryKey(runId) });
+      }
+    },
+    [queryClient, runId],
+  );
   useLiveEvents(runStream(runId), onEvent);
   const run = useReportRun(runId, {
     query: {
@@ -42,7 +55,12 @@ export function RunProgress({ runId }: { runId: string }) {
           />
         ))}
       </div>
-      {progress.measuring && state === "running" && <p className="mt-3 text-sm">Measuring…</p>}
+      {isScoring(progress) && state === "running" && !failed && (
+        <p className="mt-3 flex items-center gap-1.5 text-sm">
+          <Spinner />
+          Scoring both versions…
+        </p>
+      )}
       {failed && <p className="mt-3 text-sm text-red-600">The run stopped: {failed}</p>}
       {state === "finished" && (
         <p className="mt-3 flex gap-4 text-sm font-medium">
@@ -103,4 +121,9 @@ function LaneBar({ lane }: { lane: Lane }) {
       <p className="mt-1 text-xs text-slate-500">{label}</p>
     </div>
   );
+}
+
+/** Both versions have answered; their topics are being matched and scored. */
+function isScoring(progress: Progress): boolean {
+  return progress.measuring || VERSION_ORDER.every((v) => progress.lanes[v].stage === "done");
 }

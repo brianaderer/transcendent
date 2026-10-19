@@ -7,6 +7,7 @@ import {
   fetchIngestionStatus,
   type IngestionStatus as Status,
 } from "./ingestion";
+import { Spinner } from "./Spinner";
 import { SyncNow } from "./SyncNow";
 import { type LiveEvent, useLiveEvents } from "./useLiveEvents";
 
@@ -47,15 +48,4 @@ function stepOfTheRunningDay(status: Status, step: DayStep | null): string | nul
 /** Matches `a_catch_up_is_busy` in backend/src/voices/ingestion/sync_now.py. */
 function aCatchUpIsBusy(status: Status): boolean {
   return status.running_day !== null || status.backfill !== null;
-}
-
-/** Turns while the history is being loaded or prepared, so work in progress is visible. */
-function Spinner() {
-  return (
-    <span
-      role="status"
-      aria-label="Working"
-      className="inline-block h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-teal-600 border-t-transparent"
-    />
-  );
 }
