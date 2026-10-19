@@ -73,6 +73,12 @@ such as its `NomicEmbedder` is passed in), numpy, Pydantic.
 [report](report.md) (`comparison_run` calls `mark` and `score` for both versions).
 
 ## Configuration and data
-Fixed in code: `MAIN_TOPICS = 10`, `MATCH_SIMILARITY = 0.7` (a starting default, to be
-tuned against names real reports produce). Reads `topic_daily_engagement` and `topics`
+Fixed in code: `MAIN_TOPICS = 10`, `MATCH_SIMILARITY = 0.80`, set from the first real
+comparison run (nomic `embed_for_comparison`, report names against `"label: description"` of
+the range's active topics): right matches scored 0.83–0.91 (for example "Docking mishaps and
+stories" 0.908, "Learning to sail: courses…" to "Sailing courses and training schools"
+0.837, "End-of-season haul-out, winterization…" to "Winter storage and covers" 0.830), wrong
+ones 0.73–0.79 (for example "Liveaboard life and cruising budgets" to "Renting and
+chartering" 0.727, "Customs and border clearance for boats" to "Hull damage" 0.752, "Racing
+and events news (SailGP…)" to "Sailing festivals" 0.792). Reads `topic_daily_engagement` and `topics`
 through its data interface; writes nothing (reports are ephemeral, OPEN-24).

@@ -9,8 +9,8 @@ from voices.comparison.answer_key import KeyTopic
 from voices.ingestion.embedder import ComparisonEmbedder
 
 # How alike a name and a topic must be, by cosine similarity of their embeddings, to count as
-# the same topic. A starting default, to be tuned against names real reports produce.
-MATCH_SIMILARITY = 0.7
+# the same topic. Measured on the first real run: right matches 0.83-0.91, wrong 0.73-0.79.
+MATCH_SIMILARITY = 0.80
 
 
 Matches = dict[str, int | None]  # each name to the id of the topic it matched, or None
