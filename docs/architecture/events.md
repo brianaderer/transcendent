@@ -47,7 +47,8 @@ its first `day.step`s, to [tagging](tagging.md), which sends the tagging's `day.
 `server_sent_events`); [frontend](frontend.md) (two parts listen to the `ingestion` stream through
 `useLiveEvents`: `IngestionStatus`, which refetches the loading line on every event and folds `day.step`
 and `decision.made` into the step it ends with, and
-`ExplorePage`, which refetches everything it shows on each `day.finished`); each comparison
+`ExplorePage`, which refetches everything it shows on each `day.finished` and on
+`backfill.finished`); each comparison
 run announces itself on its own stream, `run-<id>` ([report](report.md): `worker/report_task.py`
 emits, `RunProgress` listens).
 

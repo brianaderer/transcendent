@@ -102,7 +102,8 @@ top bar's loading line ([frontend](frontend.md)) refetches on, reading "Preparin
 history: 4,120 of 12,682 posts". When the three steps are done, every kept map is
 forgotten ([explore](explore.md)'s `RedisMapCache.forget_all`), since a map drawn meanwhile
 had only the posts already embedded; then the progress record is cleared and
-`backfill.finished` is emitted. A backfill stopped between its last batch and that finish
+`backfill.finished` is emitted, on which the Explore page ([frontend](frontend.md)) refetches
+everything it shows, so the map is drawn from the rebuilt vectors. A backfill stopped between its last batch and that finish
 (its record still there, nothing missing) finishes on the next run. The embedding model runs
 on four threads (`EMBEDDING_THREADS`, [ingestion](ingestion.md)).
 
