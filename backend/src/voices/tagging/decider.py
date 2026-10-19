@@ -15,7 +15,7 @@ from pydantic import ValidationError
 from voices.log import log_event
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
-MAX_TURNS_BEFORE_DECIDING = 3  # look-ups allowed before it must decide; capped for cost
+MAX_LOOK_UPS_BEFORE_DECIDING = 3  # tool calls allowed before it must decide; capped for cost
 DECIDE = "Decision"
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.
@@ -90,17 +90,17 @@ class ToolLoopDecider:
         model: ChatModel,
         model_name: str,
         tools: Tools,
-        max_turns: int = MAX_TURNS_BEFORE_DECIDING,
+        max_look_ups: int = MAX_LOOK_UPS_BEFORE_DECIDING,
     ):
         self.model = model
         self.model_name = model_name
         self.tools = tools
-        self.max_turns = max_turns
+        self.max_look_ups = max_look_ups
 
     def decide(self, brief: ClusterBrief) -> DecidedCluster:
-        """Lets the agent look around for up to max_turns turns, then makes it decide."""
-        conversation = _Conversation(self.model, self.tools, brief)
-        for _ in range(self.max_turns):
+        """Lets the agent make up to max_look_ups tool calls, then makes it decide."""
+        conversation = _Conversation(self.model, self.tools, brief, self.max_look_ups)
+        while conversation.may_look_around():
             reply = conversation.take_turn(tool_choice=None)
             decision = _decision_in(reply)
             if decision:
@@ -108,17 +108,18 @@ class ToolLoopDecider:
             conversation.answer(reply)
         decision = _decision_in(conversation.take_turn(tool_choice=DECIDE))
         if not decision:
-            raise NoDecision(f"cluster {brief.name}: no decision after {self.max_turns} turns")
+            raise NoDecision(f"cluster {brief.name}: no decision when made to decide")
         return conversation.decided(decision, self.model_name)
 
 
 class _Conversation:
     """One cluster's exchange with the model: every message, and every one of them logged."""
 
-    def __init__(self, model: ChatModel, tools: Tools, brief: ClusterBrief):
+    def __init__(self, model: ChatModel, tools: Tools, brief: ClusterBrief, max_look_ups: int):
         self.model = model
         self.tools = tools
         self.brief = brief
+        self.look_ups_left = max_look_ups
         self.prompt = render_brief(brief)
         self.messages: list[BaseMessage] = [SystemMessage(INSTRUCTIONS), HumanMessage(self.prompt)]
 
@@ -128,20 +129,30 @@ class _Conversation:
         self.messages.append(reply)
         return reply
 
+    def may_look_around(self) -> bool:
+        return self.look_ups_left > 0
+
     def answer(self, reply: AIMessage) -> None:
         """Answers every call in a reply that made no valid decision: tool calls get their
-        results, a malformed decision gets the reason; a reply with no calls gets a reminder."""
+        results while look-ups are left, a malformed decision gets the reason; a reply with no
+        calls gets a reminder. A turn that looks nothing up still spends one, so the loop ends."""
         if not reply.tool_calls:
             self._say(HumanMessage(f"Decide now by calling {DECIDE}."))
+        look_ups_before = self.look_ups_left
         for call in reply.tool_calls:
             self._say(
-                ToolMessage(self._result_of(call), tool_call_id=call["id"]), tool=call["name"]
+                ToolMessage(self._answer_to(call), tool_call_id=call["id"]), tool=call["name"]
             )
+        if self.look_ups_left == look_ups_before:
+            self.look_ups_left -= 1
 
-    def _result_of(self, call: dict) -> str:
+    def _answer_to(self, call: dict) -> str:
         """A reply being answered made no valid decision, so a Decision call here is malformed."""
         if call["name"] == DECIDE:
             return _why_malformed(call["args"])
+        if not self.may_look_around():
+            return f"No look-ups left; decide now by calling {DECIDE}."
+        self.look_ups_left -= 1
         return self.tools.run(call["name"], call["args"])
 
     def decided(self, decision: Decision, model_name: str) -> DecidedCluster:

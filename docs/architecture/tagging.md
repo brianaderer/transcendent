@@ -54,7 +54,8 @@ For day D:
 4. **Decisions.** The tagging agent (Claude Haiku 5.5 through OpenRouter, chosen for cost) gets each brief,
    may call `search` (posts in the window by meaning, 20 at most), `lookup` (one post in
    full) or `search_tags` (existing topics by meaning, 10 at most), and answers by calling
-   `Decision`. It gets three turns to look around (a turn may call several tools); then it is
+   `Decision`. It gets three look-ups (tool calls, counted across turns; a turn with no look-up still
+   spends one, and calls beyond the limit are answered "No look-ups left"); then it is
    made to call `Decision`, and if that answer still isn't a valid decision the day fails.
    If one reply calls `Decision` more than once, the first valid call is used and a malformed
    one is skipped; when a reply has no valid decision, each `Decision` call in it is answered
@@ -108,7 +109,7 @@ loading it).
 `OPENROUTER_API_KEY` (required for tagging), `TAGGING_MODEL_NAME` (default
 `anthropic/claude-haiku-5.5`). Fixed in code: `LOOKAHEAD_DAYS = 3` (`window.py`),
 `MIN_CLUSTER_SIZE = 5`, `TYPICAL_POSTS_SHOWN = 6`, `CANDIDATE_TOPICS_SHOWN = 5`,
-`MAX_TURNS_BEFORE_DECIDING = 3`, `MAX_PARALLEL_DECISIONS = 8`, `SEARCH_RESULTS = 20`,
+`MAX_LOOK_UPS_BEFORE_DECIDING = 3`, `MAX_PARALLEL_DECISIONS = 8`, `SEARCH_RESULTS = 20`,
 `TAG_RESULTS = 10`, `SAME_NEW_TOPIC_SIMILARITY = 0.90`, `KEYWORDS_PER_TOPIC = 8`,
 `MIN_WORD_LENGTH = 4`, `RECENT_DAYS = 7`, `EXCERPT_CHARACTERS = 300`,
 `TYPICAL_POST_CHARACTERS = 600`; the model call uses temperature 0, a 120-second timeout

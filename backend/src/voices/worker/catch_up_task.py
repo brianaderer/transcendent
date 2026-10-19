@@ -82,8 +82,12 @@ def _catch_up_runner() -> Callable[[datetime], None]:
     ingestion = DayIngestion(connect_to_archive(), embedder, AgreementDetector(embedder), store)
     emit = partial(RedisEvents(redis.Redis.from_url(settings.redis_url)).emit, INGESTION_STREAM)
     tagging_store = TaggingStore(store.engine)
-    key, model_name = settings.openrouter_api_key, settings.tagging_model_name
-    agent = TaggingAgent(tagging_store, embedder, key, model_name)
+    agent = TaggingAgent(
+        tagging_store,
+        embedder,
+        api_key=settings.openrouter_api_key,
+        model_name=settings.tagging_model_name,
+    )
     tagging = DayTagging(tagging_store, agent.decide, emit)
     return CatchUp(store, partial(_load_and_tag, ingestion, tagging), emit).run
 
