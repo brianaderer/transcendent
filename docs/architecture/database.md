@@ -47,8 +47,8 @@ first stored, filled for stored threads from their earliest post or comment (atl
 precision (atlas OPEN-34), converting the stored ones in place (its downgrade converts them
 back). Embeddings (`posts.embedding`, `threads.embedding`, `topics.centroid`) are
 pgvector's `halfvec(768)`: 768 numbers, the size nomic-embed-text produces (atlas OPEN-5),
-at two bytes each instead of four, which halved the database (74 MB to 44 MB once
-compacted, on eight weeks of r/sailing). Read back, an embedding is a pgvector
+at two bytes each instead of four, which shrank the database from 74 MB to 44 MB once
+compacted, on eight weeks of r/sailing (the posts table from 55 MB to 26 MB). Read back, an embedding is a pgvector
 `HalfVector`, not a list; `explore_store` turns it into a list of floats with `to_list()`.
 
 Tables: `threads` (the unit of tagging: the thread's own embedding of its post and top

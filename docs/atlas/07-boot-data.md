@@ -64,8 +64,10 @@ as CSV and gzipped:
 | Retrieval records (all from tagging) | 528 KB | 47 KB | yes, so the most-retrieved list isn't empty |
 | **Total** | | **about 2 MB** | |
 
-The vectors, left behind, are most of the database: 37 MB of the 75 MB at full
-precision.
+The vectors, left behind, were most of the database at full precision: 37 MB of the
+75 MB. Stored at half precision since OPEN-34, they take about half that (about 18 MB,
+worked out from the halving, not measured); the whole database measured 44 MB once
+compacted, the posts table 26 MB.
 
 ## The backfill *(proposed)*
 
