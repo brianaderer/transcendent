@@ -17,6 +17,10 @@ topic's engagement has been moving, not guessed from one week of text.
   to an existing tag, mint a new tag, or ignore it as noise**. A post that hasn't
   fallen into a cluster within three days **is noise and is deleted**.
 - **Posts are not cut into pieces**: one post or comment is one embedding.
+- Comments are semantically tied to their post, so it makes sense to **encode the whole
+  thread as one unit**. Comments arriving later are **a heat signal**, and an old thread
+  that **suddenly becomes active again** is another heat signal (2026-10-18; when the
+  thread is encoded, and whether it's re-encoded, is OPEN-29).
 - Deleted posts and bot posts are dropped. **Short agreeing replies** ("+1", "this",
   "same here") are significant and inform the trend, but aren't saved as posts. A basic
   semantic check finds them, and each one adds to an **`upvotes`** count on the post it
