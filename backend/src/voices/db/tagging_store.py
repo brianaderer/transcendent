@@ -46,7 +46,7 @@ class TaggingStore:
         """Threads on their first day not yet decided, and threads on their third day not yet
         settled, each with its post (or its title, when the post isn't stored) and the replies
         it has by the end of the day."""
-        query = _thread_with_its_post(Thread.source_id, _post_text()).where(_due_on(day))
+        query = _thread_with_its_post(Thread.source_id, _post_text_or_title()).where(_due_on(day))
         with self.engine.connect() as connection:
             threads = connection.execute(query).all()
             replies = self._replies(connection, [t.source_id for t in threads], day)
@@ -74,7 +74,9 @@ class TaggingStore:
         self, ids: Sequence[str], centroid: Sequence[float], limit: int
     ) -> list[TypicalPost]:
         query = (
-            _thread_with_its_post(Thread.source_id, _post_author(), _post_text())
+            _thread_with_its_post(
+                Thread.source_id, _post_author_or_unknown(), _post_text_or_title()
+            )
             .where(Thread.source_id.in_(ids))
             .order_by(Thread.embedding.cosine_distance(centroid))
             .limit(limit)
@@ -304,16 +306,17 @@ class PostNotFound(Exception):
 
 
 def _thread_with_its_post(*columns: ColumnElement) -> Select:
-    """A thread's post shares the thread's id. A thread whose post isn't stored (removed, or
-    started before the history) comes with no post, and stands in with its title."""
+    """A thread's post shares the thread's id; a thread whose post isn't stored still comes
+    back, with no post."""
     return select(*columns).outerjoin(Post, Post.source_id == Thread.source_id)
 
 
-def _post_text() -> ColumnElement[str]:
+def _post_text_or_title() -> ColumnElement[str]:
+    """A removed post, or one from before the history, is stood in for by the thread's title."""
     return func.coalesce(Post.body, Thread.title).label("body")
 
 
-def _post_author() -> ColumnElement[str]:
+def _post_author_or_unknown() -> ColumnElement[str]:
     return func.coalesce(Post.author, UNKNOWN_AUTHOR).label("author")
 
 

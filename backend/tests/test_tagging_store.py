@@ -18,7 +18,7 @@ from voices.db.models import (
     TopicDailyEngagement,
 )
 from voices.db.store import connect_store
-from voices.db.tagging_store import PostNotFound, TaggingStore
+from voices.db.tagging_store import UNKNOWN_AUTHOR, PostNotFound, TaggingStore
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
 pytestmark = pytest.mark.database
@@ -36,13 +36,8 @@ def other_axis():
     return [0.0, 1.0] + [0.0] * (EMBEDDING_DIMENSIONS - 2)
 
 
-def thread(source_id, title, started=AT, first_seen_on=DAY):
-    return {
-        "source_id": source_id,
-        "title": title,
-        "created_at": started,
-        "first_seen_on": first_seen_on,
-    }
+def thread(source_id, title, started=AT):
+    return {"source_id": source_id, "title": title, "created_at": started, "first_seen_on": DAY}
 
 
 def add_thread_without_its_post(store, started):
@@ -179,7 +174,9 @@ def test_a_thread_without_its_post_can_be_a_typical_thread(store):
 
     typical = store.typical_threads(["test-6"], vector(1.0), 6)
 
-    assert [(t.source_id, t.text) for t in typical] == [("test-6", "Rudder squeak")]
+    assert [(t.source_id, t.author, t.text) for t in typical] == [
+        ("test-6", UNKNOWN_AUTHOR, "Rudder squeak")
+    ]
 
 
 def test_a_thread_decided_on_its_first_day_is_due_again_on_its_third(store):

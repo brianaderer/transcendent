@@ -1,5 +1,6 @@
 """Needs a real database: run with the stack up, docker compose run --rm api pytest -m database"""
 
+from dataclasses import replace
 from datetime import UTC, date, datetime
 
 import pytest
@@ -67,6 +68,17 @@ def test_a_thread_is_first_seen_on_the_day_it_is_saved_not_the_day_it_started(st
     with store.engine.connect() as connection:
         first_seen = connection.scalar(
             select(Thread.first_seen_on).where(Thread.source_id == "test-old")
+        )
+    assert first_seen == DAY
+
+
+def test_a_thread_saved_again_on_a_later_day_keeps_its_first_seen_day(store):
+    store.save_day(batch({}))
+    store.save_day(replace(batch({}), day=OTHER_DAY))
+
+    with store.engine.connect() as connection:
+        first_seen = connection.scalar(
+            select(Thread.first_seen_on).where(Thread.source_id == "test-p")
         )
     assert first_seen == DAY
 
