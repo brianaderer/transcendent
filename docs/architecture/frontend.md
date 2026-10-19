@@ -78,7 +78,7 @@ Screens and parts:
   retrieved, last retrieved (`whenRetrieved`, "19 Oct, 07:48" in UTC) and retrieved by. It
   opens sorted by rank; clicking a column heading sorts by it, clicking again reverses it,
   and the heading carries `aria-sort`.
-- `TopBar` — the app's name, the **Explore** and **Retrieval stats** links (each keeping
+- `TopBar` — the app's name, the community it reads (`CommunityHeadline`: "r/sailing on Reddit · the last 8 weeks of its posts", the name linking to the subreddit, from `community.ts`), the **Explore** and **Retrieval stats** links (each keeping
   the range in the address, the current screen's in teal), `IngestionStatus` (with the
   Sync now button),
   `BackendStatus` and `ThemeToggle` (light or dark, starting from the system's choice).
