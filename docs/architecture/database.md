@@ -126,7 +126,7 @@ that already has days (yours) records the migration as run and loads nothing; an
 `python -m voices.db.setup` on an empty scratch database on 19 October 2026 and loaded every
 row.
 
-`docker compose run --rm api pytest -m database` runs the ninety tests that need a running
+`docker compose run --rm api pytest -m database` runs the ninety-three tests that need a running
 database: one checks that the models and the applied migrations agree; eleven check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
