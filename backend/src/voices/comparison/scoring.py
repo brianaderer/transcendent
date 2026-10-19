@@ -10,17 +10,17 @@ from pydantic import BaseModel
 
 from voices.comparison.answer_key import KeyTopic, main_topics
 from voices.comparison.commitment import Commitment, NamedTopic, PredictedTopic
-from voices.comparison.matching import Matches
+from voices.comparison.matching import Matches, match_names, topic_texts
+from voices.ingestion.embedder import ComparisonEmbedder
 
 
 class Marking(BaseModel):
-    """What a report is marked against, for one range. Build it with `active_topics` and
-    `match_names`, matching each list of names against `active` separately (so the report's
-    topics and the prediction's topics may each claim the same topic)."""
+    """What a report is marked against, for one range: the range's active topics, and the
+    topic each name matched. Made by `mark`."""
 
-    active: list[KeyTopic]  # answer_key.active_topics(data, range)
-    report_matches: Matches  # match_names(report.topic_names(), active, embedder)
-    prediction_matches: Matches  # match_names(prediction.predicted_names(), active, embedder)
+    active: list[KeyTopic]
+    report_matches: Matches
+    prediction_matches: Matches
 
 
 class Scores(BaseModel):
@@ -30,11 +30,29 @@ class Scores(BaseModel):
     order_agreement: float | None  # Spearman's rank correlation over the found topics
     directions_named: int  # found topics, each named with a direction
     directions_right: int  # of those, the ones whose direction matches the key's
-    predicted_named: int
+    predicted_named: int  # distinct names in the prediction
     predicted_prominent: int  # predicted names that matched a main topic
     predicted_never_came_up: int  # predicted names that matched no active topic
     predicted_direction_right: int  # prominent, and moving the way predicted
     prediction_score: float  # predicted_direction_right / predicted_named; 0 if none named
+
+
+def mark(
+    active: list[KeyTopic],
+    report: Commitment,
+    prediction: Commitment,
+    embedder: ComparisonEmbedder,
+) -> Marking:
+    """Matches `report.topics` and `prediction.predicted` against `active` (from
+    `answer_key.active_topics`), each list separately, so the report's topics and the
+    prediction's may each claim the same topic. `report.predicted` isn't scored, so isn't
+    matched."""
+    texts = topic_texts(active)
+    return Marking(
+        active=active,
+        report_matches=match_names(report.topic_names(), texts, embedder),
+        prediction_matches=match_names(prediction.predicted_names(), texts, embedder),
+    )
 
 
 def score(report: Commitment, prediction: Commitment, marking: Marking) -> Scores:
@@ -59,9 +77,9 @@ class _Key:
         main = {t.topic_id: t for t in main_topics(active)}
         return cls(main, {t.topic_id for t in active})
 
-    def unmatched(self, matches: Matches) -> int:
+    def unmatched(self, names: set[str], matches: Matches) -> int:
         """Names that matched no topic active in the range."""
-        return sum(topic_id not in self.active_ids for topic_id in matches.values())
+        return sum(matches.get(name) not in self.active_ids for name in names)
 
 
 def _report_scores(named: list[NamedTopic], matches: Matches, key: _Key) -> dict:
@@ -69,7 +87,7 @@ def _report_scores(named: list[NamedTopic], matches: Matches, key: _Key) -> dict
     pairs = [(found[i], key.main[i]) for i in found]
     return {
         "topics_found": len(found),
-        "topics_invented": key.unmatched(matches),
+        "topics_invented": key.unmatched({n.name for n in named}, matches),
         "order_agreement": rank_agreement([n.rank for n, _ in pairs], [k.rank for _, k in pairs]),
         "directions_named": len(pairs),
         "directions_right": sum(n.direction == k.direction for n, k in pairs),
@@ -79,12 +97,13 @@ def _report_scores(named: list[NamedTopic], matches: Matches, key: _Key) -> dict
 def _prediction_scores(predicted: list[PredictedTopic], matches: Matches, key: _Key) -> dict:
     prominent = _found(predicted, matches, key)
     right = sum(p.direction == key.main[i].direction for i, p in prominent.items())
+    names = {p.name for p in predicted}
     return {
-        "predicted_named": len(matches),
+        "predicted_named": len(names),
         "predicted_prominent": len(prominent),
-        "predicted_never_came_up": key.unmatched(matches),
+        "predicted_never_came_up": key.unmatched(names, matches),
         "predicted_direction_right": right,
-        "prediction_score": right / len(matches) if matches else 0.0,
+        "prediction_score": right / len(names) if names else 0.0,
     }
 
 

@@ -74,8 +74,9 @@ dot plot, recomputed for each range (atlas OPEN-20).
 ## Used by
 [api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`), which the
 [frontend](frontend.md)'s Explore page calls; [comparison](comparison.md) (the answer key
-calls `topics_in_range`); [prediction](prediction.md) (`DayRange`, `direction.trend`,
-`TopicData`, `rows_by_topic`); the Topic detail page also calls `GET /api/topics` for the topic's badge;
+calls `topics_in_range`), [report](report.md) (`TopicData` in its run data);
+[prediction](prediction.md) (`DayRange`, `direction.is_new`, `direction.trend`, `TopicData`,
+`rows_by_topic`); the Topic detail page also calls `GET /api/topics` for the topic's badge;
 [retrievals](retrievals.md) uses `DayRange`.
 
 ## Configuration and data

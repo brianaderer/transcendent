@@ -40,6 +40,9 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
   except 429 is a bad request and is not retried.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;
   `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).
+- `embedder.ComparisonEmbedder` — the one interface for anything with
+  `embed_for_comparison(texts)`; `NomicEmbedder` satisfies it. Used by `AgreementDetector`
+  here and by [comparison](comparison.md)'s name matching and [report](report.md)'s run.
 - `agreement.AgreementDetector.agreeing(texts)` — which replies only agree with their parent.
 - `filters.is_unwanted(item)`, `items.Item`, `items.post_from_archive`, `items.comment_from_archive`.
   An `Item` keeps what its author wrote as `text`, with a post's `title` apart from it (the
@@ -101,7 +104,8 @@ the store and the `emit` function, which match the small interfaces above.
 (`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s);
 [tagging](tagging.md) (`day_tagging` uses the `Emit` interface and encodes each thread with
 `NomicEmbedder.embed_documents`; its search tools embed terms with
-`NomicEmbedder.embed_query`); [bakeoff](bakeoff.md) (`load_embedder`).
+`NomicEmbedder.embed_query`); [bakeoff](bakeoff.md) (`load_embedder`);
+[comparison](comparison.md) and [report](report.md) (the `ComparisonEmbedder` interface).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`

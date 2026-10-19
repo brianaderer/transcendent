@@ -1,7 +1,7 @@
 import math
 
-from tests.stand_ins import topic_info
-from voices.comparison.matching import MATCH_SIMILARITY, match_names
+from voices.comparison.answer_key import KeyTopic
+from voices.comparison.matching import MATCH_SIMILARITY, match_names, topic_texts
 
 
 class TableEmbedder:
@@ -21,7 +21,7 @@ def at_similarity(similarity):
     return [similarity, 0.0, math.sqrt(1 - similarity**2)]
 
 
-TOPICS = [topic_info(1, label="Winterizing"), topic_info(2, label="Impellers")]
+TOPICS = {1: "Winterizing: d", 2: "Impellers: d"}
 TOPIC_VECTORS = {"Winterizing: d": [1.0, 0.0, 0.0], "Impellers: d": [0.0, 1.0, 0.0]}
 
 
@@ -38,7 +38,7 @@ def test_a_name_matches_the_topic_closest_in_meaning():
     assert matches == {"winter prep": 1, "water pump": 2}
 
 
-def test_a_name_at_the_threshold_matches():
+def test_a_name_at_or_just_above_the_threshold_matches():
     assert match(["winter prep"], {"winter prep": at_similarity(MATCH_SIMILARITY + 1e-9)}) == {
         "winter prep": 1
     }
@@ -70,10 +70,23 @@ def test_no_names_match_nothing_and_embed_nothing():
 
 
 def test_with_no_topics_every_name_matches_nothing():
-    assert match(["winter prep"], {"winter prep": [1.0, 0.0, 0.0]}, topics=[]) == {
+    assert match(["winter prep"], {"winter prep": [1.0, 0.0, 0.0]}, topics={}) == {
         "winter prep": None
     }
 
 
 def test_a_name_with_an_empty_embedding_matches_nothing():
     assert match(["blank"], {"blank": [0.0, 0.0, 0.0]}) == {"blank": None}
+
+
+def test_a_topic_is_compared_as_its_label_and_description():
+    topic = KeyTopic(
+        topic_id=7,
+        label="Winterizing",
+        description="haul-out",
+        rank=1,
+        engagement=9,
+        direction="steady",
+    )
+
+    assert topic_texts([topic]) == {7: "Winterizing: haul-out"}

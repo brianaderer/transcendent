@@ -2,7 +2,7 @@ import pytest
 
 from voices.comparison.answer_key import MAIN_TOPICS, KeyTopic
 from voices.comparison.commitment import Commitment, NamedTopic, PredictedTopic
-from voices.comparison.scoring import Marking, rank_agreement, score
+from voices.comparison.scoring import Marking, mark, rank_agreement, score
 
 NOTHING = Commitment(topics=[], predicted=[])
 
@@ -23,26 +23,26 @@ ACTIVE = [key_topic(1, 1, "rising"), key_topic(2, 2, "fading"), key_topic(3, 3)]
 ACTIVE += [key_topic(99, MAIN_TOPICS + 1)]
 
 
-def report(*named):
+def report_naming(*named):
     """Each entry is (name, rank, direction)."""
     return Commitment(
         topics=[NamedTopic(name=n, rank=r, direction=d) for n, r, d in named], predicted=[]
     )
 
 
-def prediction(*predicted):
+def prediction_naming(*predicted):
     return Commitment(
         topics=[], predicted=[PredictedTopic(name=n, direction=d) for n, d in predicted]
     )
 
 
-def scores_of(report_=NOTHING, prediction_=NOTHING, report_matches=None, prediction_matches=None):
+def scores_of(report=NOTHING, prediction=NOTHING, report_matches=None, prediction_matches=None):
     marking = Marking(
         active=ACTIVE,
         report_matches=report_matches or {},
         prediction_matches=prediction_matches or {},
     )
-    return score(report_, prediction_, marking)
+    return score(report, prediction, marking)
 
 
 def test_an_empty_report_finds_nothing_and_scores_zero():
@@ -54,7 +54,7 @@ def test_an_empty_report_finds_nothing_and_scores_zero():
 
 
 def test_found_counts_distinct_main_topics_named():
-    named = report(("a", 1, "rising"), ("b", 2, "fading"), ("c", 3, "steady"))
+    named = report_naming(("a", 1, "rising"), ("b", 2, "fading"), ("c", 3, "steady"))
 
     scores = scores_of(named, report_matches={"a": 1, "b": 2, "c": None})
 
@@ -62,25 +62,25 @@ def test_found_counts_distinct_main_topics_named():
 
 
 def test_an_active_topic_below_the_cut_is_neither_found_nor_invented():
-    scores = scores_of(report(("a", 1, "steady")), report_matches={"a": 99})
+    scores = scores_of(report_naming(("a", 1, "steady")), report_matches={"a": 99})
 
     assert (scores.topics_found, scores.topics_invented) == (0, 0)
 
 
 def test_a_name_matching_no_active_topic_is_invented():
-    scores = scores_of(report(("a", 1, "steady")), report_matches={"a": None})
+    scores = scores_of(report_naming(("a", 1, "steady")), report_matches={"a": None})
 
     assert scores.topics_invented == 1
 
 
 def test_a_name_matching_a_topic_quiet_in_the_range_is_invented():
-    scores = scores_of(report(("a", 1, "steady")), report_matches={"a": 42})
+    scores = scores_of(report_naming(("a", 1, "steady")), report_matches={"a": 42})
 
     assert scores.topics_invented == 1
 
 
 def test_the_same_order_agrees_fully():
-    named = report(("a", 1, "rising"), ("b", 2, "fading"), ("c", 3, "steady"))
+    named = report_naming(("a", 1, "rising"), ("b", 2, "fading"), ("c", 3, "steady"))
 
     scores = scores_of(named, report_matches={"a": 1, "b": 2, "c": 3})
 
@@ -88,7 +88,7 @@ def test_the_same_order_agrees_fully():
 
 
 def test_the_reverse_order_disagrees_fully():
-    named = report(("a", 3, "rising"), ("b", 2, "fading"), ("c", 1, "steady"))
+    named = report_naming(("a", 3, "rising"), ("b", 2, "fading"), ("c", 1, "steady"))
 
     scores = scores_of(named, report_matches={"a": 1, "b": 2, "c": 3})
 
@@ -96,7 +96,7 @@ def test_the_reverse_order_disagrees_fully():
 
 
 def test_order_is_compared_by_rank_not_by_rank_number():
-    named = report(("a", 4, "rising"), ("b", 7, "fading"))
+    named = report_naming(("a", 4, "rising"), ("b", 7, "fading"))
 
     scores = scores_of(named, report_matches={"a": 1, "b": 2})
 
@@ -104,7 +104,7 @@ def test_order_is_compared_by_rank_not_by_rank_number():
 
 
 def test_one_found_topic_has_no_order_to_compare():
-    scores = scores_of(report(("a", 1, "rising")), report_matches={"a": 1})
+    scores = scores_of(report_naming(("a", 1, "rising")), report_matches={"a": 1})
 
     assert scores.order_agreement is None
 
@@ -118,7 +118,7 @@ def test_tied_ranks_share_their_average_rank():
 
 
 def test_directions_are_checked_for_found_topics_only():
-    named = report(("a", 1, "rising"), ("b", 2, "rising"), ("c", 3, "rising"))
+    named = report_naming(("a", 1, "rising"), ("b", 2, "rising"), ("c", 3, "rising"))
 
     scores = scores_of(named, report_matches={"a": 1, "b": 2, "c": None})
 
@@ -126,7 +126,7 @@ def test_directions_are_checked_for_found_topics_only():
 
 
 def test_a_main_topic_named_only_once_counts_its_first_entry():
-    named = report(("a", 1, "rising"), ("a", 5, "fading"))
+    named = report_naming(("a", 1, "rising"), ("a", 5, "fading"))
 
     scores = scores_of(named, report_matches={"a": 1})
 
@@ -134,10 +134,12 @@ def test_a_main_topic_named_only_once_counts_its_first_entry():
 
 
 def test_predictions_are_counted_prominent_unseen_and_right():
-    predicted = prediction(("a", "rising"), ("b", "rising"), ("c", "steady"), ("d", "steady"))
+    predicted = prediction_naming(
+        ("a", "rising"), ("b", "rising"), ("c", "steady"), ("d", "steady")
+    )
     matches = {"a": 1, "b": 2, "c": 99, "d": None}
 
-    scores = scores_of(prediction_=predicted, prediction_matches=matches)
+    scores = scores_of(prediction=predicted, prediction_matches=matches)
 
     assert scores.predicted_named == 4
     assert scores.predicted_prominent == 2
@@ -147,27 +149,74 @@ def test_predictions_are_counted_prominent_unseen_and_right():
 
 
 def test_a_perfect_prediction_scores_one():
-    predicted = prediction(("a", "rising"), ("b", "fading"))
+    predicted = prediction_naming(("a", "rising"), ("b", "fading"))
 
-    scores = scores_of(prediction_=predicted, prediction_matches={"a": 1, "b": 2})
+    scores = scores_of(prediction=predicted, prediction_matches={"a": 1, "b": 2})
 
     assert scores.prediction_score == 1.0
 
 
 def test_the_reports_own_prediction_is_not_scored():
-    both = Commitment(topics=[], predicted=[PredictedTopic(name="a", direction="rising")])
+    predicting = Commitment(topics=[], predicted=[PredictedTopic(name="a", direction="rising")])
 
-    scores = scores_of(report_=both)
+    scores = scores_of(report=predicting, prediction_matches={"a": 1})
 
-    assert scores.predicted_named == 0
+    assert (scores.predicted_named, scores.predicted_prominent) == (0, 0)
+    assert scores.predicted_direction_right == 0
+
+
+def test_predicted_named_counts_distinct_predicted_names():
+    predicted = prediction_naming(("a", "rising"), ("a", "fading"), ("b", "steady"))
+
+    scores = scores_of(prediction=predicted, prediction_matches={"a": 1, "b": None})
+
+    assert scores.predicted_named == 2
 
 
 def test_the_prediction_and_the_report_may_claim_the_same_topic():
     scores = scores_of(
-        report(("a", 1, "rising")),
-        prediction(("a", "rising")),
+        report_naming(("a", 1, "rising")),
+        prediction_naming(("a", "rising")),
         report_matches={"a": 1},
         prediction_matches={"a": 1},
     )
 
     assert (scores.topics_found, scores.predicted_prominent) == (1, 1)
+
+
+class ExactEmbedder:
+    """Embeds a text as a one-hot vector by its table index, so a name matches a topic only
+    when the table gives both the same index."""
+
+    def __init__(self, index_of):
+        self.index_of = index_of
+
+    def embed_for_comparison(self, texts):
+        return [[float(self.index_of[t] == i) for i in range(4)] for t in texts]
+
+
+TOPIC_INDEX = {"t1: d": 0, "t2: d": 1, "t3: d": 2, "t99: d": 3}
+
+
+def test_mark_matches_the_reports_topics_and_the_prediction_separately():
+    embedder = ExactEmbedder({**TOPIC_INDEX, "a": 0, "b": 1})
+
+    marking = mark(
+        ACTIVE,
+        report_naming(("a", 1, "rising")),
+        prediction_naming(("a", "rising"), ("b", "fading")),
+        embedder,
+    )
+
+    assert marking.active == ACTIVE
+    assert marking.report_matches == {"a": 1}
+    assert marking.prediction_matches == {"a": 1, "b": 2}
+
+
+def test_mark_ignores_the_reports_own_prediction():
+    embedder = ExactEmbedder({**TOPIC_INDEX, "a": 0})
+    predicting = Commitment(topics=[], predicted=[PredictedTopic(name="a", direction="rising")])
+
+    marking = mark(ACTIVE, predicting, NOTHING, embedder)
+
+    assert (marking.report_matches, marking.prediction_matches) == ({}, {})

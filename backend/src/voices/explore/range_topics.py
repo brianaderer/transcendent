@@ -12,6 +12,8 @@ from voices.explore.shapes import TopicDay, TopicInfo, TopicInRange
 
 
 class TopicData(Protocol):
+    """Topics' daily engagement and their labels; `ExploreStore` satisfies it."""
+
     def topic_days(self, first_day: date, last_day: date) -> list[TopicDay]: ...
     def topics(self, ids: Sequence[int]) -> list[TopicInfo]: ...
 
