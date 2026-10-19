@@ -105,6 +105,64 @@ compacted, the posts table 26 MB.
 - **After it, the app is live** (specified, OPEN-36): the catch-up takes the days from the
   seed's last day to yesterday, fetching and tagging each, once the backfill is done.
 
+## As built (build step 7, 2026-10-19)
+
+Code: [seed](../architecture/seed.md), [database](../architecture/database.md),
+[worker](../architecture/worker.md). Choices made while building are defaults, held as named
+constants, not Brian's decisions.
+
+- **The export** is `python -m voices.db.seed_export <path>`: one gzipped JSON file
+  (`voices-seed/1`), one row set per table, each table's columns written out in the export
+  code rather than taken from the models. Rows come in key order and the gzip header carries
+  no timestamp, so the same database writes the same bytes. **Measured: 1.93 MB** (8.2 MB of
+  JSON) on the local database: posts 1.48 MB, decisions 0.34 MB, retrieval records 0.06 MB,
+  the rest under 0.1 MB together.
+- **Left out:** every embedding and centre; each decision's prompt, which reads
+  `(left out of the seed)` because the column can't be empty; and the 2 topics with no
+  threads, with their engagement rows; the 3 decisions that named them keep their record
+  with no topic.
+- **Author names** pass through one small function, `published_author`, on the way into the
+  file. It keeps them as they are while OPEN-37 is open; hiding them is a change to that one
+  line.
+- **The loader**, `load_seed(connection, data_file)`, puts each table's rows in with plain
+  SQL under the file's own column names (Postgres's `json_populate_recordset`), keeps the
+  ids, and moves every id counter on the loaded tables past them. It loads nothing into a
+  database that already has a day in `ingested_days`, so a restart, or a database that
+  filled itself, is left alone. Into an empty scratch database, the real file loaded in
+  under a second.
+- **A schema change the plan didn't name:** migration `0007` lets `topics.centroid` be
+  missing, since seeded topics arrive without one until the backfill.
+- **The seed migration itself is not in the repo yet.** It is written as the last build step
+  (specified): the export into `backend/migrations/versions/0008_seed_snapshot.json.gz`, and a
+  migration of a few lines calling `load_seed` with that file. The exact command and file are
+  in [database](../architecture/database.md) → *Writing the seed migration*; that exact file,
+  with a real export, was run through setup on an empty scratch database and loaded every row.
+- **The backfill** runs first in every catch-up, under its lock, and does nothing when no
+  vector is missing. Batches of 256 (`ROWS_PER_BATCH`), each saved before the next; posts,
+  then threads (as of their third day once settled, their first while they wait, read
+  through the tagging store's `threads_as_of` and `thread_text`), then centres. The model
+  runs on 4 threads (`EMBEDDING_THREADS`). A failed backfill stops that catch-up, which
+  tries again ten minutes later and carries on from the last saved batch.
+- **Progress** (specified, built): after each batch, `{what, done, total}` is kept in Redis
+  (`backfill:progress`), returned by `GET /api/ingestion` as `backfill`, and sent as a
+  `backfill.progress` event; the top bar reads "Preparing the history: 4,120 of 12,682
+  posts", then threads, then topics, then the catch-up's days. When it finishes, every kept
+  map (`map:*`) is forgotten, the record cleared, and `backfill.finished` sent.
+- **How long, measured** on this Mac under Docker with the real seed in a scratch database:
+  **6 minutes 21 seconds** in all: posts 4 min 55 s (about 43 a second), threads 1 min 27 s,
+  centres under a second.
+- **How close the rebuilt vectors come, measured:** not to 0.999 as proposed above. Against
+  the stored vectors the median similarity was 0.979 for posts (lowest 0.952), 0.984 for
+  threads, 0.990 for centres. The model gives that much spread on its own: the same post
+  embedded alone and in a batch agreed only to 0.977, whatever the thread count, so the
+  stored vectors carry the same noise. A post's ten nearest posts are 70% the same as
+  before, a thread's ten nearest threads 77%, a topic's five nearest topics 90%. No test
+  in the suite checks this: it needs the real model.
+- **The README** describes both first starts: with a seed, "Preparing the history…" then the
+  days since; without one, the eight weeks and the measured 1 hour 40 minutes. It is true
+  before and after the snapshot is committed.
+
 ## Open in this draft
 
-- `?` Reddit content and usernames in a public repo (OPEN-37), Brian thinking it over.
+- `?` Reddit content and usernames in a public repo (OPEN-37), Brian thinking it over. As
+  built, names pass through `published_author` unchanged, so a decision is a one-line change.
