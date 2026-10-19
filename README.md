@@ -149,19 +149,19 @@ the back end directly, open http://localhost:5173/api/health; it should show
 
 Beside it, the top bar shows the r/sailing history loading, as one line for the whole first
 start. It may say **Waiting to start loading r/sailing history** for a few seconds; the first
-time, the worker also downloads the 130 MB model that prepares posts for search. When the
-repo carries a seed of the history (posts already sorted into topics), the line then reads
-**Preparing the history: 4,120 of 12,682 posts**, then threads, then topics, counting up
+time, the worker also downloads the 130 MB model that prepares posts for search. The repo
+carries a seed of the history (eight weeks of posts, 23 August to 18 October 2026, already
+sorted into topics), so the line then reads
+**Preparing the history: 4,120 of 12,726 posts**, then threads, then topics, counting up
 while the worker prepares the seeded posts for search; meanwhile the topics and the slider
-already work, and the map and search fill in once it is done. After that, or straight away
-when there is no seed, it reads, for example,
+already work, and the map and search fill in once it is done. After that it reads, for example,
 **Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
 is loaded and sorted into topics, and ending with what the day is doing right now
 (**· embedding 204 posts**, **· tagging: 3 of 7 groups decided**, and so on): every day of the last eight weeks that isn't stored yet
-(with a seed, only the days since it was taken). Each day is fetched from the
+(after the seed, only the days since it was taken). Each day is fetched from the
 Arctic Shift archive (a public archive of Reddit, so your computer needs an internet
 connection), prepared for search, and then the AI model sorts the day's threads
-into topics through OpenRouter. With no seed, the whole first start (fetching, preparing and
+into topics through OpenRouter. Without the seed, the whole first start (fetching, preparing and
 sorting eight weeks into topics) took about 1 hour 40 minutes on a laptop, measured on two
 runs, and used about $1.30 to $1.70 of OpenRouter credit. The worker uses about 1 GB of memory while it runs. You can leave it
 running in the background. When it's done the line reads

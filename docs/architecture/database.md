@@ -56,7 +56,7 @@ tagging (atlas OPEN-29): threads gain `embedding`, `topic_id`, `cluster_decision
 `topic_daily_engagement` gains `revived_threads`; `0004` adds `threads.first_seen_on`, the day a thread was
 first stored, filled for stored threads from their earliest post or comment (atlas OPEN-30); `0005` adds `noise_threads` (atlas OPEN-31); `0006` stores every embedding at half
 precision (atlas OPEN-34), converting the stored ones in place (its downgrade converts them
-back); `0007` lets a topic's centre (`topics.centroid`) be missing, as it is between loading the boot seed and the worker's backfill that rebuilds it from the topic's threads ([atlas plate 07](../atlas/07-boot-data.md)). Embeddings (`posts.embedding`, `threads.embedding`, `topics.centroid`) are
+back); `0007` lets a topic's centre (`topics.centroid`) be missing, as it is between loading the boot seed and the worker's backfill that rebuilds it from the topic's threads ([atlas plate 07](../atlas/07-boot-data.md)); `0008` loads the boot seed, the gzipped data file beside it, into an empty database ([seed](seed.md)). Embeddings (`posts.embedding`, `threads.embedding`, `topics.centroid`) are
 pgvector's `halfvec(768)`: 768 numbers, the size nomic-embed-text produces (atlas OPEN-5),
 at two bytes each instead of four, which shrank the database from 74 MB to 44 MB once
 compacted, on eight weeks of r/sailing (the posts table from 55 MB to 26 MB). Read back, an embedding is a pgvector
@@ -81,7 +81,8 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
 ```
 
 **Writing the seed migration** (the last build step, atlas plate 07; the seed's code is
-described in [seed](seed.md)). With the stack running and the history the seed should carry
+described in [seed](seed.md)). The migration and its data file are in the repo; to take the
+seed again, with the stack running and the history the seed should carry
 loaded, from the repository root, write the data file beside the migrations (the export
 replaces every username with a stand-in as it writes, so the file holds no real one):
 
@@ -90,8 +91,7 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api python -m voices.db.seed_export /srv/migrations/versions/0008_seed_snapshot.json.gz
 ```
 
-then add `backend/migrations/versions/0008_seed_snapshot.py` (the next free number, revising
-the latest migration) holding only:
+`backend/migrations/versions/0008_seed_snapshot.py` beside it holds only:
 
 ```python
 """seed snapshot

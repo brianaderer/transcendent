@@ -120,8 +120,11 @@ nearest topics 90%. No
 test in the suite checks this, since it needs the real model.
 
 **The seed migration is written last** (atlas plate 07, OPEN-35): it is a point-in-time
-snapshot on whatever schema exists then. Neither it nor a real data file is in the repo
-yet. The procedure, from the repository root with the stack running, is in
+snapshot on whatever schema exists then. It is in the repo as
+`backend/migrations/versions/0008_seed_snapshot.py`, loading `0008_seed_snapshot.json.gz`
+beside it (12,726 posts and comments, 644 threads, 150 topics, 57 days, 23 August to
+18 October 2026, no vectors). How to take it again, from the repository root with the
+stack running, is in
 [database](database.md) → *Writing the seed migration*.
 
 ## Uses
