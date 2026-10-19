@@ -37,8 +37,10 @@ the rest in order. `migrations/versions/0001_initial_tables.py` creates the pgve
 extension and every table; `0002` adds `ingested_days.error`, why a day failed. Embeddings are `vector(768)`, the size nomic-embed-text
 produces (atlas OPEN-5).
 
-Tables: `threads`, `posts` (one embedding each; `pending` or `tagged`; `upvotes` from
-agreeing replies, apart from `reddit_score`; the cluster decision that tagged it),
+Tables: `threads` (the unit of tagging: the thread's own embedding of its post and top
+replies, its topic, the decision that gave it, and its `stage`: `new`, `decided_once` on its
+first day or `settled` on its third), `posts` (one embedding each; `upvotes` from agreeing
+replies, apart from `reddit_score`; a post's topic is its thread's),
 `post_upvotes_daily`, `topics` (label, description, keywords, centroid),
 `topic_daily_engagement`, `cluster_decisions`, `retrieval_events`, `ingested_days`.
 
@@ -50,20 +52,18 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the twenty tests that need a running
+`docker compose run --rm api pytest -m database` runs the twenty-seven tests that need a running
 database: one checks that the models and the applied migrations agree; five check that
 the store saves a day (twice without duplicates), never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, and keeps the day ledger; and fourteen check that the tagging store reads
-the window, mints a topic, attaches to one and deletes noise, deletes posts left waiting
-too long, counts daily engagement (including upvotes on a day with no new posts), finds
-posts by meaning while recording the retrievals, leaves posts waiting when the agent
-attaches to a topic that doesn't exist (counting only posts that were waiting), joins a
-merged mint to the topic minted earlier and refuses one whose twin wasn't minted first,
-moves an attached topic's last-seen day and centre, and counts candidate topics' posts
-from the last week. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
-
-`topic_similarity` is double precision (`Float`); the earlier SQL file used `real`.
+from different days, and keeps the day ledger; and twenty-one check the tagging store: which
+threads are due on their first and third days (with their replies, best first) and that a
+settled thread is never due again, minting, attaching, noise on a first day waiting and on a
+third day deleting the thread with its comments, attaching to a topic that doesn't exist,
+merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
+third day, candidate topics' recent posts, typical threads, daily engagement (including a
+late comment counting on its own day, revived threads, and upvotes on a day with no new
+posts), search with recorded retrievals, and looking up an unknown post. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through

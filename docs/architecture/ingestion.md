@@ -5,8 +5,8 @@
 ## Purpose
 Fills the database with r/sailing, one day at a time, from the Arctic Shift archive of
 Reddit. Plans: [atlas plate 40](../atlas/40-backend.md) (the catch-up) and
-[plate 21](../atlas/20-data-model/21-topics.md) (what is kept). Posts are stored as
-`pending`; [tagging](tagging.md) sorts them into topics right after each day is loaded.
+[plate 21](../atlas/20-data-model/21-topics.md) (what is kept). Posts are stored with
+their threads; [tagging](tagging.md) sorts the threads into topics right after each day is loaded.
 
 ## Public interface
 - `catch_up.CatchUp(ledger, process, emit).run(now, history_days=56)` — processes every
@@ -51,7 +51,7 @@ arrive with the day they were written), drop removed and deleted posts and bots,
 the title of any older thread a comment belongs to, turn agreeing replies into upvotes on
 their parent, embed the rest, and save it all in one transaction. A day whose loading fails
 leaves nothing behind. In the worker, `process` loads the day and then tags it; if tagging
-fails, the loaded posts stay (still `pending`) and the day is marked failed. Either way the
+fails, the loaded posts stay (their threads undecided) and the day is marked failed. Either way the
 day is redone from the start at the next catch-up (the worker retries a failed one after ten
 minutes), and saving it again adds nothing.
 

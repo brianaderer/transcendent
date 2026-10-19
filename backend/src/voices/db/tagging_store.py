@@ -1,29 +1,36 @@
-"""Reads and writes for tagging (atlas plate 21): the three-day window, the agent's searches,
-applying its decisions, deleting what never clustered, and the daily engagement table."""
+"""Reads and writes for tagging (atlas plate 21): the threads due a decision, their
+encodings, the agent's searches, applying its decisions, and the daily engagement table."""
 
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import (
+    ColumnElement,
     Connection,
     Engine,
     Insert,
     Update,
+    and_,
+    bindparam,
+    case,
     delete,
     func,
     insert,
+    or_,
     select,
     text,
     update,
 )
 
 from voices.db.models import ClusterDecision, Post, RetrievalEvent, Thread, Topic
-from voices.tagging.clustering import WindowPost
 from voices.tagging.decisions import CandidateTopic, DecidedCluster, TypicalPost
+from voices.tagging.threads import DueThread, Reply
+from voices.tagging.window import window_start
 
 EXCERPT_CHARACTERS = 300
 TYPICAL_POST_CHARACTERS = 600
 RECENT_DAYS = 7  # "recent engagement" shown to the agent for each candidate topic
+REVIVAL_DAYS = 7  # a thread older than this that gets new comments has come back to life
 
 
 class TaggingStore:
@@ -32,21 +39,44 @@ class TaggingStore:
 
     # --- reading -------------------------------------------------------------------------
 
-    def window_posts(self, first_day: date, last_day: date) -> list[WindowPost]:
-        query = select(Post.source_id, Post.embedding, Post.topic_id).where(
-            *_created_between(first_day, last_day), Post.embedding.is_not(None)
+    def threads_due(self, day: date) -> list[DueThread]:
+        """Threads on their first day not yet decided, and threads on their third day not yet
+        settled, each with its post and the replies it has by the end of the day."""
+        query = (
+            select(Thread.source_id, Post.author, Post.body)
+            .join(Post, Post.source_id == Thread.source_id)
+            .where(_due_on(day))
         )
         with self.engine.connect() as connection:
-            rows = connection.execute(query).all()
-        return [WindowPost(row.source_id, list(row.embedding), row.topic_id) for row in rows]
+            threads = connection.execute(query).all()
+            replies = self._replies(connection, [t.source_id for t in threads], day)
+        return [
+            DueThread(t.source_id, t.author, t.body, replies.get(t.source_id, [])) for t in threads
+        ]
 
-    def typical_posts(
+    def _replies(self, connection: Connection, thread_ids: list[str], day: date) -> dict:
+        query = (
+            select(Post.thread_source_id, Post.body, Post.reddit_score)
+            .where(
+                Post.thread_source_id.in_(thread_ids),
+                Post.kind == "comment",
+                Post.created_at < _start_of(day + timedelta(days=1)),
+            )
+            .order_by(Post.reddit_score.desc())
+        )
+        replies: dict[str, list[Reply]] = {}
+        for row in connection.execute(query):
+            replies.setdefault(row.thread_source_id, []).append(Reply(row.body, row.reddit_score))
+        return replies
+
+    def typical_threads(
         self, ids: Sequence[str], centroid: Sequence[float], limit: int
     ) -> list[TypicalPost]:
         query = (
-            select(Post.source_id, Post.author, Post.body)
-            .where(Post.source_id.in_(ids))
-            .order_by(Post.embedding.cosine_distance(centroid))
+            select(Thread.source_id, Post.author, Post.body)
+            .join(Post, Post.source_id == Thread.source_id)
+            .where(Thread.source_id.in_(ids))
+            .order_by(Thread.embedding.cosine_distance(centroid))
             .limit(limit)
         )
         with self.engine.connect() as connection:
@@ -66,10 +96,6 @@ class TaggingStore:
             CandidateTopic(r.id, r.label, r.description, round(r.similarity, 3), r.recent)
             for r in rows
         ]
-
-    def texts(self, ids: Sequence[str]) -> list[str]:
-        with self.engine.connect() as connection:
-            return list(connection.scalars(select(Post.body).where(Post.source_id.in_(ids))))
 
     def search_posts(
         self, embedding: Sequence[float], first_day: date, last_day: date, limit: int
@@ -117,6 +143,18 @@ class TaggingStore:
 
     # --- writing -------------------------------------------------------------------------
 
+    def save_thread_embeddings(self, embeddings: dict[str, list[float]]) -> None:
+        if not embeddings:
+            return
+        statement = (
+            update(Thread)
+            .where(Thread.source_id == bindparam("thread_id"))
+            .values(embedding=bindparam("encoding"))
+        )
+        rows = [{"thread_id": i, "encoding": list(v)} for i, v in embeddings.items()]
+        with self.engine.begin() as connection:
+            connection.execute(statement, rows)
+
     def record_retrievals(self, post_ids: Sequence[str], run: str, agent: str, tool: str) -> None:
         rows = [{"post_source_id": i, "run": run, "agent": agent, "tool": tool} for i in post_ids]
         with self.engine.begin() as connection:
@@ -125,25 +163,17 @@ class TaggingStore:
     def apply_decisions(
         self, day: date, settled: list[DecidedCluster], keywords: dict[str, list[str]]
     ) -> dict[str, int]:
-        """All of a day's decisions in one transaction. Only posts still waiting for a tag are
-        changed; posts already tagged in the window were there as anchors."""
+        """All of a day's decisions in one transaction."""
         with self.engine.begin() as connection:
             applier = _DecisionApplier(connection, day, keywords)
             for item in settled:
                 applier.apply(item)
         return applier.counts
 
-    def delete_expired_pending(self, before: date) -> int:
-        """Posts that joined no cluster in their three days are noise (atlas OPEN-14)."""
-        statement = delete(Post).where(
-            Post.status == "pending", Post.created_at < _start_of(before)
-        )
-        with self.engine.begin() as connection:
-            return connection.execute(statement).rowcount
-
     def rebuild_engagement(self, first_day: date, last_day: date) -> None:
-        """Recomputes each topic's daily engagement for these days from the posts."""
-        days = {"first": first_day, "last": last_day}
+        """Recomputes each topic's daily engagement for these days from the posts, each post
+        counting for its thread's topic."""
+        days = {"first": first_day, "last": last_day, "revival": REVIVAL_DAYS}
         with self.engine.begin() as connection:
             connection.execute(text(CLEAR_ENGAGEMENT), days)
             connection.execute(text(COUNT_ENGAGEMENT), days)
@@ -151,14 +181,21 @@ class TaggingStore:
 
 class _DecisionApplier:
     """Applies one day's decisions inside one transaction, remembering the topics it mints so
-    a merged mint can join them."""
+    a merged mint can join them. A thread decided on its first day is decided again on its
+    third; the third day's decision is final."""
 
     def __init__(self, connection: Connection, day: date, keywords: dict[str, list[str]]):
         self.connection = connection
         self.day = day
         self.keywords = keywords
-        self.minted_topic_ids: dict[str, int] = {}  # cluster name -> its new topic
-        self.counts = {"attached": 0, "minted": 0, "noise_deleted": 0, "left_waiting": 0}
+        self.minted_topic_ids: dict[str, int] = {}  # group name -> its new topic
+        self.counts = {
+            "attached": 0,
+            "minted": 0,
+            "noise_waiting": 0,
+            "noise_deleted": 0,
+            "left_waiting": 0,
+        }
 
     def apply(self, item: DecidedCluster) -> None:
         """Relies on settle_mints' order: a merged mint comes after the mint it joins."""
@@ -173,28 +210,49 @@ class _DecisionApplier:
             self.attach(item, self.mint_topic(item))
 
     def discard_as_noise(self, item: DecidedCluster) -> None:
-        self._record(item, topic_id=None)
-        deleted = self.connection.execute(delete(Post).where(*_waiting(item))).rowcount
-        self.counts["noise_deleted"] += deleted
+        """Noise on a thread's third day deletes it with its posts; on its first day the
+        thread waits for its third."""
+        decision_id = self._record(item, topic_id=None)
+        on_third_day = and_(_members(item), _on_or_after_third_day(self.day))
+        self.counts["noise_deleted"] += self._delete_threads(on_third_day)
+        waiting = (
+            update(Thread)
+            .where(_members(item))
+            .values(stage="decided_once", cluster_decision_id=decision_id)
+        )
+        self.counts["noise_waiting"] += self.connection.execute(waiting).rowcount
 
     def attach(self, item: DecidedCluster, topic_id: int | None) -> None:
-        """Tags the cluster's waiting posts with the topic. With no topic (the agent named one
-        that doesn't exist) the posts keep waiting for another day's decision."""
+        """Tags the group's threads with the topic. With no topic (the agent named one that
+        doesn't exist) the threads keep waiting for another decision."""
         decision_id = self._record(item, topic_id)
         if topic_id is None:
-            still_waiting = select(func.count()).select_from(Post).where(*_waiting(item))
-            self.counts["left_waiting"] += self.connection.scalar(still_waiting)
+            members = select(func.count()).select_from(Thread).where(_members(item))
+            self.counts["left_waiting"] += self.connection.scalar(members)
             return
-        statement = _tag_posts(_waiting(item), topic_id, decision_id, item)
+        topics_left = self._current_topics(item) - {topic_id}
+        statement = _tag_threads(_members(item), topic_id, decision_id, self.day)
         self.counts["attached"] += self.connection.execute(statement).rowcount
-        self.connection.execute(_refresh_topic(topic_id, self.day))
+        last_seen_today = func.greatest(Topic.last_seen, self.day)
+        self.connection.execute(_refresh_topic(topic_id).values(last_seen=last_seen_today))
+        for left in topics_left:
+            self.connection.execute(_refresh_topic(left))
 
     def mint_topic(self, item: DecidedCluster) -> int:
-        """Creates the new topic and remembers it for any later cluster merged into it."""
+        """Creates the new topic and remembers it for any later group merged into it."""
         topic_id = self.connection.scalar(_new_topic(self.day, item, self.keywords))
         self.minted_topic_ids[item.brief.name] = topic_id
         self.counts["minted"] += 1
         return topic_id
+
+    def _delete_threads(self, which: ColumnElement[bool]) -> int:
+        doomed = select(Thread.source_id).where(which)
+        self.connection.execute(delete(Post).where(Post.thread_source_id.in_(doomed)))
+        return self.connection.execute(delete(Thread).where(which)).rowcount
+
+    def _current_topics(self, item: DecidedCluster) -> set[int]:
+        query = select(Thread.topic_id).where(_members(item), Thread.topic_id.is_not(None))
+        return set(self.connection.scalars(query))
 
     def _twin_topic(self, item: DecidedCluster) -> int:
         if item.merged_into not in self.minted_topic_ids:
@@ -212,9 +270,37 @@ class PostNotFound(Exception):
     pass
 
 
-def _waiting(item: DecidedCluster) -> list:
-    """The cluster's posts still waiting for a tag; posts already tagged were only anchors."""
-    return [Post.source_id.in_(item.brief.member_ids), Post.status == "pending"]
+def _due_on(day: date) -> ColumnElement[bool]:
+    return or_(
+        and_(_started_on(day), Thread.stage == "new"),
+        and_(_started_on(window_start(day)), Thread.stage.in_(["new", "decided_once"])),
+    )
+
+
+def _started_on(day: date) -> ColumnElement[bool]:
+    return and_(
+        Thread.created_at >= _start_of(day), Thread.created_at < _start_of(day + timedelta(days=1))
+    )
+
+
+def _on_or_after_third_day(day: date) -> ColumnElement[bool]:
+    """Threads started on or before the first of the three days ending today."""
+    return Thread.created_at < _start_of(window_start(day) + timedelta(days=1))
+
+
+def _members(item: DecidedCluster) -> ColumnElement[bool]:
+    return Thread.source_id.in_(item.brief.member_ids)
+
+
+def _tag_threads(
+    members: ColumnElement[bool], topic_id: int, decision_id: int, day: date
+) -> Update:
+    stage = case((_on_or_after_third_day(day), "settled"), else_="decided_once")
+    return (
+        update(Thread)
+        .where(members)
+        .values(topic_id=topic_id, cluster_decision_id=decision_id, stage=stage)
+    )
 
 
 def _new_topic(day: date, item: DecidedCluster, keywords: dict[str, list[str]]) -> Insert:
@@ -248,35 +334,26 @@ def _new_decision(day: date, item: DecidedCluster, topic_id: int | None) -> Inse
     )
 
 
-def _tag_posts(waiting: list, topic_id: int, decision_id: int, item: DecidedCluster) -> Update:
-    closeness = 1 - Post.embedding.cosine_distance(list(item.brief.centroid))
-    return (
-        update(Post)
-        .where(*waiting)
-        .values(
-            status="tagged",
-            topic_id=topic_id,
-            cluster_decision_id=decision_id,
-            topic_similarity=closeness,
-        )
+def _refresh_topic(topic_id: int) -> Update:
+    """The topic's centre moves to the average of its threads; a topic left with no threads
+    keeps the centre it had."""
+    average = (
+        select(func.avg(Thread.embedding)).where(Thread.topic_id == topic_id).scalar_subquery()
     )
-
-
-def _refresh_topic(topic_id: int, day: date) -> Update:
-    """The topic's centre moves to the average of its posts; it was last seen today."""
-    average = select(func.avg(Post.embedding)).where(Post.topic_id == topic_id).scalar_subquery()
     return (
         update(Topic)
         .where(Topic.id == topic_id)
-        .values(centroid=average, last_seen=func.greatest(Topic.last_seen, day))
+        .values(centroid=func.coalesce(average, Topic.centroid))
     )
 
 
 def _recent_posts():
-    window_start = Topic.last_seen - RECENT_DAYS
+    recent_start = Topic.last_seen - RECENT_DAYS
     return (
         select(func.count())
-        .where(Post.topic_id == Topic.id, func.date(Post.created_at) > window_start)
+        .select_from(Post)
+        .join(Thread, Thread.source_id == Post.thread_source_id)
+        .where(Thread.topic_id == Topic.id, func.date(Post.created_at) > recent_start)
         .scalar_subquery()
         .label("recent")
     )
@@ -306,35 +383,43 @@ def _hit(row) -> dict:
 
 CLEAR_ENGAGEMENT = "DELETE FROM topic_daily_engagement WHERE day BETWEEN :first AND :last"
 
-# One row per topic per day: posts and comments written that day, agreeing replies that day
-# (even to older posts, so a day can have upvotes and no new posts), distinct people,
-# threads started that day, and questions started that day that nobody has answered.
+# One row per topic per day, each post counting for its thread's topic: posts and comments
+# written that day, agreeing replies that day (even to older posts, so a day can have upvotes
+# and no new posts), distinct people, threads started that day, threads older than :revival
+# days that got comments that day, and questions started that day that nobody has answered.
 COUNT_ENGAGEMENT = """
 WITH items AS (
-    SELECT p.topic_id, (p.created_at AT TIME ZONE 'UTC')::date AS day, p.kind, p.author,
+    SELECT t.topic_id, (p.created_at AT TIME ZONE 'UTC')::date AS day, p.kind, p.author,
+           p.thread_source_id, (t.created_at AT TIME ZONE 'UTC')::date AS thread_day,
            p.kind = 'post' AND strpos(p.body, '?') > 0
              AND NOT EXISTS (SELECT 1 FROM posts r WHERE r.parent_source_id = p.source_id)
              AS unanswered
-    FROM posts p
-    WHERE p.status = 'tagged'
+    FROM posts p JOIN threads t ON t.source_id = p.thread_source_id
+    WHERE t.topic_id IS NOT NULL
       AND (p.created_at AT TIME ZONE 'UTC')::date BETWEEN :first AND :last
 ), counted AS (
     SELECT topic_id, day,
            count(*) FILTER (WHERE kind = 'post') AS posts,
            count(*) FILTER (WHERE kind = 'comment') AS comments,
            count(DISTINCT author) AS unique_authors,
+           count(DISTINCT thread_source_id)
+             FILTER (WHERE kind = 'comment' AND day - thread_day > :revival) AS revived_threads,
            count(*) FILTER (WHERE unanswered) AS unanswered_questions
     FROM items GROUP BY topic_id, day
 ), votes AS (
-    SELECT q.topic_id, u.day, sum(u.count) AS upvotes
-    FROM post_upvotes_daily u JOIN posts q ON q.source_id = u.post_source_id
-    WHERE q.status = 'tagged' AND u.day BETWEEN :first AND :last
-    GROUP BY q.topic_id, u.day
+    SELECT t.topic_id, u.day, sum(u.count) AS upvotes
+    FROM post_upvotes_daily u
+    JOIN posts q ON q.source_id = u.post_source_id
+    JOIN threads t ON t.source_id = q.thread_source_id
+    WHERE t.topic_id IS NOT NULL AND u.day BETWEEN :first AND :last
+    GROUP BY t.topic_id, u.day
 )
 INSERT INTO topic_daily_engagement
-    (topic_id, day, posts, comments, upvotes, unique_authors, new_threads, unanswered_questions)
+    (topic_id, day, posts, comments, upvotes, unique_authors, new_threads, revived_threads,
+     unanswered_questions)
 SELECT coalesce(c.topic_id, v.topic_id), coalesce(c.day, v.day),
        coalesce(c.posts, 0), coalesce(c.comments, 0), coalesce(v.upvotes, 0),
-       coalesce(c.unique_authors, 0), coalesce(c.posts, 0), coalesce(c.unanswered_questions, 0)
+       coalesce(c.unique_authors, 0), coalesce(c.posts, 0), coalesce(c.revived_threads, 0),
+       coalesce(c.unanswered_questions, 0)
 FROM counted c FULL OUTER JOIN votes v ON v.topic_id = c.topic_id AND v.day = c.day
 """

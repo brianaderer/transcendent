@@ -23,7 +23,8 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
   production builds a cluster's; `tools_for(case)` gives the production `TaggingTools`
   reading the store, as on the case's day (`case_day(case)`). The store keeps the embedder
   it was given, and embeds everything once when it is built.
-  `thread_text(thread)` is a thread as one text: its post and its five best-scored comments.
+  Each thread is embedded as one text with tagging's `thread_text`: its post and its five
+  best-scored comments.
 - `scoring.judge(case, decision) -> Verdict` — right, or which mistake: wrong topic, a
   duplicate of an existing topic, a real conversation called noise, a new subject attached
   to an old topic, noise kept, or no decision.
@@ -60,7 +61,7 @@ Cases run one after another, so the time per decision is not affected by other d
 
 ## Uses
 [tagging](tagging.md) (`ToolLoopDecider`, `NoDecision`, `TaggingTools`, `Decision`, `Action`,
-`ClusterBrief`, `TypicalPost`, `CandidateTopic`, `connect_model`, and the brief sizes
+`ClusterBrief`, `TypicalPost`, `CandidateTopic`, `connect_model`, `thread_text`, and the brief sizes
 `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`),
 [database](database.md) (`PostNotFound` and the excerpt lengths from `tagging_store`),
 [ingestion](ingestion.md) (`load_embedder`, the real embedding model),

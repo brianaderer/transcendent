@@ -68,7 +68,7 @@ which the `setup` service needs.
   `model-cache` volume.
 - The backend's dependencies are pinned in `backend/pyproject.toml` and `backend/uv.lock`;
   among them `fastembed` runs the embedding model, `httpx` reads the archive,
-  `scikit-learn` clusters posts (HDBSCAN), and `langgraph`, `langchain-core` and
+  `scikit-learn` groups threads by meaning (agglomerative clustering), and `langgraph`, `langchain-core` and
   `langchain-openai` run the tagging agent against OpenRouter.
 - The first start needs an internet connection (the worker fetches from the Arctic Shift
   archive, downloads the embedding model, and calls the tagging model on OpenRouter) and

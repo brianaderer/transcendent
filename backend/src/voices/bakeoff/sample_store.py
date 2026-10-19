@@ -11,11 +11,8 @@ from voices.bakeoff.sample import Case, Comment, SampleData, SampleThread
 from voices.db.tagging_store import EXCERPT_CHARACTERS, TYPICAL_POST_CHARACTERS, PostNotFound
 from voices.tagging.day_tagging import CANDIDATE_TOPICS_SHOWN, TYPICAL_POSTS_SHOWN
 from voices.tagging.decisions import CandidateTopic, ClusterBrief, TypicalPost
+from voices.tagging.threads import thread_text
 from voices.tagging.tools import TaggingTools
-
-# A thread is grouped as one text: its post and its best-scored replies (atlas OPEN-29).
-TOP_COMMENTS_IN_THREAD_TEXT = 5
-THREAD_TEXT_CHARACTERS = 3000
 
 
 class Embedder(Protocol):
@@ -32,7 +29,7 @@ class SampleStore:
         self._posts = _posts_by_id(sample)
         self._post_vectors = self._embedded({i: post["text"] for i, post in self._posts.items()})
         self._thread_vectors = self._embedded(
-            {i: thread_text(thread) for i, thread in sample.threads.items()}
+            {i: thread_text(thread.body, thread.comments) for i, thread in sample.threads.items()}
         )
         self._topic_vectors = self._embedded(
             {topic.topic_id: f"{topic.label}: {topic.description}" for topic in sample.topics}
@@ -109,11 +106,6 @@ class SampleStore:
             )
             for topic_id, similarity in _closest(self._topic_vectors, embedding, limit)
         ]
-
-
-def thread_text(thread: SampleThread) -> str:
-    best = sorted(thread.comments, key=lambda c: -c.score)[:TOP_COMMENTS_IN_THREAD_TEXT]
-    return "\n\n".join([thread.body, *(c.body for c in best)])[:THREAD_TEXT_CHARACTERS]
 
 
 def _posts_by_id(sample: SampleData) -> dict[str, dict]:

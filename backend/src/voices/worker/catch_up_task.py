@@ -88,7 +88,7 @@ def _catch_up_runner() -> Callable[[datetime], None]:
         api_key=settings.openrouter_api_key,
         model_name=settings.tagging_model_name,
     )
-    tagging = DayTagging(tagging_store, agent.decide, emit)
+    tagging = DayTagging(tagging_store, embedder, agent.decide, emit)
     return CatchUp(store, partial(_load_and_tag, ingestion, tagging), emit).run
 
 

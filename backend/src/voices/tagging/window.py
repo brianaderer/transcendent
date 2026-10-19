@@ -1,10 +1,12 @@
-"""The three-day window a post has to fall into a cluster (atlas OPEN-14)."""
+"""A thread's three days: it is decided on its first day and again on its third (atlas
+OPEN-29), and the agent's searches look across the three days ending today."""
 
 from datetime import date, timedelta
 
-LOOKAHEAD_DAYS = 3
+THREAD_DAYS = 3
 
 
 def window_start(day: date) -> date:
-    """The first day of the window that ends on `day`."""
-    return day - timedelta(days=LOOKAHEAD_DAYS - 1)
+    """The first of the three days ending on `day`: the day the threads decided a second
+    time today were started."""
+    return day - timedelta(days=THREAD_DAYS - 1)

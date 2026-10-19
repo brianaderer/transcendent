@@ -12,7 +12,6 @@ from sqlalchemy import (
     CheckConstraint,
     Date,
     DateTime,
-    Float,
     ForeignKey,
     Integer,
     Text,
@@ -29,11 +28,22 @@ class Base(DeclarativeBase):
 
 
 class Thread(Base):
+    """A post and its comments: the unit that is encoded, grouped and tagged (atlas OPEN-29).
+    Its comments take its topic, including comments that arrive later."""
+
     __tablename__ = "threads"
+    __table_args__ = (
+        CheckConstraint("stage IN ('new', 'decided_once', 'settled')", name="thread_stage"),
+    )
 
     source_id: Mapped[str] = mapped_column(Text, primary_key=True)
     title: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
+    topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
+    cluster_decision_id: Mapped[int | None] = mapped_column(ForeignKey("cluster_decisions.id"))
+    # new: not decided yet; decided_once: decided on its first day; settled: decided on its third
+    stage: Mapped[str] = mapped_column(Text, server_default="new")
 
 
 class Topic(Base):
@@ -65,13 +75,10 @@ class ClusterDecision(Base):
 
 
 class Post(Base):
-    """A post or a comment, embedded whole, once."""
+    """A post or a comment, embedded whole, once. Its topic is its thread's."""
 
     __tablename__ = "posts"
-    __table_args__ = (
-        CheckConstraint("kind IN ('post', 'comment')", name="post_kind"),
-        CheckConstraint("status IN ('pending', 'tagged')", name="post_status"),
-    )
+    __table_args__ = (CheckConstraint("kind IN ('post', 'comment')", name="post_kind"),)
 
     source_id: Mapped[str] = mapped_column(Text, primary_key=True)
     thread_source_id: Mapped[str] = mapped_column(ForeignKey("threads.source_id"))
@@ -83,10 +90,6 @@ class Post(Base):
     upvotes: Mapped[int] = mapped_column(Integer, server_default="0")  # agreeing replies
     parent_source_id: Mapped[str | None] = mapped_column(Text)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
-    status: Mapped[str] = mapped_column(Text, server_default="pending")
-    topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
-    topic_similarity: Mapped[float | None] = mapped_column(Float)
-    cluster_decision_id: Mapped[int | None] = mapped_column(ForeignKey("cluster_decisions.id"))
 
 
 class PostUpvotesDaily(Base):
@@ -109,6 +112,7 @@ class TopicDailyEngagement(Base):
     upvotes: Mapped[int] = mapped_column(Integer, server_default="0")
     unique_authors: Mapped[int] = mapped_column(Integer, server_default="0")
     new_threads: Mapped[int] = mapped_column(Integer, server_default="0")
+    revived_threads: Mapped[int] = mapped_column(Integer, server_default="0")
     unanswered_questions: Mapped[int] = mapped_column(Integer, server_default="0")
 
 

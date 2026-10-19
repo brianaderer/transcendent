@@ -22,12 +22,13 @@ NO_LOOK_UPS_LEFT = f"No look-ups left; decide now by calling {DECIDE}."
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.
 
-You are shown one cluster: posts from the last three days that an algorithm grouped because
-they mean similar things, and the existing topics closest to it. Decide one of:
-- attach: the posts continue one of the existing topics shown (give its topic_id);
+You are shown one group: threads (a post and its replies) from the last three days that an
+algorithm grouped because they mean similar things, often a single thread, and the existing
+topics closest to it. Decide one of:
+- attach: the threads continue one of the existing topics shown (give its topic_id);
 - mint: they are a real conversation that no existing topic covers (give a short label and a
-  one- or two-sentence description that would fit next week's posts on it too);
-- noise: they share no real subject (jokes, greetings, unrelated one-liners).
+  one- or two-sentence description that would fit next week's threads on it too);
+- noise: no real conversation (spam, empty posts, jokes), or threads sharing no subject.
 
 Prefer attach when an existing topic fits; a topic is a subject, not a single thread. You may
 use the tools to read more before deciding, then call Decision exactly once."""
@@ -37,7 +38,8 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "search",
-            "description": "Find posts from these three days closest in meaning to a term.",
+            "description": "Find posts and comments from these three days closest in meaning "
+            "to a term.",
             "parameters": {
                 "type": "object",
                 "properties": {"term": {"type": "string"}},
@@ -227,7 +229,7 @@ def render_brief(brief: ClusterBrief) -> str:
     return json.dumps(
         {
             "day": brief.day,
-            "posts_in_cluster": len(brief.member_ids),
+            "threads_in_group": len(brief.member_ids),
             "typical_posts": [vars(post) for post in brief.typical_posts],
             "nearest_existing_topics": [vars(topic) for topic in brief.candidates],
         },
