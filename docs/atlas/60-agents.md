@@ -111,7 +111,16 @@ benchmarked; then a bake-off between Claude Haiku 5.5 and Claude Sonnet 5.5.
 - **What makes it a test:** it fails if the model the app is set to use for tagging gets fewer than eight cases in ten right, so a later model change can't quietly make tagging worse. The scoring and the case reader have their own offline tests with stand-in models.
 - **Cost of one bake-off:** about $1 for Sonnet and a few cents for Haiku *(estimate)*.
 
+*Measured:*
+
+- **First results (measured 2026-10-19, 25 cases, one run each):** Haiku got 21 right (84%), Sonnet 22 (88%). Haiku cost $0.011 for the run and Sonnet $0.17, fifteen times more; both took about 2.4 seconds a decision and looked something up in only one decision in five. Results page: `docs/benchmarks/tagging-models.md`.
+- **Where they differed:** only one case: a group of scenic sailing photos, which Sonnet made a new topic and Haiku called noise. Noise is deleted, so that is the costlier kind of mistake.
+- **Where both were marked wrong:** the same three cases, and in each the label may be what's wrong: a regatta-poster debate and an America's Cup keepsake both went to the racing topic, and a "finally bought a boat" post whose replies are about rigging went to sail handling. These labels are Claude's and want Brian's review.
+- **What it means for cost:** about $0.0005 a decision on Haiku and $0.007 on Sonnet, so roughly $1 for an eight-week first start on Haiku, or $15 on Sonnet *(from these 25 decisions; real days may look things up more)*.
+- **Found by the first run:** Claude Sonnet 5.5 refuses a forced tool choice, so the old last turn, which forced the decision, failed on Sonnet. The last turn now offers only the decision and asks for it; both models run the same code.
+
 ## Open in this draft
 
 - `?` The floor the tagging model must reach (proposed: eight cases in ten right), and
-  whether Brian reviews the cases' right answers before they're trusted.
+  whether Brian reviews the cases' right answers before they're trusted; three of them
+  (above) look like labelling mistakes rather than model mistakes.

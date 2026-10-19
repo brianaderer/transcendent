@@ -197,7 +197,9 @@ flowchart TB
   twenty a day each time, so about forty calls a day and around two thousand for the
   eight-week history *(estimate, not yet measured)*. On Claude Haiku 5.5 with at most
   three look-ups (Brian, 2026-10-18), that is about a fifth of a cent a call, so under
-  $5 for the eight weeks *(estimate, not yet measured)*.
+  $5 for the eight weeks *(estimate, not yet measured)*. The bake-off measured about
+  $0.0005 a decision on Haiku (plate [60](../60-agents.md)), so roughly $1 for the eight
+  weeks *(measured on 25 sample decisions, not yet on real days)*.
 - **Tests** replace the LLM and the embedder with stand-ins (`CLAUDE.md` §7).
 
 ## Where similarity search is used
