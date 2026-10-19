@@ -110,7 +110,7 @@ def create_app(services: ApiServices) -> FastAPI:
         """How far the catch-up has got through the history."""
         return {**services.ingestion_status(), "days_wanted": HISTORY_DAYS}
 
-    @app.get("/api/streams/{stream}/events")
+    @app.get(LIVE_EVENTS_PATH + "{stream}/events")
     def stream_events(stream: str) -> StreamingResponse:
         """Live events as server-sent events (atlas plate 41)."""
         if stream not in STREAMS and not is_run_stream(stream):

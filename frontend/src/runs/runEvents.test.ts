@@ -30,8 +30,8 @@ test("a version is done once its prediction is", () => {
     STARTING,
   );
 
-  expect(progress.lanes.A.done).toBe(true);
-  expect(progress.lanes.B.done).toBe(false);
+  expect(progress.lanes.A.stage).toBe("done");
+  expect(progress.lanes.B.stage).toBe("waiting");
 });
 
 test("measuring until the run finishes; or failed with the reason", () => {
@@ -57,13 +57,35 @@ test("each lane knows its stage and how many tools it has called", () => {
   const lane = events.reduce(folded, STARTING).lanes.B;
 
   expect(lane.stage).toBe("predict");
-  expect(lane.toolCalls).toBe(2);
+  expect(lane.toolCallsThisStage).toBe(0);
+});
+
+test("a new step's tool calls start from zero", () => {
+  const call = {
+    type: "tool.called",
+    version: "A",
+    phase: "write",
+    tool: "read_posts",
+    arguments: {},
+  };
+  const events = [
+    { type: "step.started", version: "A", phase: "write" },
+    call,
+    call,
+    call,
+    { type: "step.started", version: "A", phase: "predict" },
+    { ...call, phase: "predict" },
+  ];
+
+  const lane = events.reduce(folded, STARTING).lanes.A;
+
+  expect(laneProgress(lane).label).toBe("Predicting the range · 1 tool call");
 });
 
 test("a lane's bar fills from waiting through writing and predicting to done", () => {
   const waiting = laneProgress(STARTING.lanes.A);
-  const writing = laneProgress({ ...STARTING.lanes.A, stage: "write", toolCalls: 3 });
-  const predicting = laneProgress({ ...STARTING.lanes.A, stage: "predict", toolCalls: 0 });
+  const writing = laneProgress({ ...STARTING.lanes.A, stage: "write", toolCallsThisStage: 3 });
+  const predicting = laneProgress({ ...STARTING.lanes.A, stage: "predict", toolCallsThisStage: 0 });
   const done = laneProgress({ ...STARTING.lanes.A, stage: "done" });
 
   expect(waiting).toEqual({ percent: 0, label: "Waiting to start" });

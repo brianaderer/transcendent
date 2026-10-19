@@ -7,14 +7,14 @@ import type { LiveEvent } from "../useLiveEvents";
 import type { Version } from "./versions";
 
 export type Stage = "waiting" | "write" | "predict" | "done";
-export type Lane = { lines: string[]; done: boolean; stage: Stage; toolCalls: number };
+export type Lane = { lines: string[]; stage: Stage; toolCallsThisStage: number };
 export type Progress = {
   lanes: Record<Version, Lane>;
   measuring: boolean;
   failed: string | null;
 };
 
-const NEW_LANE: Lane = { lines: [], done: false, stage: "waiting", toolCalls: 0 };
+const NEW_LANE: Lane = { lines: [], stage: "waiting", toolCallsThisStage: 0 };
 
 export const STARTING: Progress = {
   lanes: { A: { ...NEW_LANE }, B: { ...NEW_LANE } },
@@ -43,7 +43,7 @@ export function folded(progress: Progress, event: LiveEvent): Progress {
     case "measurement.done":
       return { ...progress, measuring: true };
     default:
-      return withLine(progress, event);
+      return withEventInItsLane(progress, event);
   }
 }
 
@@ -55,25 +55,37 @@ export function whyTheRunStopped(progress: Progress, runState?: RunState): strin
   return runState.reason ?? UNEXPLAINED_FAILURE;
 }
 
-function withLine(progress: Progress, event: LiveEvent): Progress {
+function withEventInItsLane(progress: Progress, event: LiveEvent): Progress {
   const version = event.version as Version | undefined;
   const line = lineFor(event);
   if (!version || !line) return progress;
   const lane = progress.lanes[version];
-  const done = lane.done || (event.type === "step.finished" && event.phase === "predict");
-  const moved = {
+  const stage = stageAfter(lane.stage, event);
+  const moved: Lane = {
     lines: [...lane.lines, line],
-    done,
-    stage: done ? "done" : stageAfter(lane.stage, event),
-    toolCalls: lane.toolCalls + (event.type === "tool.called" ? 1 : 0),
-  } as Lane;
+    stage,
+    toolCallsThisStage: toolCallsIn(stage, lane, event),
+  };
   return { ...progress, lanes: { ...progress.lanes, [version]: moved } };
 }
 
 function stageAfter(stage: Stage, event: LiveEvent): Stage {
-  const started =
-    event.type === "step.started" && (event.phase === "write" || event.phase === "predict");
-  return started ? (event.phase as Stage) : stage;
+  if (stage === "done" || isPredictionFinished(event)) return "done";
+  if (event.type === "step.started" && isWorkingStage(event.phase)) return event.phase;
+  return stage;
+}
+
+function toolCallsIn(stage: Stage, lane: Lane, event: LiveEvent): number {
+  const before = stage === lane.stage ? lane.toolCallsThisStage : 0;
+  return before + (event.type === "tool.called" ? 1 : 0);
+}
+
+function isPredictionFinished(event: LiveEvent): boolean {
+  return event.type === "step.finished" && event.phase === "predict";
+}
+
+function isWorkingStage(phase: unknown): phase is "write" | "predict" {
+  return phase === "write" || phase === "predict";
 }
 
 /** Where a lane's bar stands: each phase's share of the bar fills with its tool calls, up to the
@@ -81,9 +93,9 @@ function stageAfter(stage: Stage, event: LiveEvent): Stage {
 export function laneProgress(lane: Lane): { percent: number; label: string } {
   if (lane.stage === "done") return { percent: 100, label: "Done" };
   if (lane.stage === "waiting") return { percent: 0, label: "Waiting to start" };
-  const within = Math.min(lane.toolCalls, TOOL_CALL_CAP) / TOOL_CALL_CAP;
+  const within = Math.min(lane.toolCallsThisStage, TOOL_CALL_CAP) / TOOL_CALL_CAP;
   const percent = Math.round(PHASE_START[lane.stage] + within * PHASE_SHARE);
-  const calls = `${lane.toolCalls} tool call${lane.toolCalls === 1 ? "" : "s"}`;
+  const calls = `${lane.toolCallsThisStage} tool call${lane.toolCallsThisStage === 1 ? "" : "s"}`;
   return { percent, label: `${PHASE_NAMES[lane.stage]} · ${calls}` };
 }
 
