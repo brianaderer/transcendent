@@ -1,4 +1,4 @@
-from voices.ingestion.embedder import EMBED_BATCH_SIZE, NomicEmbedder
+from voices.ingestion.embedder import BATCH_TEXT_BUDGET, MAX_BATCH, NomicEmbedder
 
 
 class EchoModel:
@@ -6,10 +6,12 @@ class EchoModel:
 
     def __init__(self):
         self.seen = []
+        self.batches = []
 
     def embed(self, texts, batch_size):
+        assert batch_size == len(texts)
         self.seen += texts
-        self.batch_size = batch_size
+        self.batches.append(list(texts))
         return [[float(len(text)), 2.0] for text in texts]
 
 
@@ -38,7 +40,7 @@ def test_replies_checked_for_agreement_are_embedded_for_classification():
     assert model.seen == ["classification: +1"]
 
 
-def test_texts_are_embedded_in_small_batches_of_similar_length_and_returned_in_order():
+def test_texts_are_embedded_shortest_first_and_returned_in_order():
     model = EchoModel()
     texts = ["a much longer reply about reefing", "+1", "medium length reply"]
 
@@ -46,4 +48,21 @@ def test_texts_are_embedded_in_small_batches_of_similar_length_and_returned_in_o
 
     assert model.seen == sorted(model.seen, key=len)
     assert [v[0] for v in vectors] == [float(len("search_document: " + t)) for t in texts]
-    assert model.batch_size == EMBED_BATCH_SIZE
+
+
+def test_a_batch_never_holds_more_text_than_the_budget_unless_one_text_is_longer():
+    model = EchoModel()
+    long_post = "x" * (BATCH_TEXT_BUDGET + 10)
+
+    NomicEmbedder(model).embed_documents(["short"] * 3 + [long_post])
+
+    assert all(sum(map(len, b)) <= BATCH_TEXT_BUDGET for b in model.batches if len(b) > 1)
+    assert [len(b) for b in model.batches] == [3, 1]
+
+
+def test_short_texts_go_at_most_the_batch_limit_at_a_time():
+    model = EchoModel()
+
+    NomicEmbedder(model).embed_documents(["+1"] * (MAX_BATCH + 1))
+
+    assert [len(b) for b in model.batches] == [MAX_BATCH, 1]

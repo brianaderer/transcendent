@@ -57,4 +57,4 @@ the worker's own start-up queue `voices.catch_up`.
 `REDIS_URL`, `DATABASE_URL`, `MODEL_DIR`, `LOG_DIR`, `SERVICE_NAME`, `OPENROUTER_API_KEY`,
 `MODEL_NAME`. Fixed in code: `RETRY_FAILED_CATCH_UP_SECONDS = 600`,
 `LOCK_SECONDS = 12 hours`. Beat keeps its schedule
-file in `/tmp` inside its container. The worker uses about 2 GB while embedding.
+file in `/tmp` inside its container. The worker uses under 1 GB while embedding.

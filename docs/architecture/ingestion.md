@@ -66,12 +66,15 @@ minutes), and saving it again adds nothing.
   never double-counts and can also take upvotes away.
 - **Embedding**: posts are embedded whole as `search_document:`; the tagging agent's search
   terms are embedded as `search_query:`; agreement checks use `classification:`, as nomic-embed-text
-  expects. Texts go in batches of 8, shortest first: memory grows with batch size times the
-  longest text, and the library's default of 256 ran Docker out of memory.
+  expects. Texts go shortest first, in batches of at most 4,000 characters and 32 texts
+  (a longer text goes alone): the model's memory grows with batch size times the square of
+  the longest text, and the library keeps its high point. Fixed batches of 8 climbed past
+  8 GB over a first start in a boot test; length-sized batches stay under 1 GB and are about
+  20% faster (measured on 3,600 real r/sailing posts).
 
 **Measured on a laptop, first start, loading only (before tagging was added):** about 35–50 seconds a day, so roughly 40–45 minutes
-for the full eight weeks; around 550–600 posts and comments kept a day; the worker uses
-about 2 GB.
+for the full eight weeks; around 550–600 posts and comments kept a day; the worker then used
+about 2 GB, climbing higher; with length-sized batches it stays under 1 GB.
 
 ## Uses
 [logging](logging.md); [environment](environment.md) (`HISTORY_DAYS` from `voices.config`); the Arctic Shift archive (through `httpx`); the embedding model
@@ -89,4 +92,4 @@ with `NomicEmbedder.embed_query`).
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`
 comes from `voices.config`, shared with the API. Fixed in code: `ARCHIVE_CATCH_UP_HOURS = 6`, `PAGE_SIZE = 100`, `ERROR_TEXT_CHARACTERS = 200`,
-`ATTEMPTS = 7`, `MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `EMBED_BATCH_SIZE = 8`.
+`ATTEMPTS = 7`, `MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `BATCH_TEXT_BUDGET = 4000`, `MAX_BATCH = 32`.

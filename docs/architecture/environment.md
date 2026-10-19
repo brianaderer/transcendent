@@ -68,7 +68,7 @@ which the `setup` service needs.
   `langchain-openai` run the tagging agent against OpenRouter.
 - The first start needs an internet connection (the worker fetches from the Arctic Shift
   archive, downloads the embedding model, and calls the tagging model on OpenRouter) and
-  about 2 GB of memory for the worker.
+  about 1 GB of memory for the worker (give Docker at least 4 GB).
 - Named volumes (created as `community-voices_<name>`): `postgres-data`, `redis-data`
   (Redis writes an append-only file), `model-cache` (the embedding model's files, from
   build step 2, mounted at `/home/voices/.cache`), `logs` (mounted at `/var/log/voices`).

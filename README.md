@@ -137,7 +137,7 @@ the back end directly, open http://localhost:5173/api/health; it should show
 `"status":"ok"`.
 
 Below that, the page shows the r/sailing history loading. It may say **Waiting to start
-loading r/sailing history** for the first minute or so, while the worker downloads, once,
+loading r/sailing history** for a few seconds; the first time, the worker also downloads
 the 130 MB model that prepares posts for search. Then it reads, for example,
 **Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
 is loaded and sorted into topics. The first start fetches eight weeks of posts from the
@@ -145,7 +145,8 @@ Arctic Shift archive (a public archive of Reddit, so your computer needs an inte
 connection), prepares each one for search, and then has the AI model sort each day's posts
 into topics through OpenRouter. Fetching and preparing alone took about 40–45 minutes on a
 laptop; sorting into topics adds about ten model calls per day and hasn't been timed yet,
-so allow longer. The worker uses about 2 GB of memory while it runs. You can leave it
+so allow longer. The worker uses about 1 GB of memory while it runs; give Docker at least 4 GB in
+Docker Desktop's Settings → Resources. You can leave it
 running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are
 missing. If it reads **Loading stopped at** a date, something went wrong on that day, and
@@ -156,8 +157,8 @@ step 3 says, then run `docker compose up --build` again. Stopping and starting t
 (below) also picks up from that day. A day
 that is tried again is fetched from the start, and nothing in it is counted twice.
 
-Ignore the `Network:` address the frontend prints in the log; it's internal to Docker.
-Use http://localhost:5173.
+Ignore the `Local:` and `Network:` addresses the frontend prints in the log; they're inside
+Docker. Use http://localhost:5173 (or the `PORT` you set).
 
 To stop the app, press `Ctrl+C` in that terminal. Everything it has stored is kept
 for next time. To erase all stored data and start fresh, run
