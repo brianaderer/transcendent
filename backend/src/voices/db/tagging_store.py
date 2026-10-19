@@ -176,10 +176,12 @@ class TaggingStore:
 
     def expire_noise(self, day: date) -> int:
         """Deletes, with their posts, the threads whose third day has come that still have no
-        topic (atlas OPEN-14): what three days never placed is noise. Returns how many threads."""
+        topic (atlas OPEN-14): what three days never placed is noise. Each leaves its id in
+        noise_threads, so a comment arriving later is dropped at intake (atlas OPEN-31).
+        Returns how many threads."""
         expired = and_(_on_or_after_third_day(day), Thread.topic_id.is_(None))
         with self.engine.begin() as connection:
-            return _delete_threads(connection, expired, day)
+            return _delete_threads_as_noise(connection, expired, day)
 
     def rebuild_engagement(self, first_day: date, last_day: date) -> None:
         """Recomputes each topic's daily engagement for these days from the posts, each post
@@ -222,8 +224,8 @@ class _DecisionApplier:
             self.attach(item, self.mint_topic(item))
 
     def discard_as_noise(self, item: DecidedCluster) -> None:
-        """Noise on a thread's third day deletes it with its posts; on its first day the
-        thread waits for its third."""
+        """Noise on a thread's third day deletes it with its posts, leaving its marker in
+        noise_threads (atlas OPEN-31); on its first day the thread waits for its third."""
         decision_id = self._record(item, topic_id=None)
         self._delete_on_third_day(item)
         self._wait_for_third_day(item, decision_id)
@@ -254,7 +256,9 @@ class _DecisionApplier:
     def _delete_on_third_day(self, item: DecidedCluster) -> None:
         on_third_day = self._members_on_third_day(item)
         topics_left = self._current_topics(on_third_day)
-        self.counts["noise_deleted"] += _delete_threads(self.connection, on_third_day, self.day)
+        self.counts["noise_deleted"] += _delete_threads_as_noise(
+            self.connection, on_third_day, self.day
+        )
         self._refresh_centres(topics_left)
 
     def _wait_for_third_day(self, item: DecidedCluster, decision_id: int) -> None:
@@ -343,7 +347,9 @@ def _on_or_after_third_day(day: date) -> ColumnElement[bool]:
     return Thread.first_seen_on <= window_start(day)
 
 
-def _delete_threads(connection: Connection, threads: ColumnElement[bool], day: date) -> int:
+def _delete_threads_as_noise(
+    connection: Connection, threads: ColumnElement[bool], day: date
+) -> int:
     """Deletes the threads with their posts (and so the posts' upvotes and retrievals),
     leaving each thread's marker so its later comments are dropped (atlas OPEN-31)."""
     doomed = select(Thread.source_id).where(threads)

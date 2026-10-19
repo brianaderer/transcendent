@@ -4,10 +4,17 @@ from dataclasses import replace
 from datetime import UTC, date, datetime
 
 import pytest
-from sqlalchemy import delete, select
+from sqlalchemy import delete, insert, select
 
 from voices.config import load_settings
-from voices.db.models import EMBEDDING_DIMENSIONS, IngestedDay, Post, PostUpvotesDaily, Thread
+from voices.db.models import (
+    EMBEDDING_DIMENSIONS,
+    IngestedDay,
+    NoiseThread,
+    Post,
+    PostUpvotesDaily,
+    Thread,
+)
 from voices.db.store import connect_store
 from voices.ingestion.day import DayBatch, EmbeddedItem, NewThread
 from voices.ingestion.items import Item
@@ -31,6 +38,7 @@ def store():
         connection.execute(delete(Post).where(Post.source_id.like("test-%")))
         connection.execute(delete(Thread).where(Thread.source_id.like("test-%")))
         connection.execute(delete(IngestedDay).where(IngestedDay.day == DAY))
+        connection.execute(delete(NoiseThread).where(NoiseThread.source_id.like("test-%")))
 
 
 def batch(upvotes):
@@ -109,3 +117,10 @@ def test_redoing_a_day_that_no_longer_upvotes_a_post_takes_that_days_upvotes_awa
     store.save_day(DayBatch(DAY, [], [], {}))
 
     assert upvotes_of(store, "test-p") == (0, {})
+
+
+def test_threads_deleted_as_noise_are_found_by_their_marker(store):
+    with store.engine.begin() as connection:
+        connection.execute(insert(NoiseThread), [{"source_id": "test-n", "deleted_on": DAY}])
+
+    assert store.noise_thread_ids(["test-n", "test-p"]) == {"test-n"}

@@ -18,7 +18,7 @@ from voices.db.models import (
     Topic,
     TopicDailyEngagement,
 )
-from voices.db.store import Store, connect_store
+from voices.db.store import connect_store
 from voices.db.tagging_store import UNKNOWN_AUTHOR, PostNotFound, TaggingStore
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
@@ -135,7 +135,12 @@ def thread_exists(store, thread_id):
 
 
 def marked_as_noise(store, thread_ids):
-    return Store(store.engine).noise_thread_ids(thread_ids)
+    """Each marked thread with the day it was deleted."""
+    with store.engine.connect() as connection:
+        marked = select(NoiseThread.source_id, NoiseThread.deleted_on).where(
+            NoiseThread.source_id.in_(thread_ids)
+        )
+        return dict(connection.execute(marked).tuples().all())
 
 
 def ours(threads):
@@ -452,16 +457,19 @@ def test_a_thread_counts_as_revived_only_after_seven_days(store, days_later, rev
 def test_a_thread_deleted_as_noise_on_its_third_day_leaves_a_marker(store):
     store.apply_decisions(THIRD_DAY, [decided("noise", ["test-1"])], {})
 
-    assert marked_as_noise(store, ["test-1", "test-4"]) == {"test-1"}
+    assert marked_as_noise(store, ["test-1", "test-4"]) == {"test-1": THIRD_DAY}
 
 
 def test_an_expired_thread_leaves_a_marker(store):
     store.expire_noise(THIRD_DAY)
 
-    assert marked_as_noise(store, ["test-1", "test-4"]) == {"test-1", "test-4"}
+    assert marked_as_noise(store, ["test-1", "test-4"]) == {
+        "test-1": THIRD_DAY,
+        "test-4": THIRD_DAY,
+    }
 
 
 def test_a_thread_waiting_for_its_third_day_is_not_marked(store):
     store.apply_decisions(DAY, [decided("noise", ["test-1"])], {})
 
-    assert marked_as_noise(store, ["test-1"]) == set()
+    assert marked_as_noise(store, ["test-1"]) == {}

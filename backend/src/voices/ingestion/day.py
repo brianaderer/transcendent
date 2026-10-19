@@ -64,7 +64,7 @@ class DaySteps:
 
     fetched: list[Item]
     wanted: list[Item]
-    alive: list[Item]
+    off_noise_threads: list[Item]
     threaded: list[Item]
     agreeing: list[Item]
     batch: DayBatch
@@ -83,13 +83,13 @@ class DayIngestion:
         """Fetch, filter, fold and embed one day, save it, and say what happened."""
         fetched = self._fetch(day)
         wanted = [item for item in fetched if not is_unwanted(item)]
-        alive = self._without_noise_threads(wanted)
-        threads, threaded = self._attach_threads(alive)
+        off_noise_threads = self._without_noise_threads(wanted)
+        threads, threaded = self._attach_threads(off_noise_threads)
         agreeing, kept = self._split_agreeing(threaded)
         upvotes = self._upvotes_for_parents(agreeing, kept)
         batch = DayBatch(day, threads, self._embed(kept), upvotes)
         self.store.save_day(batch)
-        return _day_counts(DaySteps(fetched, wanted, alive, threaded, agreeing, batch))
+        return _day_counts(DaySteps(fetched, wanted, off_noise_threads, threaded, agreeing, batch))
 
     def _fetch(self, day: date) -> list[Item]:
         start = datetime.combine(day, time(), UTC)
@@ -147,8 +147,8 @@ def _day_counts(steps: DaySteps) -> dict[str, int]:
     return {
         "fetched": len(steps.fetched),
         "dropped_unwanted": len(steps.fetched) - len(steps.wanted),
-        "dropped_as_noise": len(steps.wanted) - len(steps.alive),
-        "dropped_without_thread": len(steps.alive) - len(steps.threaded),
+        "dropped_as_noise": len(steps.wanted) - len(steps.off_noise_threads),
+        "dropped_without_thread": len(steps.off_noise_threads) - len(steps.threaded),
         "upvotes": upvotes,
         "dropped_orphan_upvotes": len(steps.agreeing) - upvotes,
         "stored": len(steps.batch.posts),

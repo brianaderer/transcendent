@@ -164,7 +164,8 @@ def test_a_comment_on_a_thread_deleted_as_noise_is_dropped_and_counted():
     counts = run(archive, store)
 
     assert (store.saved.posts, store.saved.threads) == ([], [])
-    assert counts["dropped_as_noise"] == 1 and counts["dropped_without_thread"] == 0
+    assert counts["dropped_as_noise"] == 1
+    assert counts["dropped_without_thread"] == 0
 
 
 def test_a_post_deleted_as_noise_is_not_stored_again_when_its_day_is_run_again():
