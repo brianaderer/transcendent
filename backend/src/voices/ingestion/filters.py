@@ -12,13 +12,7 @@ def is_unwanted(item: Item) -> bool:
 
 
 def _is_removed(item: Item) -> bool:
-    return item.author == DELETED_AUTHOR or _own_text(item) in REMOVED_TEXT
-
-
-def _own_text(item: Item) -> str:
-    """A post's body starts with its title, which survives removal; only the text after it
-    is replaced by the removal marker."""
-    return item.body.removeprefix(item.title or "").strip()
+    return item.author == DELETED_AUTHOR or item.text.strip() in REMOVED_TEXT
 
 
 def _is_bot(author: str) -> bool:

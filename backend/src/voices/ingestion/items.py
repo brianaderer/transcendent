@@ -14,6 +14,7 @@ class Item:
     body: str
     reddit_score: int
     parent_source_id: str | None
+    text: str  # what the author wrote: a post's text without its title, a comment's body
     title: str | None = None  # posts only
 
 
@@ -29,6 +30,7 @@ def post_from_archive(raw: dict) -> Item:
         body=f"{title}\n\n{text}" if text else title,
         reddit_score=raw.get("score", 0),
         parent_source_id=None,
+        text=text,
         title=title,
     )
 
@@ -43,6 +45,7 @@ def comment_from_archive(raw: dict) -> Item:
         body=raw.get("body", ""),
         reddit_score=raw.get("score", 0),
         parent_source_id=_without_kind_prefix(raw["parent_id"]),
+        text=raw.get("body", ""),
     )
 
 

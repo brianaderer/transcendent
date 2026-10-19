@@ -60,10 +60,10 @@ minutes), and saving it again adds nothing.
   pushed, especially when two copies of the app fetch at once.
 - **Removed, deleted, and bot posts** (atlas OPEN-14, `filters.py`): an item is dropped when
   its author is `[deleted]`, when its own text is exactly `[deleted]`, `[removed]`, or
-  `[ Removed by Reddit ]`, or when its author's name ends in "bot" or is AutoModerator. A
-  post's stored body is its title followed by its text, and the title survives removal, so
-  the check looks only at the text after the title. A post with a title and no text at all
-  is kept.
+  `[ Removed by Reddit ]`, or when its author's name ends in "bot" or is AutoModerator. The
+  check reads each item's `text` (what its author wrote: a post's text without its title,
+  which survives removal, or a comment's body), not the stored body. A post with a title and
+  no text at all is kept.
 - **Agreeing replies** (atlas OPEN-19): eight words or fewer, no question mark or link, and
   close in meaning (≥ 0.80) to examples such as "+1", "same here", "good point". They are
   not stored; each adds one to the parent's `upvotes` and to that day's

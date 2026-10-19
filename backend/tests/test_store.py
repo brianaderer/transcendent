@@ -33,7 +33,9 @@ def store():
 
 
 def batch(upvotes):
-    post = Item("test-p", "test-p", "post", "salty", AT, "Which anchor?", 3, None, "Which anchor?")
+    post = Item(
+        "test-p", "test-p", "post", "salty", AT, "Which anchor?", 3, None, "", "Which anchor?"
+    )
     return DayBatch(
         DAY, [NewThread("test-p", "Which anchor?", AT)], [EmbeddedItem(post, VECTOR)], upvotes
     )
