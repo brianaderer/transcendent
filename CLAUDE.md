@@ -337,8 +337,9 @@ retrieval from our own data store, versus **with** it. Treat that comparison as 
 core feature, not an afterthought:
 
 - **Both versions are produced by one code path.** A single document generator takes
-  a switch: retrieval off (version A, the model on its own) or retrieval on (version
-  B, the model given passages pulled from our store). Everything else — model,
+  a switch: retrieval off (version A, which may read a few of the range's posts, at most
+  ten per step, picked without regard to meaning, but cannot search them) or retrieval on
+  (version B, which searches our store by meaning; atlas OPEN-39). Everything else — model,
   settings, prompt wording, the week covered, output format — is identical, so the
   only difference between the two documents is the retrieval.
 - **Reports are ephemeral.** A comparison run's reports and scores are shown when it
@@ -389,7 +390,7 @@ functions, and Robert C. Martin's *Clean Code* principles. The full guidelines a
 - **Keep the pieces apart:** ingestion, storage, retrieval, generation, comparison,
   and the web app are separate modules that talk through small, documented interfaces.
   That separation is also what makes the comparison honest, because generation can't
-  reach the store when retrieval is switched off.
+  search the store when retrieval is switched off: it only gets the few posts it reads.
 
 ### Workflow notes for the submission
 

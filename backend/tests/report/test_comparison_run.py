@@ -120,11 +120,17 @@ def test_both_versions_get_the_same_words_and_only_b_gets_retrieval():
 
     run(model)
 
-    a_write, a_predict, b_write, b_predict = model.tasks
-    assert (a_write, a_predict) == (b_write, b_predict)
-    assert model.offered_tools[0] == ["read_posts", "Report"]
-    assert model.offered_tools[1] == ["read_posts", "Prediction"]
-    assert "search" in model.offered_tools[2] and "read_posts" not in model.offered_tools[2]
+    # Both versions run at once, so tell them apart by their tools, not by the order of calls.
+    calls = list(zip(model.tasks, model.offered_tools, strict=True))
+    by_a = [(task, tools) for task, tools in calls if "read_posts" in tools]
+    by_b = [(task, tools) for task, tools in calls if "search" in tools]
+    assert len(by_a) == len(by_b) == 2
+    assert sorted(task for task, _ in by_a) == sorted(task for task, _ in by_b)
+    assert sorted(tools for _, tools in by_a) == [
+        ["read_posts", "Prediction"],
+        ["read_posts", "Report"],
+    ]
+    assert all("read_posts" not in tools for _, tools in by_b)
 
 
 def test_version_a_reads_only_before_the_range_when_predicting_as_b_searches():
