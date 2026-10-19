@@ -59,6 +59,20 @@ def test_finished_is_announced_only_once_the_result_can_be_read():
     assert seen_when_announced == ["finished"]
 
 
+def test_failed_is_announced_only_once_the_failure_can_be_read():
+    seen_when_announced = []
+    runs = RunStore(FakeRedis())
+    record = RunRecord(
+        runs, lambda kind, **body: seen_when_announced.append(runs.state(JOB.run_id).state)
+    )
+    runs.mark_running(JOB.run_id)
+
+    with pytest.raises(RuntimeError):
+        run_and_keep_result(FailingComparison(), record, JOB)
+
+    assert seen_when_announced == ["failed"]
+
+
 def test_a_failed_run_is_marked_failed_announced_and_raised():
     record, announced = _record()
 

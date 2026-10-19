@@ -109,6 +109,8 @@ test("once both versions are done, the panel says it is scoring them", async () 
   expect(await screen.findByText("Scoring both versions…")).toBeInTheDocument();
 });
 
+const SOONER_THAN_THE_NEXT_STATE_CHECK_MS = 1000; // the panel rereads the run every 3 s anyway
+
 test("the links appear as soon as the run says it has finished, without waiting to check", async () => {
   await showProgress();
   await screen.findByRole("region", { name: "Report progress" });
@@ -116,5 +118,5 @@ test("the links appear as soon as the run says it has finished, without waiting 
 
   act(() => announce({ type: "run.finished" }));
 
-  expect(await screen.findByText("See the comparison", {}, { timeout: 1000 })).toBeInTheDocument();
+  expect(await screen.findByText("See the comparison", {}, { timeout: SOONER_THAN_THE_NEXT_STATE_CHECK_MS })).toBeInTheDocument();
 });

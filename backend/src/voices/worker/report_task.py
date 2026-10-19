@@ -65,8 +65,9 @@ def compare_now(run_id: str, start: date, end: date) -> None:
 
 def run_and_keep_result(comparison: Comparison, record: RunRecord, job: RunJob) -> None:
     """Marks the run finished with its result, then announces `run.finished`, so the page,
-    once told, can read the result at once. On any failure marks it failed with the reason,
-    which the page shows, announces and logs `run.failed`, and raises for the worker's log."""
+    once told, can read the result at once. On any failure logs `run.failed`, marks the run
+    failed with the reason, which the page shows, then announces it the same way, and raises
+    for the worker's log."""
     try:
         result = comparison.run(job.run_id, job.days)
     except Exception as error:
@@ -78,8 +79,8 @@ def run_and_keep_result(comparison: Comparison, record: RunRecord, job: RunJob) 
 
 def _record_failure(record: RunRecord, run_id: str, reason: str) -> None:
     log_event(logger, "run.failed", run_id=run_id, reason=reason)
-    record.emit("run.failed", reason=reason)
     record.runs.mark_failed(run_id, reason)
+    record.emit("run.failed", reason=reason)
 
 
 def _parts() -> RunParts:
