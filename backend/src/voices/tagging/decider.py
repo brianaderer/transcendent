@@ -119,19 +119,17 @@ class ToolLoopDecider:
                 return conversation.decided(decision, self.model_name)
             conversation.answer(reply)
         conversation.tell(NO_LOOK_UPS_LEFT)
-        return conversation.decided(self._made_to_decide(conversation), self.model_name)
+        return conversation.decided(self._insist_on_a_decision(conversation), self.model_name)
 
-    def _made_to_decide(self, conversation: "_Conversation") -> Decision:
-        reply = conversation.take_turn(DECISION_ONLY)
-        for _ in range(CORRECTIONS_ON_LAST_TURN):
-            if _decision_in(reply):
-                break
-            conversation.answer(reply)
+    def _insist_on_a_decision(self, conversation: "_Conversation") -> Decision:
+        for corrections_left in reversed(range(CORRECTIONS_ON_LAST_TURN + 1)):
             reply = conversation.take_turn(DECISION_ONLY)
-        decision = _decision_in(reply)
-        if not decision:
-            raise NoDecision(f"cluster {conversation.brief.name}: no decision when made to decide")
-        return decision
+            decision = _decision_in(reply)
+            if decision:
+                return decision
+            if corrections_left:
+                conversation.answer(reply)
+        raise NoDecision(f"cluster {conversation.name}: no decision when made to decide")
 
 
 class _Conversation:
@@ -150,6 +148,10 @@ class _Conversation:
         self._log("tagging.turn", reply=reply.content, tool_calls=reply.tool_calls)
         self.messages.append(reply)
         return reply
+
+    @property
+    def name(self) -> str:
+        return self.brief.name
 
     def tell(self, text: str) -> None:
         self._say(HumanMessage(text))

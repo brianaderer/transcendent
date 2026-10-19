@@ -154,6 +154,22 @@ def test_a_malformed_decision_on_the_last_turn_is_answered_and_offered_once_more
     assert model.offered == [Decision]
 
 
+def test_a_reply_without_a_decision_on_the_last_turn_is_reminded_and_offered_once_more():
+    model = ScriptedModel(
+        [
+            call("search", {"term": "x"}),
+            AIMessage(content="thinking"),
+            call("Decision", DECIDE, "2"),
+        ]
+    )
+
+    decided = ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=1).decide(BRIEF)
+
+    assert decided.decision.topic_id == 3
+    assert "Decide now" in str(model.seen[-1][-1].content)
+    assert model.offered == [Decision]
+
+
 def test_a_second_malformed_decision_on_the_last_turn_stops_with_an_error():
     malformed = {"action": "maybe", "reason": "?"}
     model = ScriptedModel(
