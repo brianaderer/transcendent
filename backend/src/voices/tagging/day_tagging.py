@@ -7,7 +7,7 @@ from collections.abc import Callable, Sequence
 from datetime import date
 from typing import Protocol
 
-from voices.ingestion.catch_up import Emit
+from voices.ingestion.catch_up import Emit, announce_step
 from voices.tagging.decisions import (
     CandidateTopic,
     ClusterBrief,
@@ -64,11 +64,15 @@ class DayTagging:
         self.groups_of = groups_of
 
     def tag(self, day: date) -> dict[str, int]:
+        """Tag the day's due threads, announcing each step live as it begins."""
         texts = {t.source_id: thread_text(t.post, t.replies) for t in self.store.threads_due(day)}
+        announce_step(self.emit, day, "grouping", threads=len(texts))
         groups = self.groups_of(self._encoded_and_kept(texts))
         briefs = [self._brief(day, f"group-{n}", g) for n, g in enumerate(groups, start=1)]
+        announce_step(self.emit, day, "tagging", groups=len(briefs))
         settled = settle_mints(self.decide_all(day, briefs, self._announce))
         self._announce_merges(settled)
+        announce_step(self.emit, day, "applying")
         counts = self.store.apply_decisions(day, settled, self._keywords(settled, texts))
         expired = self.store.expire_noise(day)
         self.store.rebuild_engagement(window_start(day), day)

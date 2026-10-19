@@ -36,12 +36,16 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
   `sync_now.a_catch_up_is_busy(ingestion_status, backfill_progress)` — busy while the
   ledger has a running day or the seed is being prepared.
 - `catch_up.Emit` — the shape of that `emit` function; [tagging](tagging.md) uses it too.
-- `day.DayIngestion(archive, embedder, agreement, store).process(day)` — one day, returning counts
+- `catch_up.announce_step(emit, day, step, **numbers)` — sends `day.step` as a step of the
+  day's work begins ([events](events.md)); used here and by [tagging](tagging.md).
+- `day.DayIngestion(archive, embedder, agreement, store, emit).process(day)` — one day,
+  announcing `day.step` `fetching` before it asks the archive and `embedding` (with
+  `posts`, the items kept to embed) before it embeds, and returning counts
   (`fetched`, `dropped_unwanted`, `dropped_as_noise` (items on a thread already deleted as
   noise, atlas OPEN-31), `dropped_without_thread`, `dropped_orphan_upvotes`,
   `stored`, `threads_added`, `upvotes`), read off what was left after each step. Each
   collaborator is a small interface (`Archive`,
-  `DocumentEmbedder`, `Agreement`, `DayStore`), so tests pass stand-ins.
+  `DocumentEmbedder`, `Agreement`, `DayStore`, and `Emit`), so tests pass stand-ins.
 - `day.DayBatch`, `day.EmbeddedItem`, `day.NewThread` — what one day hands to the store to
   save together.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,

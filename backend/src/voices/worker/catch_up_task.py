@@ -129,7 +129,8 @@ def _connect_shared() -> _Shared:
 
 def _ingestion_for(shared: _Shared) -> DayIngestion:
     embedder = shared.embedder
-    return DayIngestion(connect_to_archive(), embedder, AgreementDetector(embedder), shared.store)
+    agreement = AgreementDetector(embedder)
+    return DayIngestion(connect_to_archive(), embedder, agreement, shared.store, shared.emit)
 
 
 def _tagging_for(shared: _Shared) -> DayTagging:

@@ -75,3 +75,23 @@ test("says a day is loading when the daily run fetches a new one, though the his
 
   expect(describeIngestion(status)).toBe("Loading 18 Oct · history up to date through 17 Oct");
 });
+
+test("names the step of the day being loaded, once the history is full", () => {
+  const status = {
+    ...base,
+    days_done: 56,
+    days_wanted: 56,
+    latest_day: "2026-10-17",
+    running_day: "2026-10-18",
+  };
+
+  expect(describeIngestion(status, "fetching posts")).toBe("Loading 18 Oct · fetching posts");
+});
+
+test("names the step after the progress on a first start", () => {
+  const status = { ...base, days_done: 3, posts: 1751, running_day: "2026-08-26" };
+
+  expect(describeIngestion(status, "grouping 12 threads")).toBe(
+    "Loading r/sailing history: 3 of 56 days · 1,751 posts · grouping 12 threads",
+  );
+});

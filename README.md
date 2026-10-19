@@ -151,7 +151,8 @@ while the worker prepares the seeded posts for search; meanwhile the topics and 
 already work, and the map and search fill in once it is done. After that, or straight away
 when there is no seed, it reads, for example,
 **Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
-is loaded and sorted into topics: every day of the last eight weeks that isn't stored yet
+is loaded and sorted into topics, and ending with what the day is doing right now
+(**· embedding 204 posts**, **· tagging: 3 of 7 groups decided**, and so on): every day of the last eight weeks that isn't stored yet
 (with a seed, only the days since it was taken). Each day is fetched from the
 Arctic Shift archive (a public archive of Reddit, so your computer needs an internet
 connection), prepared for search, and then the AI model sorts the day's threads

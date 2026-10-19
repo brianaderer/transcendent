@@ -26,6 +26,12 @@ class Emit(Protocol):
     def __call__(self, event_type: str, **body: object) -> None: ...
 
 
+def announce_step(emit: Emit, day: date, step: str, **numbers: int) -> None:
+    """A step of the day's work is starting (`day.step`, atlas plate 41), with how much it
+    has to get through: posts to embed, threads to group, groups to decide."""
+    emit("day.step", day=day.isoformat(), step=step, **numbers)
+
+
 ProcessDay = Callable[[date], dict[str, int]]
 
 

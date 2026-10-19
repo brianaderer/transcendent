@@ -69,8 +69,42 @@ class FakeStore:
         self.saved = batch
 
 
+def ignore(_event_type, **_body):
+    pass
+
+
 def run(archive, store):
-    return DayIngestion(archive, FakeEmbedder(), AgreesWithPlusOne(), store).process(DAY)
+    return DayIngestion(archive, FakeEmbedder(), AgreesWithPlusOne(), store, ignore).process(DAY)
+
+
+def test_each_step_is_announced_as_it_begins_with_how_many_posts_it_embeds():
+    happened = []
+
+    class WatchedArchive(FakeArchive):
+        def posts_created_between(self, start, end):
+            happened.append("archive asked")
+            return super().posts_created_between(start, end)
+
+    class WatchedEmbedder(FakeEmbedder):
+        def embed_documents(self, texts):
+            happened.append("embedded")
+            return super().embed_documents(texts)
+
+    archive = WatchedArchive(
+        [post("p1")], [comment("c1", "Rocna.", "p1"), comment("c2", "+1", "p1")]
+    )
+
+    def emit(event_type, **body):
+        happened.append((event_type, body))
+
+    DayIngestion(archive, WatchedEmbedder(), AgreesWithPlusOne(), FakeStore(), emit).process(DAY)
+
+    assert happened == [
+        ("day.step", {"day": "2026-10-15", "step": "fetching"}),
+        "archive asked",
+        ("day.step", {"day": "2026-10-15", "step": "embedding", "posts": 2}),
+        "embedded",
+    ]
 
 
 def test_posts_and_comments_are_stored_with_their_embeddings():

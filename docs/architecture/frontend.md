@@ -92,10 +92,16 @@ Screens and parts:
   the status's `backfill`); then "Loading r/sailing history: 23 of 56
   days · 9,412 posts", then "History up to date through 17 Oct"; "Waiting to start loading
   r/sailing history" before the first day; "Loading stopped at 26 Aug: " and the reason when
-  a day failed. It is fetched again whenever a live `ingestion` event arrives
+  a day failed. While a day loads, the line ends with the step it has reached, from the
+  live `day.step` events: "Loading 18 Oct · fetching posts", "· embedding 204 posts",
+  "· grouping 12 threads", "· tagging: 3 of 7 groups decided" (counted off by
+  `decision.made`), "· saving"; on a first start the step follows "Loading r/sailing
+  history: 3 of 56 days · 1,751 posts". `foldedStep(step, event)` and `describeStep(step)` in
+  `src/daySteps.ts` keep and word it; it is cleared by `day.finished` or `day.failed`, and
+  shown only for the day the status says is loading. It is fetched again whenever a live `ingestion` event arrives
   (`backfill.progress` after every saved batch, then the days' events), so a page opened
   mid-way shows where the first boot has got.
-  `describeIngestion(status)` in `src/ingestion.ts` writes the sentence. Beside it,
+  `describeIngestion(status, step)` in `src/ingestion.ts` writes the sentence. Beside it,
   `SyncNow`.
 - `SyncNow` — the **Sync now** button (`src/SyncNow.tsx`): asks `POST /api/catch-up`
   through the generated `useSyncNow` for the daily catch-up now ([api](api.md),
