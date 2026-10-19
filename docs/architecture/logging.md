@@ -10,7 +10,9 @@ fields from every service. Plan: [atlas plate 05](../atlas/05-logging.md).
 - `configure_logging(service, log_dir)` — sends every log line to standard output and to
   `<log_dir>/<service>.jsonl`. Raises `ValueError` if `service` is empty, so a container
   that forgets `SERVICE_NAME` fails at start instead of logging under the wrong name.
-- `log_event(logger, event, **fields)` — logs one named event with extra fields.
+- `log_event(logger, event, **fields)` — logs one named event with extra fields. A field may
+  have any name, including one Python's log records use themselves (`name`, `msg`, ...): those
+  travel apart inside the record and still appear on the line as given.
 - `tracing(trace_id)` — a `with` block; every event logged inside it carries that trace id.
 - `JsonFormatter(service)` — the formatter behind the above.
 

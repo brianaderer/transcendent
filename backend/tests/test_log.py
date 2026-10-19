@@ -93,3 +93,14 @@ def test_extra_fields_cannot_overwrite_the_standard_ones():
 def test_a_service_must_name_itself_before_logging(tmp_path):
     with pytest.raises(ValueError):
         configure_logging("", str(tmp_path))
+
+
+@pytest.mark.parametrize("field", ["name", "msg", "args", "levelname", "message"])
+def test_a_field_named_like_a_log_record_attribute_is_logged_as_given(field):
+    logger, stream = capture()
+
+    log_event(logger, "measurement.done", **{field: "topics_found"})
+
+    [line] = lines(stream)
+    assert line[field] == "topics_found"
+    assert line["event"] == "measurement.done"

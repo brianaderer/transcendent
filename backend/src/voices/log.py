@@ -15,8 +15,11 @@ from pathlib import Path
 
 _trace_id: ContextVar[str | None] = ContextVar("trace_id", default=None)
 
-# Attributes every LogRecord has; anything else on a record came from log_event's fields.
+# Attributes every LogRecord has; anything else on a record came from a caller's `extra`.
 _STANDARD_ATTRIBUTES = set(vars(logging.makeLogRecord({}))) | {"message", "asctime"}
+# A log_event field named like one of the record's own attributes (`name`, `msg`, ...) travels
+# under this one attribute instead, so it can't collide; the line still shows it as given.
+_CLASHING_FIELDS = "clashing_fields"
 
 
 class JsonFormatter(logging.Formatter):
@@ -40,7 +43,9 @@ class JsonFormatter(logging.Formatter):
 
 
 def log_event(logger: logging.Logger, event: str, **fields: object) -> None:
-    logger.info(event, extra=fields)
+    clashing = {k: v for k, v in fields.items() if k in _STANDARD_ATTRIBUTES}
+    others = {k: v for k, v in fields.items() if k not in clashing}
+    logger.info(event, extra={**others, _CLASHING_FIELDS: clashing})
 
 
 @contextmanager
@@ -73,4 +78,5 @@ def _utc_timestamp(created: float) -> str:
 
 
 def _extra_fields(record: logging.LogRecord) -> dict[str, object]:
-    return {k: v for k, v in vars(record).items() if k not in _STANDARD_ATTRIBUTES}
+    extras = {k: v for k, v in vars(record).items() if k not in _STANDARD_ATTRIBUTES}
+    return {**extras, **extras.pop(_CLASHING_FIELDS, {})}

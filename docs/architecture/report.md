@@ -48,7 +48,8 @@ only difference is whether the model gets tools that read our store.
   invented topics marked, and both documents side by side).
 
 ## How it works
-The worker's `voices.compare` task builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
+The worker's `voices.compare` task (`compare_now`; `in_parallel` runs the two versions in
+threads, each in a copy of the run's logging context so its lines carry the run's trace id) builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
 through OpenRouter), the stores and the embedder, and runs both versions in parallel threads.
 Events go out on the run's stream: `run.started`, per version `step.started` /
 `step.finished` / `usage` / `tool.called` / `tool.returned`, then a `measurement.done` per

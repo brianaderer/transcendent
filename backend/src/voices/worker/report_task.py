@@ -4,6 +4,7 @@ run's own stream and keeping its result for the page."""
 import logging
 from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from datetime import date
 from functools import lru_cache, partial
 
@@ -50,9 +51,11 @@ def compare_now(run_id: str, start: date, end: date) -> None:
 def in_parallel(
     work: Callable[[Version], VersionResult], versions: Iterable[Version]
 ) -> Iterator[VersionResult]:
-    """Both versions at once: each spends most of its time waiting for the model."""
+    """Both versions at once: each spends most of its time waiting for the model. Each runs in
+    a copy of the caller's context, so its log lines carry the run's trace id."""
+    contexts = {version: copy_context() for version in versions}
     with ThreadPoolExecutor(max_workers=2) as pool:
-        return iter(list(pool.map(work, versions)))
+        return iter(list(pool.map(lambda v: contexts[v].run(work, v), contexts)))
 
 
 def _parts() -> RunParts:
