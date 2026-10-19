@@ -37,11 +37,11 @@ topic's engagement has been moving, not guessed from one week of text.
 ```mermaid
 erDiagram
     THREADS ||--o{ POSTS : contains
-    POSTS }o--o| TOPICS : "tagged with"
+    THREADS }o--o| TOPICS : "tagged with"
     POSTS ||--o{ POST_UPVOTES_DAILY : "agreed with"
     TOPICS ||--o{ TOPIC_DAILY_ENGAGEMENT : "measured by"
     CLUSTER_DECISIONS }o--o| TOPICS : "attached to or minted"
-    CLUSTER_DECISIONS ||--o{ POSTS : "covers"
+    CLUSTER_DECISIONS ||--o{ THREADS : "covers"
     POSTS ||--o{ RETRIEVAL_EVENTS : "returned in"
 
     THREADS {
@@ -50,6 +50,7 @@ erDiagram
         timestamptz created_at
         vector embedding "post + top comments, as one text (proposed)"
         int topic_id "the thread's tag; its comments share it (proposed)"
+        text stage "new, decided_once (day one), settled (day three) (proposed)"
     }
     POSTS {
         text source_id "Reddit's id, unique, so a repeat is dropped"
@@ -61,8 +62,6 @@ erDiagram
         int upvotes "agreeing replies it received"
         text parent_source_id "what it replies to"
         vector embedding "its meaning, as numbers"
-        text status "pending, tagged"
-        float topic_similarity "how close it sits to its tag's center"
     }
     POST_UPVOTES_DAILY {
         date day "when the agreeing replies were written"
@@ -72,7 +71,7 @@ erDiagram
         text label "short name, written by the LLM"
         text description "one or two sentences, written by the LLM"
         text_array keywords "the words that most set it apart"
-        vector centroid "the average meaning of its posts"
+        vector centroid "the average meaning of its threads"
         date first_seen
         date last_seen
     }
@@ -106,8 +105,8 @@ erDiagram
 
 - **threads, posts** — the community's posts and comments as fetched, one embedding
   each. Reddit's id is unique, so the small overlap between daily pulls is dropped on
-  insert (`CLAUDE.md` §7). A post is `pending` until a cluster takes it, then `tagged`;
-  noise is deleted rather than marked.
+  insert (`CLAUDE.md` §7). A post has no tag of its own: it counts for its
+  thread's, so a comment arriving later counts too. Noise is deleted rather than marked.
 - **upvotes** — Brian's design: an agreeing reply isn't stored; it adds one to its
   parent's `upvotes`. *Proposed:* the count is also kept per day in
   **post_upvotes_daily** (post, day, count, with no text), because the trend needs to
@@ -131,7 +130,7 @@ erDiagram
   lookup tools ([60](../60-agents.md)): which run, which agent, which tool, when
   (OPEN-12, resolved). The retrieval-statistics screen counts these; the report
   agent's retrievals are shown apart from the tagging agent's.
-- **cluster_decisions** — one row per cluster per day: what the LLM decided, why, which
+- **cluster_decisions** — one row per group of threads per day: what the LLM decided, why, which
   tags it was choosing between and how close each was, and the exact prompt it saw.
   Every tag is traceable to the decisions that built it, and because tagging always
   moves forward one day at a time, it also records what was known on each day — which

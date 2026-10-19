@@ -401,9 +401,9 @@ const PLATES={
  figs:[
   {h:"Tables",cw:250,gx:170,gy:70,valign:"top",
    boxes:[
-    ["THREADS",0,0,"data","THREADS",["source_id text — Reddit's id, unique","title text","created_at timestamptz","embedding vector — post + top comments, as one text (proposed)","topic_id int — the thread's tag; its comments share it (proposed)"],{tag:"TABLE"}],
-    ["POSTS",1,0,"data","POSTS",["source_id text — Reddit's id, unique, so a repeat is dropped","kind text — post or comment","author text","created_at timestamptz","body text","reddit_score int — Reddit's own score at fetch time, not used for trends","upvotes int — agreeing replies it received","parent_source_id text — what it replies to","embedding vector — its meaning, as numbers","status text — pending, tagged","topic_similarity float — how close it sits to its tag's center"],{tag:"TABLE"}],
-    ["TOPICS",2,0,"data","TOPICS",["label text — short name, written by the LLM","description text — one or two sentences, written by the LLM","keywords text_array — the words that most set it apart","centroid vector — the average meaning of its posts","first_seen date","last_seen date"],{tag:"TABLE"}],
+    ["THREADS",0,0,"data","THREADS",["source_id text — Reddit's id, unique","title text","created_at timestamptz","embedding vector — post + top comments, as one text (proposed)","topic_id int — the thread's tag; its comments share it (proposed)","stage text — new, decided_once (day one), settled (day three) (proposed)"],{tag:"TABLE"}],
+    ["POSTS",1,0,"data","POSTS",["source_id text — Reddit's id, unique, so a repeat is dropped","kind text — post or comment","author text","created_at timestamptz","body text","reddit_score int — Reddit's own score at fetch time, not used for trends","upvotes int — agreeing replies it received","parent_source_id text — what it replies to","embedding vector — its meaning, as numbers"],{tag:"TABLE"}],
+    ["TOPICS",2,0,"data","TOPICS",["label text — short name, written by the LLM","description text — one or two sentences, written by the LLM","keywords text_array — the words that most set it apart","centroid vector — the average meaning of its threads","first_seen date","last_seen date"],{tag:"TABLE"}],
     ["TDE",3,0,"data","TOPIC_DAILY_ENGAGEMENT",["day date","posts int","comments int","upvotes int — agreeing replies","unique_authors int","new_threads int","revived_threads int — older than seven days, new comments today (proposed)","unanswered_questions int"],{tag:"TABLE"}],
     ["RE",0,1,"data","RETRIEVAL_EVENTS",["run text — which run","agent text — report or tagging","tool text — search or lookup","at timestamptz"],{tag:"TABLE"}],
     ["PUD",1,1,"data","POST_UPVOTES_DAILY",["day date — when the agreeing replies were written","count int"],{tag:"TABLE"}],
@@ -411,11 +411,11 @@ const PLATES={
    ],
    arrows:[
     ["THREADS","POSTS","contains · 1 : 0..n","attach"],
-    ["POSTS","TOPICS","tagged with · 0..n : 0..1","attach"],
+    ["THREADS","TOPICS","tagged with · 0..n : 0..1","attach"],
     ["POSTS","PUD","agreed with · 1 : 0..n","attach"],
     ["TOPICS","TDE","measured by · 1 : 0..n","attach"],
     ["CD","TOPICS","attached to or minted · 0..n : 0..1","attach"],
-    ["CD","POSTS","covers · 1 : 0..n","attach"],
+    ["CD","THREADS","covers · 1 : 0..n","attach"],
     ["POSTS","RE","returned in · 1 : 0..n","attach"]
    ]},
   {h:"The daily intake",cw:226,gx:52,gy:40,
@@ -454,12 +454,12 @@ const PLATES={
    "Deleted posts and bot posts are dropped. **Short agreeing replies** (\"+1\", \"this\", \"same here\") are significant and inform the trend, but aren't saved as posts. A basic semantic check finds them, and each one adds to an **`upvotes`** count on the post it replies to, a magnitude increaser for that post (OPEN-19)."],
    p2:"**Everything else on this plate is *proposed*.** In the intake flow, details in brackets are *proposed*."},
   {h:"What each table is for",li:[
-   "**threads, posts** — the community's posts and comments as fetched, one embedding each. Reddit's id is unique, so the small overlap between daily pulls is dropped on insert (`CLAUDE.md` §7). A post is `pending` until a cluster takes it, then `tagged`; noise is deleted rather than marked.",
+   "**threads, posts** — the community's posts and comments as fetched, one embedding each. Reddit's id is unique, so the small overlap between daily pulls is dropped on insert (`CLAUDE.md` §7). A post has no tag of its own: it counts for its thread's, so a comment arriving later counts too. Noise is deleted rather than marked.",
    "**upvotes** — Brian's design: an agreeing reply isn't stored; it adds one to its parent's `upvotes`. *Proposed:* the count is also kept per day in **post_upvotes_daily** (post, day, count, with no text), because the trend needs to know *when* the agreement happened: \"+1\"s arriving on Friday for a Monday post are Friday's engagement. The name `upvotes` is ours; Reddit's own score is kept apart as `reddit_score` so the two are never confused. Upvotes ride on their parent: they count toward its tag, and go if it's deleted as noise.",
    "**topics** — the topic tags. The *semantic information* is four things together: a **label** and **description** a person can read, written by the LLM from the tag's most typical posts; **keywords**, the words that most set it apart from other tags, computed by code; the **centroid**: the average of its posts' embeddings, the tag's position in meaning-space. Clusters are compared against the centroids to find the tags they might belong to, and the centroid moves whenever posts are added.",
    "**topic_daily_engagement** — one row per tag per day: posts, comments, upvotes, distinct people, new threads and unanswered questions. **This is the graph.** Any range — a week, eight weeks — is a sum over its days. Rebuilt from the posts after each day's intake, never edited by hand. Eight weeks of about thirty tags is under two thousand rows.",
    "**retrieval_events** — one row each time a post is returned by the agents' search or lookup tools ([60](60)): which run, which agent, which tool, when (OPEN-12, resolved). The retrieval-statistics screen counts these; the report agent's retrievals are shown apart from the tagging agent's.",
-   "**cluster_decisions** — one row per cluster per day: what the LLM decided, why, which tags it was choosing between and how close each was, and the exact prompt it saw. Every tag is traceable to the decisions that built it, and because tagging always moves forward one day at a time, it also records what was known on each day — which is what keeps the backtest honest (OPEN-11)."]},
+   "**cluster_decisions** — one row per group of threads per day: what the LLM decided, why, which tags it was choosing between and how close each was, and the exact prompt it saw. Every tag is traceable to the decisions that built it, and because tagging always moves forward one day at a time, it also records what was known on each day — which is what keeps the backtest honest (OPEN-11)."]},
   {h:"The daily intake",li:[
    "Runs once a day as a Celery job ([40](40)). The flow is specified by Brian; details in brackets are *proposed*.",
    "**Why the whole thread is the unit:** most comments (\"Awesome, thanks!\") carry no subject of their own; their thread does. Grouping single posts left 86% in no group. A thread written out as its post plus its top five comments grouped into the most coherent subjects of everything measured (OPEN-29).",
