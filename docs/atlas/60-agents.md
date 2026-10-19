@@ -81,7 +81,11 @@ structure stay as they were.
   Version B gets four tools:
   - **search** and **lookup** (above) — search is the retrieval: every hit is counted
     for the retrieval statistics;
-  - **topic trends** — the ranked, extrapolated tags from plate [50](50-prediction.md);
+  - **topic trends** — the ranked, extrapolated tags from plate [50](50-prediction.md).
+    **Kept, specified by Brian (2026-10-19, [OPEN-41](90-open-questions.md)):** the
+    comparison weighs the full solution against the model on its own, so B keeps every
+    advantage the solution gives it, this table included, even though it is built from the
+    same topic data the answer key is;
   - **upcoming events** — posts mentioning dates after the period (regattas, boat
     shows, weather windows).
 - **The tools are the retrieval.** Giving the agent tools rather than pasting posts

@@ -121,9 +121,11 @@ constants, not Brian's decisions.
   `(left out of the seed)` because the column can't be empty; and the 2 topics with no
   threads, with their engagement rows; the 3 decisions that named them keep their record
   with no topic.
-- **Author names** pass through one small function, `published_author`, on the way into the
-  file. It keeps them as they are while OPEN-37 is open; hiding them is a change to that one
-  line.
+- **Usernames are replaced** (specified by Brian, 2026-10-19, OPEN-37): every author in the
+  file is a stand-in, `sailor-0001` onward, numbered in the order authors first appear, and
+  a post that names a user (`u/name`) names the same stand-in. The README says usernames
+  were changed to comply with Reddit's public data policy. Posts fetched later, on the
+  reviewer's machine, keep their real names there.
 - **The loader**, `load_seed(connection, data_file)`, puts each table's rows in with plain
   SQL under the file's own column names (Postgres's `json_populate_recordset`), keeps the
   ids, and moves every id counter on the loaded tables past them. It loads nothing into a
@@ -164,5 +166,4 @@ constants, not Brian's decisions.
 
 ## Open in this draft
 
-- `?` Reddit content and usernames in a public repo (OPEN-37), Brian thinking it over. As
-  built, names pass through `published_author` unchanged, so a decision is a one-line change.
+Nothing open.
