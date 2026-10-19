@@ -36,6 +36,25 @@ def other_axis():
     return [0.0, 1.0] + [0.0] * (EMBEDDING_DIMENSIONS - 2)
 
 
+def thread(source_id, title, started=AT, first_seen_on=DAY):
+    return {
+        "source_id": source_id,
+        "title": title,
+        "created_at": started,
+        "first_seen_on": first_seen_on,
+    }
+
+
+def add_thread_without_its_post(store, started):
+    """A thread whose opening post was removed, or started before the history began."""
+    with store.engine.begin() as connection:
+        connection.execute(insert(Thread), [thread("test-6", "Rudder squeak", started=started)])
+        connection.execute(
+            insert(Post), [post("test-7", "test-6", "comment", "Grease the bearing.", score=4)]
+        )
+    store.save_thread_embeddings({"test-6": vector(1.0)})
+
+
 def post(source_id, thread, kind, body, at=AT, parent=None, score=1):
     return {
         "source_id": source_id,
@@ -58,8 +77,8 @@ def store():
         connection.execute(
             insert(Thread),
             [
-                {"source_id": "test-1", "title": "Impellers", "created_at": AT},
-                {"source_id": "test-4", "title": "Bermuda?", "created_at": AT},
+                thread("test-1", "Impellers"),
+                thread("test-4", "Bermuda?"),
             ],
         )
         connection.execute(
@@ -134,6 +153,33 @@ def test_new_threads_are_due_on_their_first_day_with_their_replies_best_first(st
         "Run it dry and it dies.",
         "Carry a spare.",
     ]
+
+
+@pytest.mark.parametrize("started", [AT, datetime(2010, 7, 5, tzinfo=UTC)])
+def test_a_thread_without_its_post_is_due_on_the_day_first_seen_written_from_its_title(
+    store, started
+):
+    add_thread_without_its_post(store, started)
+
+    due = {t.source_id: t for t in store.threads_due(DAY)}
+
+    assert due["test-6"].post == "Rudder squeak"
+    assert [reply.body for reply in due["test-6"].replies] == ["Grease the bearing."]
+
+
+def test_an_old_thread_first_seen_today_is_due_again_two_days_later(store):
+    add_thread_without_its_post(store, datetime(2010, 7, 5, tzinfo=UTC))
+    store.apply_decisions(DAY, [decided("mint", ["test-6"])], {})
+
+    assert "test-6" in ours(store.threads_due(THIRD_DAY))
+
+
+def test_a_thread_without_its_post_can_be_a_typical_thread(store):
+    add_thread_without_its_post(store, AT)
+
+    typical = store.typical_threads(["test-6"], vector(1.0), 6)
+
+    assert [(t.source_id, t.text) for t in typical] == [("test-6", "Rudder squeak")]
 
 
 def test_a_thread_decided_on_its_first_day_is_due_again_on_its_third(store):

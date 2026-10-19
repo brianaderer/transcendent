@@ -56,11 +56,12 @@ both have happened.
 
 ## How it works
 For day D (atlas OPEN-29):
-1. **Threads due.** Threads started on D that haven't been decided (`stage` `new`), and
-   threads started on D−2 that haven't been settled (`new` or `decided_once`), each with its
-   post and the replies it has by the end of D. A thread whose post was never loaded (an
-   older thread that only its comments brought in) is never due, so its comments count for
-   no topic.
+1. **Threads due.** Threads first seen on D that haven't been decided (`stage` `new`), and
+   threads first seen on D−2 that haven't been settled (`new` or `decided_once`), each with
+   its post and the replies it has by the end of D. A thread is first seen on the day it is
+   stored, which for most threads is the day its post was written. A thread whose post isn't
+   stored (removed, or started before the history and brought in by a new comment) is first
+   seen with that comment, and its title stands in for the post (atlas OPEN-30).
 2. **Encoding.** Each due thread is written out as one text (`thread_text`) and embedded;
    the embedding is saved on the thread, replacing a first-day one on the third day.
 3. **Groups.** The due threads are grouped by meaning; every thread is in a group, so every

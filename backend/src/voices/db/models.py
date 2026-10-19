@@ -39,6 +39,9 @@ class Thread(Base):
     source_id: Mapped[str] = mapped_column(Text, primary_key=True)
     title: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    # Its first and third days count from here: a thread started before the history, or whose
+    # post was removed, is first seen with its first stored comment (atlas OPEN-30).
+    first_seen_on: Mapped[date] = mapped_column(Date)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
     cluster_decision_id: Mapped[int | None] = mapped_column(ForeignKey("cluster_decisions.id"))

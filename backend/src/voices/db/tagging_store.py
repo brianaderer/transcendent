@@ -33,6 +33,7 @@ EXCERPT_CHARACTERS = 300
 TYPICAL_POST_CHARACTERS = 600
 RECENT_DAYS = 7  # "recent engagement" shown to the agent for each candidate topic
 REVIVAL_DAYS = 7  # a thread older than this that gets new comments has come back to life
+UNKNOWN_AUTHOR = "unknown"  # shown for a thread whose post isn't stored
 
 
 class TaggingStore:
@@ -43,8 +44,9 @@ class TaggingStore:
 
     def threads_due(self, day: date) -> list[DueThread]:
         """Threads on their first day not yet decided, and threads on their third day not yet
-        settled, each with its post and the replies it has by the end of the day."""
-        query = _thread_with_its_post(Thread.source_id, Post.body).where(_due_on(day))
+        settled, each with its post (or its title, when the post isn't stored) and the replies
+        it has by the end of the day."""
+        query = _thread_with_its_post(Thread.source_id, _post_text()).where(_due_on(day))
         with self.engine.connect() as connection:
             threads = connection.execute(query).all()
             replies = self._replies(connection, [t.source_id for t in threads], day)
@@ -72,7 +74,7 @@ class TaggingStore:
         self, ids: Sequence[str], centroid: Sequence[float], limit: int
     ) -> list[TypicalPost]:
         query = (
-            _thread_with_its_post(Thread.source_id, Post.author, Post.body)
+            _thread_with_its_post(Thread.source_id, _post_author(), _post_text())
             .where(Thread.source_id.in_(ids))
             .order_by(Thread.embedding.cosine_distance(centroid))
             .limit(limit)
@@ -302,26 +304,33 @@ class PostNotFound(Exception):
 
 
 def _thread_with_its_post(*columns: ColumnElement) -> Select:
-    """A thread's post shares the thread's id."""
-    return select(*columns).join(Post, Post.source_id == Thread.source_id)
+    """A thread's post shares the thread's id. A thread whose post isn't stored (removed, or
+    started before the history) comes with no post, and stands in with its title."""
+    return select(*columns).outerjoin(Post, Post.source_id == Thread.source_id)
+
+
+def _post_text() -> ColumnElement[str]:
+    return func.coalesce(Post.body, Thread.title).label("body")
+
+
+def _post_author() -> ColumnElement[str]:
+    return func.coalesce(Post.author, UNKNOWN_AUTHOR).label("author")
 
 
 def _due_on(day: date) -> ColumnElement[bool]:
     return or_(
-        and_(_started_on(day), Thread.stage == "new"),
-        and_(_started_on(window_start(day)), Thread.stage.in_(["new", "decided_once"])),
+        and_(_first_seen_on(day), Thread.stage == "new"),
+        and_(_first_seen_on(window_start(day)), Thread.stage.in_(["new", "decided_once"])),
     )
 
 
-def _started_on(day: date) -> ColumnElement[bool]:
-    return and_(
-        Thread.created_at >= _start_of(day), Thread.created_at < _start_of(day + timedelta(days=1))
-    )
+def _first_seen_on(day: date) -> ColumnElement[bool]:
+    return Thread.first_seen_on == day
 
 
 def _on_or_after_third_day(day: date) -> ColumnElement[bool]:
-    """Threads started on or before the first of the three days ending today."""
-    return Thread.created_at < _start_of(window_start(day) + timedelta(days=1))
+    """Threads first seen on or before the first of the three days ending today."""
+    return Thread.first_seen_on <= window_start(day)
 
 
 def _members(item: DecidedCluster) -> ColumnElement[bool]:

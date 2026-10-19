@@ -40,7 +40,8 @@ class Store:
         replaced as a whole, and every post they touch, before or after, is recounted."""
         with self.engine.begin() as connection:
             if batch.threads:
-                connection.execute(_insert_new(Thread, [_thread_row(t) for t in batch.threads]))
+                rows = [_thread_row(t, batch.day) for t in batch.threads]
+                connection.execute(_insert_new(Thread, rows))
             if batch.posts:
                 connection.execute(_insert_new(Post, [_post_row(p) for p in batch.posts]))
             self._replace_days_upvotes(connection, batch)
@@ -99,8 +100,13 @@ def _insert_new(table: type[Base], rows: list[dict]) -> Insert:
     return insert(table).values(rows).on_conflict_do_nothing()
 
 
-def _thread_row(thread: NewThread) -> dict:
-    return {"source_id": thread.source_id, "title": thread.title, "created_at": thread.created_at}
+def _thread_row(thread: NewThread, day: date) -> dict:
+    return {
+        "source_id": thread.source_id,
+        "title": thread.title,
+        "created_at": thread.created_at,
+        "first_seen_on": day,
+    }
 
 
 def _post_row(embedded: EmbeddedItem) -> dict:

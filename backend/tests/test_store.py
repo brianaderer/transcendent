@@ -60,6 +60,17 @@ def test_a_saved_day_can_be_found_again_and_saving_it_twice_adds_nothing(store):
     assert store.known_thread_ids(["test-p"]) == {"test-p"}
 
 
+def test_a_thread_is_first_seen_on_the_day_it_is_saved_not_the_day_it_started(store):
+    old = NewThread("test-old", "Old thread", datetime(1990, 5, 1, tzinfo=UTC))
+    store.save_day(DayBatch(DAY, [old], [], {}))
+
+    with store.engine.connect() as connection:
+        first_seen = connection.scalar(
+            select(Thread.first_seen_on).where(Thread.source_id == "test-old")
+        )
+    assert first_seen == DAY
+
+
 def test_saving_the_same_day_twice_does_not_double_its_upvotes(store):
     store.save_day(batch({"test-p": 2}))
     store.save_day(batch({"test-p": 2}))
