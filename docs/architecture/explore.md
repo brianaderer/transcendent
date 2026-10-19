@@ -47,7 +47,8 @@ dot plot, recomputed for each range (atlas OPEN-20).
   the N days before the range and the range itself, in one read. Each topic's range total is
   compared with its total before to give the badge; topics with no engagement in the range
   are left out.
-- **The map.** The range's posts are read with their embeddings and flattened by t-SNE on
+- **The map.** The range's posts are read with their embeddings (stored at half precision,
+  read back as plain lists of numbers) and flattened by t-SNE on
   cosine distance, started from the principal components with a fixed seed (`SEED`), so the
   same posts always give the same map; perplexity is 30, or a third of the posts for small
   ranges, and fewer than five posts are laid out in a row. The result is centred and scaled

@@ -85,4 +85,4 @@ def _start_of(day: date) -> datetime:
 def _map_post(row) -> MapPost:
     fields = {k: v for k, v in row.items() if k not in ("created_at", "embedding")}
     day = row["created_at"].astimezone(UTC).date()
-    return MapPost(**fields, day=day, embedding=[float(v) for v in row["embedding"]])
+    return MapPost(**fields, day=day, embedding=row["embedding"].to_list())

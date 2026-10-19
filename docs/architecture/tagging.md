@@ -65,7 +65,8 @@ For day D (atlas OPEN-29):
    stored (removed, or started before the history and brought in by a new comment) is first
    seen with that comment, and its title stands in for the post (atlas OPEN-30).
 2. **Encoding.** Each due thread is written out as one text (`thread_text`) and embedded;
-   the embedding is saved on the thread, replacing a first-day one on the third day.
+   the embedding is saved on the thread (at half precision, see [database](database.md)),
+   replacing a first-day one on the third day.
 3. **Groups.** The due threads are grouped by meaning; every thread is in a group, so every
    thread gets a decision.
 4. **Briefs.** For each group, the six threads closest to its centre (their posts; a thread whose post isn't
