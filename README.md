@@ -148,7 +148,7 @@ the back end directly, open http://localhost:5173/api/health; it should show
 > Posts the app fetches after the seed, on your own machine, keep their real usernames there.
 
 Beside it, the top bar shows the r/sailing history loading, as one line for the whole first
-start. It may say **Waiting to start loading r/sailing history** for a few seconds; the first
+start. It may say **Waiting to start loading r/sailing history** for a minute or so (longer on a slow connection); the first
 time, the worker also downloads the 130 MB model that prepares posts for search. The repo
 carries a seed of the history (eight weeks of posts, 23 August to 18 October 2026, already
 sorted into topics), so the line then reads
@@ -180,7 +180,7 @@ that is tried again is fetched from the start, and nothing in it is counted twic
 first start fills them in.** The page takes in each day as it finishes loading, without a
 reload. Once days have loaded, the page shows them: it opens on the last seven days, with
 the range written out (for example
-**12 Oct – 18 Oct 2026 · 1,097 posts**). Drag either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
+**12 Oct – 18 Oct 2026 · 1,141 posts**). Drag either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
 when you let go, and the address changes with it, so you can share exactly what you see.
 The large plot shows every post in the range as a dot, coloured by topic, with posts that
 mean similar things close together. The map is worked out afresh for each range, which
@@ -235,7 +235,7 @@ docker compose run --rm --no-deps api pytest
 docker compose run --rm --no-deps frontend npm test
 ```
 
-Each should end with every test passed (a `warning` line from a library is fine). The backend
+Each should end with every test passed (warning lines are fine, including React's "not wrapped in act(...)" notes from the frontend tests). The backend
 line also gives a count of deselected tests: the ones that need a running database, and one that
 calls the real model (step 6), which the default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline: about a minute for the backend and fifteen seconds for the frontend.
