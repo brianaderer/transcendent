@@ -48,8 +48,8 @@ topics). Serif for the report's headings and body text; a clean sans-serif for U
 numbers and labels. Light and dark themes. No stock photos, no sailing clip-art.
 
 **Global layout.** A slim top bar with the app name, navigation (Explore,
-Retrieval stats), a theme toggle, and a status pill showing data freshness ("Data
-through 17 Oct · 8 weeks · 21,480 posts"). The date range chosen on Explore carries
+Retrieval stats), a theme toggle, and a status line showing the history's loading ("History
+up to date through 17 Oct · 12,682 posts") and whether the backend is running. The date range chosen on Explore carries
 through to every other screen.
 
 ### Screen 1 — Explore (the main page)
@@ -159,12 +159,12 @@ Opened from the topics panel or a document section.
 ## How Explore is built (build step 4) *(proposed)*
 
 Screen 1 above is the target; these are the details it needs underneath, all proposed.
-The Generate report button and the retrieved-posts toggle are drawn but wait for
-build step 5 (plate [06](../06-build-order.md)).
+The Generate report button works from build step 5 (plate [06](../06-build-order.md)),
+and the retrieved-posts toggle arrives with it, since it needs a report.
 
 - **Three reads from the API** (generated into a typed client, OPEN-1):
-  - `GET /api/days` — posts per day across the history: the slider's histogram, and the
-    status pill's "Data through … · N posts".
+  - `GET /api/days` — posts per day across the history: the slider's histogram and the
+    range's post count.
   - `GET /api/topics?start=…&end=…` — the topics with engagement in the range: label,
     description, the range's posts and comments, one number a day for the sparkline, and
     the badge.
