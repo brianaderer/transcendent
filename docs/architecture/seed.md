@@ -98,6 +98,19 @@ had only the posts already embedded; then the progress record is cleared and
 (its record still there, nothing missing) finishes on the next run. The embedding model runs
 on four threads (`EMBEDDING_THREADS`, [ingestion](ingestion.md)).
 
+**Measured** (19 October 2026, on this project's Mac under Docker, the real seed loaded into a
+scratch database): the whole backfill took 6 minutes 21 seconds: the 12,682 posts and
+comments 4 minutes 55 seconds (about 43 a second), the 640 threads 1 minute 27 seconds, the
+150 centres under a second. The rebuilt vectors are not the stored ones: against the stored
+vectors, a sample of 500 posts had a median similarity of 0.979 (lowest 0.952), the threads
+0.984 (lowest 0.900), the centres 0.990. The model itself gives that much spread: the same
+post embedded alone and inside a batch agreed only to 0.977 (median of ten), with four
+threads or the library's default alike, so the batch it lands in moves a vector about as
+much as the backfill does. Nearest neighbours mostly hold: a post's ten nearest posts are 70%
+the same as before (median of 300), a thread's ten nearest threads 77%, a topic's five
+nearest topics 90%. No
+test in the suite checks this, since it needs the real model.
+
 **The seed migration is written last** (atlas plate 07, OPEN-35): it is a point-in-time
 snapshot on whatever schema exists then. Neither it nor a real data file is in the repo
 yet. The procedure, from the repository root with the stack running, is in
