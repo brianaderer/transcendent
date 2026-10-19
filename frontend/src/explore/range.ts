@@ -50,7 +50,8 @@ export function shortRange(range: DayRange): string {
     : `${startDay} ${startMonth} – ${end}`;
 }
 
-function dayAndMonth(day: string): string {
+/** "12 Oct" */
+export function dayAndMonth(day: string): string {
   const date = new Date(`${day}T00:00:00Z`);
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 }

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from tests.stand_ins import FakeExplore
+from tests.stand_ins import FakeExplore, FakeRetrievals, FakeTopics
 from voices.api.main import ApiServices, create_app
 
 
@@ -10,7 +10,10 @@ async def two_events(_stream):
 
 
 def client_with(status=dict):
-    return TestClient(create_app(ApiServices({}, status, two_events, explore=FakeExplore())))
+    services = ApiServices(
+        {}, status, two_events, FakeExplore(), topics=FakeTopics(), retrievals=FakeRetrievals()
+    )
+    return TestClient(create_app(services))
 
 
 def test_ingestion_status_reports_what_the_ledger_says_and_how_many_days_are_wanted():

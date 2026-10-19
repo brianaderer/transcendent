@@ -1,8 +1,10 @@
+import { Link, useSearch } from "@tanstack/react-router";
+
 import type { TopicInRange } from "../api/generated";
 import { colourOf } from "./colours";
 import { useUiState } from "./uiState";
 
-const BADGES: Record<TopicInRange["direction"], string> = {
+export const BADGES: Record<TopicInRange["direction"], string> = {
   new: "New",
   rising: "Rising",
   steady: "Steady",
@@ -11,9 +13,11 @@ const BADGES: Record<TopicInRange["direction"], string> = {
 
 type Props = { topics: TopicInRange[]; colours: Map<number, string> };
 
-/** The range's topics, busiest first (atlas plate 31): hovering one highlights its dots. */
+/** The range's topics, busiest first (atlas plate 31): hovering one highlights its dots, and
+ * clicking its name opens its Topic detail page with the same range. */
 export function TopicsPanel({ topics, colours }: Props) {
   const highlightTopic = useUiState((state) => state.highlightTopic);
+  const { start, end } = useSearch({ strict: false });
   if (topics.length === 0)
     return <p className="text-sm text-slate-500">No topics in these days.</p>;
   return (
@@ -33,7 +37,14 @@ export function TopicsPanel({ topics, colours }: Props) {
             className="h-3 w-3 shrink-0 rounded-full"
             style={{ background: colourOf(topic.id, colours) }}
           />
-          <span className="min-w-0 flex-1 truncate text-sm">{topic.label}</span>
+          <Link
+            to="/topics/$topicId"
+            params={{ topicId: String(topic.id) }}
+            search={{ start, end }}
+            className="min-w-0 flex-1 truncate text-sm hover:underline"
+          >
+            {topic.label}
+          </Link>
           <Sparkline values={topic.daily} />
           <span className="w-10 text-right text-xs tabular-nums text-slate-500">{topic.posts}</span>
           <span className="w-14 text-right text-xs font-medium">{BADGES[topic.direction]}</span>

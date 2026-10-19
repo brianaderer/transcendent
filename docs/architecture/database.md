@@ -1,6 +1,6 @@
 # database
 
-**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/src/voices/db/explore_store.py`, `backend/src/voices/db/day_ledger.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py`, `backend/tests/test_tagging_store.py` and `backend/tests/test_explore_store.py` (these four need a database)
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/src/voices/db/explore_store.py`, `backend/src/voices/db/topic_store.py`, `backend/src/voices/db/retrieval_store.py`, `backend/src/voices/db/post_columns.py`, `backend/src/voices/db/day_ledger.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py`, `backend/tests/test_tagging_store.py`, `backend/tests/test_explore_store.py`, `backend/tests/test_topic_store.py` and `backend/tests/test_retrieval_store.py` (these six need a database)
 
 ## Purpose
 Describes the tables and keeps the database in step with them. The tables follow
@@ -12,6 +12,14 @@ Describes the tables and keeps the database in step with them. The tables follow
   [tagging](tagging.md).
 - `voices.db.explore_store.ExploreStore` — the Explore page's reads; described in
   [explore](explore.md).
+- `voices.db.topic_store.TopicStore` — the Topic detail page's reads; described in
+  [topics](topics.md).
+- `voices.db.retrieval_store.RetrievalStore` — the Retrieval stats page's reads; described
+  in [retrievals](retrievals.md).
+- `voices.db.post_columns` — column expressions the reading stores share: `written_on()`
+  (a post's day in UTC), `written_between(first, last)` (both days included) and
+  `excerpt(characters)` (a post's opening words, or its thread's title for a post with no
+  text).
 - `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
   for ingestion: `known_post_ids`, `known_thread_ids`, `noise_thread_ids` (those of the given threads deleted as noise), `save_day(batch)` (threads, posts
   and upvotes in one transaction; a new thread is recorded as first seen on the batch's day; saving a day again adds nothing — the day's upvote rows
@@ -64,7 +72,7 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the fifty tests that need a running
+`docker compose run --rm api pytest -m database` runs the sixty-five tests that need a running
 database: one checks that the models and the applied migrations agree; eight check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
@@ -78,7 +86,7 @@ first day's topic, and one that had none is expired, its thread gone), threads w
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
-posts), search with recorded retrievals, and looking up an unknown post; and six check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post with no text shown by its title and long text cut, and topics read by id. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+posts), search with recorded retrievals, and looking up an unknown post; and six check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post with no text shown by its title and long text cut, and topics read by id; eight check the topic store: a topic's summary with its keywords and days seen, an unknown topic not found, engagement each day oldest first with its distinct people, typical posts closest to the centre first and stopping at the limit, a typical post cut to a card's length and dated in UTC, a thread whose post isn't stored shown by its title, and decisions oldest first with the threads that carry them (none for one whose threads were decided again); and seven check the retrieval store: posts counted most retrieved first with ties to the latest, a retrieved post with its topic and last retrieval (and none for an untagged thread), the table's limit, only the named run, only the named agent, per-topic counts with untagged threads together, and runs newest first per agent. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
@@ -87,7 +95,9 @@ with its `EmbeddedItem`s and `NewThread`s), [tagging](tagging.md) (`tagging_stor
 its `DueThread`s with their `Reply`s, its `TypicalPost`s and `CandidateTopic`s, applies its
 `DecidedCluster`s, and uses its `window_start` for the three days ending on a day),
 [explore](explore.md) (`explore_store` returns its `DayCount`s, `TopicDay`s, `TopicInfo`s and
-`MapPost`s),
+`MapPost`s), [topics](topics.md) (`topic_store` returns its shapes and raises its
+`TopicNotFound`), [retrievals](retrievals.md) (`retrieval_store` takes its
+`RetrievalFilter` and returns its shapes),
 Postgres with pgvector,
 SQLAlchemy, Alembic.
 
@@ -95,7 +105,7 @@ SQLAlchemy, Alembic.
 [environment](environment.md): the `setup` service in `compose.yaml` runs setup.
 [worker](worker.md) builds the store and hands it to the [ingestion](ingestion.md)
 catch-up, which saves each day and keeps the day ledger through it; the worker also builds
-`TaggingStore` on the same connection and hands it to [tagging](tagging.md); [api](api.md) uses it for `GET /api/ingestion` and builds `ExploreStore` on its connection for the [explore](explore.md) reads (its health check connects to Postgres
+`TaggingStore` on the same connection and hands it to [tagging](tagging.md); [api](api.md) uses it for `GET /api/ingestion` and builds `ExploreStore`, `TopicStore` and `RetrievalStore` on its connection for the [explore](explore.md), [topics](topics.md) and [retrievals](retrievals.md) reads (its health check connects to Postgres
 directly); [bakeoff](bakeoff.md) uses `PostNotFound` and `tagging_store`'s excerpt lengths.
 
 ## Configuration and data

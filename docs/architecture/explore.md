@@ -62,11 +62,13 @@ dot plot, recomputed for each range (atlas OPEN-20).
 
 ## Uses
 [database](database.md) (`posts`, `threads`, `topics`, `topic_daily_engagement`,
-`ingested_days`), Redis, scikit-learn (t-SNE), numpy, Pydantic.
+`ingested_days`), Redis, scikit-learn (t-SNE), numpy, Pydantic; `voices.db.post_columns` (shared with [topics](topics.md) and
+[retrievals](retrievals.md)) for the day a post was written, the range test and the excerpt.
 
 ## Used by
 [api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`), which the
-[frontend](frontend.md)'s Explore page calls.
+[frontend](frontend.md)'s Explore page calls (the Topic detail page also calls
+`GET /api/topics` for the topic's badge); [retrievals](retrievals.md) uses `DayRange`.
 
 ## Configuration and data
 `REDIS_URL` (read by the API, which builds the cache). Fixed in code: `CHANGE_THAT_COUNTS =
