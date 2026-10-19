@@ -22,7 +22,9 @@ frontend's container exits 0 when stopped.
 
 Seven services. `postgres` (with the pgvector extension) and `redis` start first and
 report healthy. `setup` then runs any database migrations not yet applied (see [database](database.md)) and exits; `api` and `worker` wait for it
-to finish successfully. `beat` schedules jobs onto Redis. `frontend` serves the built web
+to finish successfully. `beat` schedules jobs onto Redis. Redis also carries the live
+events to the browser ([events](events.md)) and keeps each date range's map for the Explore
+page, which `api` computes and caches there ([explore](explore.md)). `frontend` serves the built web
 app on port 5173 inside its container, published on your computer as `PORT` (5173 unless
 `.env` says otherwise), and passes every `/api` request through to `api`, so only one port is
 exposed. It runs with `init: true`, and its start command catches Docker's stop signal and
@@ -68,7 +70,8 @@ which the `setup` service needs.
   `model-cache` volume.
 - The backend's dependencies are pinned in `backend/pyproject.toml` and `backend/uv.lock`;
   among them `fastembed` runs the embedding model, `httpx` reads the archive,
-  `scikit-learn` groups threads by meaning (agglomerative clustering), and `langgraph`, `langchain-core` and
+  `scikit-learn` groups threads by meaning (agglomerative clustering) and flattens a range's
+  posts to the Explore map (t-SNE), and `langgraph`, `langchain-core` and
   `langchain-openai` run the tagging agent against OpenRouter.
 - The first start needs an internet connection (the worker fetches from the Arctic Shift
   archive, downloads the embedding model, and calls the tagging model on OpenRouter) and

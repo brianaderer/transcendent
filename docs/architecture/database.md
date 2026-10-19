@@ -1,6 +1,6 @@
 # database
 
-**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py` and `backend/tests/test_tagging_store.py` (these three need a database)
+**Source:** `backend/src/voices/db/models.py`, `backend/src/voices/db/setup.py`, `backend/src/voices/db/address.py`, `backend/src/voices/db/store.py`, `backend/src/voices/db/tagging_store.py`, `backend/src/voices/db/explore_store.py`, `backend/alembic.ini`, `backend/migrations/`   ·   **Tests:** `backend/tests/test_models.py`, `backend/tests/test_setup.py`, `backend/tests/test_migrations_match_models.py`, `backend/tests/test_store.py`, `backend/tests/test_tagging_store.py` and `backend/tests/test_explore_store.py` (these four need a database)
 
 ## Purpose
 Describes the tables and keeps the database in step with them. The tables follow
@@ -83,6 +83,8 @@ posts), search with recorded retrievals, and looking up an unknown post; and fiv
 with its `EmbeddedItem`s and `NewThread`s), [tagging](tagging.md) (`tagging_store` returns
 its `DueThread`s with their `Reply`s, its `TypicalPost`s and `CandidateTopic`s, applies its
 `DecidedCluster`s, and uses its `window_start` for the three days ending on a day),
+[explore](explore.md) (`explore_store` returns its `DayCount`s, `TopicDay`s, `TopicInfo`s and
+`MapPost`s),
 Postgres with pgvector,
 SQLAlchemy, Alembic.
 

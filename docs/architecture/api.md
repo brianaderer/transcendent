@@ -29,7 +29,10 @@ The web API the frontend calls. Every route lives under `/api`.
 
 ## How it works
 Uvicorn runs `create_production_app` (a factory), which reads settings, configures
-logging under the container's `SERVICE_NAME` (`api`), and checks Postgres and Redis on each health request. A
+logging under the container's `SERVICE_NAME` (`api`), and checks Postgres and Redis on each health request.
+It also builds the Explore reads ([explore](explore.md)) on the store's database connection,
+with a map cache on Redis at `REDIS_URL`. A range that ends before it starts is answered with
+422 and the reason. A
 health check that fails logs why (`health.database_unreachable`, `health.queue_unreachable`).
 Every request is logged as `api.request` with its method, path, status and time taken,
 under a trace id of its own; a request that raises is logged as `api.request_failed` with
