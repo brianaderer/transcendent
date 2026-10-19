@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from tests.stand_ins import FakeExplore, FakeRuns, no_events
+from tests.stand_ins import FakeExplore, FakeRetrievals, FakeRuns, FakeTopics, no_events
 from voices.api.main import ApiServices, create_app
 
 
@@ -11,6 +11,8 @@ def services_with(checks):
         event_stream=no_events,
         explore=FakeExplore(),
         runs=FakeRuns(),
+        topics=FakeTopics(),
+        retrievals=FakeRetrievals(),
     )
 
 

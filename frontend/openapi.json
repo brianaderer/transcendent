@@ -284,6 +284,127 @@
           }
         }
       }
+    },
+    "/api/topics/{topic_id}": {
+      "get": {
+        "summary": "Report Topic",
+        "description": "One topic: its engagement each day across the history, its typical posts, and the\ntagging decisions that built it. 404 for a topic that doesn't exist.",
+        "operationId": "report_topic",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Topic Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/retrievals": {
+      "get": {
+        "summary": "Report Retrievals",
+        "description": "Which posts written in the range an agent retrieved most, and its retrievals per\ntopic; from one run, or from every run when none is named.",
+        "operationId": "report_retrievals",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End"
+            }
+          },
+          {
+            "name": "agent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "report",
+                "tagging"
+              ],
+              "type": "string",
+              "default": "report",
+              "title": "Agent"
+            }
+          },
+          {
+            "name": "run",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -335,6 +456,41 @@
           "latest_day"
         ],
         "title": "Days"
+      },
+      "EngagementDay": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "posts": {
+            "type": "integer",
+            "title": "Posts"
+          },
+          "comments": {
+            "type": "integer",
+            "title": "Comments"
+          },
+          "upvotes": {
+            "type": "integer",
+            "title": "Upvotes"
+          },
+          "people": {
+            "type": "integer",
+            "title": "People"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "posts",
+          "comments",
+          "upvotes",
+          "people"
+        ],
+        "title": "EngagementDay",
+        "description": "One day the topic had any engagement."
       },
       "HTTPValidationError": {
         "properties": {
@@ -504,6 +660,51 @@
         ],
         "title": "NamedTopic"
       },
+      "PostCard": {
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "author": {
+            "type": "string",
+            "title": "Author"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "excerpt": {
+            "type": "string",
+            "title": "Excerpt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "post_id",
+          "thread_id",
+          "kind",
+          "author",
+          "day",
+          "title",
+          "excerpt"
+        ],
+        "title": "PostCard",
+        "description": "A thread's opening post, as a typical post's card shows it. A thread whose post isn't\nstored is shown by its title, under an unknown author."
+      },
       "PredictedTopic": {
         "properties": {
           "name": {
@@ -527,6 +728,131 @@
           "direction"
         ],
         "title": "PredictedTopic"
+      },
+      "RankedPost": {
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "title": "Post Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "author": {
+            "type": "string",
+            "title": "Author"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "excerpt": {
+            "type": "string",
+            "title": "Excerpt"
+          },
+          "topic_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic Id"
+          },
+          "topic_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic Label"
+          },
+          "times_retrieved": {
+            "type": "integer",
+            "title": "Times Retrieved"
+          },
+          "last_retrieved": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Retrieved"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "post_id",
+          "thread_id",
+          "kind",
+          "author",
+          "day",
+          "excerpt",
+          "topic_id",
+          "topic_label",
+          "times_retrieved",
+          "last_retrieved",
+          "rank"
+        ],
+        "title": "RankedPost"
+      },
+      "RetrievalStats": {
+        "properties": {
+          "agent": {
+            "type": "string",
+            "enum": [
+              "report",
+              "tagging"
+            ],
+            "title": "Agent"
+          },
+          "runs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/RankedPost"
+            },
+            "type": "array",
+            "title": "Posts"
+          },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicRetrievals"
+            },
+            "type": "array",
+            "title": "Topics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent",
+          "runs",
+          "total",
+          "posts",
+          "topics"
+        ],
+        "title": "RetrievalStats"
       },
       "RunRequest": {
         "properties": {
@@ -729,6 +1055,103 @@
         ],
         "title": "Scores"
       },
+      "TopicDecision": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "threads": {
+            "type": "integer",
+            "title": "Threads"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "decision",
+          "threads",
+          "reason"
+        ],
+        "title": "TopicDecision",
+        "description": "One tagging decision that built the topic: minting it, or attaching threads to it."
+      },
+      "TopicDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "First Seen"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "Last Seen"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/EngagementDay"
+            },
+            "type": "array",
+            "title": "Daily"
+          },
+          "typical_posts": {
+            "items": {
+              "$ref": "#/components/schemas/PostCard"
+            },
+            "type": "array",
+            "title": "Typical Posts"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/TopicDecision"
+            },
+            "type": "array",
+            "title": "Decisions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "description",
+          "keywords",
+          "first_seen",
+          "last_seen",
+          "daily",
+          "typical_posts",
+          "decisions"
+        ],
+        "title": "TopicDetail"
+      },
       "TopicInRange": {
         "properties": {
           "id": {
@@ -786,6 +1209,43 @@
           "direction"
         ],
         "title": "TopicInRange"
+      },
+      "TopicRetrievals": {
+        "properties": {
+          "topic_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic Id"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "times_retrieved": {
+            "type": "integer",
+            "title": "Times Retrieved"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic_id",
+          "label",
+          "times_retrieved"
+        ],
+        "title": "TopicRetrievals"
       },
       "ValidationError": {
         "properties": {

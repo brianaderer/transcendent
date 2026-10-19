@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
-from tests.stand_ins import FakeExplore, FakeRuns
-from voices.api.main import ApiServices, create_app
+from tests.stand_ins import stand_in_services
+from voices.api.main import create_app
 
 
 async def two_events(_stream):
@@ -11,7 +11,7 @@ async def two_events(_stream):
 
 def client_with(status=dict):
     return TestClient(
-        create_app(ApiServices({}, status, two_events, explore=FakeExplore(), runs=FakeRuns()))
+        create_app(stand_in_services(ingestion_status=status, event_stream=two_events))
     )
 
 

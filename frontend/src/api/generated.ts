@@ -20,6 +20,7 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 
+import { fetchOrThrow } from "./fetchOrThrow";
 export interface DayCount {
   day: string;
   posts: number;
@@ -28,6 +29,17 @@ export interface DayCount {
 export interface Days {
   days: DayCount[];
   latest_day: string | null;
+}
+
+/**
+ * One day the topic had any engagement.
+ */
+export interface EngagementDay {
+  day: string;
+  posts: number;
+  comments: number;
+  upvotes: number;
+  people: number;
 }
 
 export interface ValidationError {
@@ -90,6 +102,20 @@ export interface NamedTopic {
   direction: NamedTopicDirection;
 }
 
+/**
+ * A thread's opening post, as a typical post's card shows it. A thread whose post isn't
+ * stored is shown by its title, under an unknown author.
+ */
+export interface PostCard {
+  post_id: string;
+  thread_id: string;
+  kind: string;
+  author: string;
+  day: string;
+  title: string;
+  excerpt: string;
+}
+
 export type PredictedTopicDirection =
   (typeof PredictedTopicDirection)[keyof typeof PredictedTopicDirection];
 
@@ -103,6 +129,41 @@ export const PredictedTopicDirection = {
 export interface PredictedTopic {
   name: string;
   direction: PredictedTopicDirection;
+}
+
+export interface RankedPost {
+  post_id: string;
+  thread_id: string;
+  kind: string;
+  author: string;
+  day: string;
+  excerpt: string;
+  topic_id: number | null;
+  topic_label: string | null;
+  times_retrieved: number;
+  last_retrieved: string;
+  rank: number;
+}
+
+export type RetrievalStatsAgent = (typeof RetrievalStatsAgent)[keyof typeof RetrievalStatsAgent];
+
+export const RetrievalStatsAgent = {
+  report: "report",
+  tagging: "tagging",
+} as const;
+
+export interface TopicRetrievals {
+  topic_id: number | null;
+  label: string | null;
+  times_retrieved: number;
+}
+
+export interface RetrievalStats {
+  agent: RetrievalStatsAgent;
+  runs: string[];
+  total: number;
+  posts: RankedPost[];
+  topics: TopicRetrievals[];
 }
 
 export interface RunRequest {
@@ -182,6 +243,28 @@ export interface RunState {
   reason?: string | null;
 }
 
+/**
+ * One tagging decision that built the topic: minting it, or attaching threads to it.
+ */
+export interface TopicDecision {
+  day: string;
+  decision: string;
+  threads: number;
+  reason: string;
+}
+
+export interface TopicDetail {
+  id: number;
+  label: string;
+  description: string;
+  keywords: string[];
+  first_seen: string;
+  last_seen: string;
+  daily: EngagementDay[];
+  typical_posts: PostCard[];
+  decisions: TopicDecision[];
+}
+
 export type TopicInRangeDirection =
   (typeof TopicInRangeDirection)[keyof typeof TopicInRangeDirection];
 
@@ -215,6 +298,23 @@ export type ReportMapParams = {
   end: string;
 };
 
+export type ReportRetrievalsParams = {
+  start: string;
+  end: string;
+  agent?: ReportRetrievalsAgent;
+  run?: string | null;
+};
+
+export type ReportRetrievalsAgent =
+  (typeof ReportRetrievalsAgent)[keyof typeof ReportRetrievalsAgent];
+
+export const ReportRetrievalsAgent = {
+  report: "report",
+  tagging: "tagging",
+} as const;
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -238,16 +338,13 @@ export const getReportHealthUrl = () => {
  * Say whether every dependency answers, and name any that doesn't.
  * @summary Report Health
  */
-export const reportHealth = async (options?: RequestInit): Promise<unknown> => {
-  const res = await fetch(getReportHealthUrl(), {
+export const reportHealth = async (
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<unknown> => {
+  return fetchOrThrow<unknown>(getReportHealthUrl(), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: unknown = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getReportHealthQueryKey = () => {
@@ -259,14 +356,14 @@ export const getReportHealthQueryOptions = <
   TError = unknown,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportHealth>>, TError, TData>>;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof fetchOrThrow>;
 }) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getReportHealthQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof reportHealth>>> = ({ signal }) =>
-    reportHealth({ signal, ...fetchOptions });
+    reportHealth({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof reportHealth>>,
@@ -289,7 +386,7 @@ export function useReportHealth<TData = Awaited<ReturnType<typeof reportHealth>>
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -304,14 +401,14 @@ export function useReportHealth<TData = Awaited<ReturnType<typeof reportHealth>>
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useReportHealth<TData = Awaited<ReturnType<typeof reportHealth>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportHealth>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -322,7 +419,7 @@ export function useReportHealth<TData = Awaited<ReturnType<typeof reportHealth>>
 export function useReportHealth<TData = Awaited<ReturnType<typeof reportHealth>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportHealth>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -343,16 +440,13 @@ export const getReportIngestionUrl = () => {
  * How far the catch-up has got through the history.
  * @summary Report Ingestion
  */
-export const reportIngestion = async (options?: RequestInit): Promise<ReportIngestion200> => {
-  const res = await fetch(getReportIngestionUrl(), {
+export const reportIngestion = async (
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<ReportIngestion200> => {
+  return fetchOrThrow<ReportIngestion200>(getReportIngestionUrl(), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: ReportIngestion200 = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getReportIngestionQueryKey = () => {
@@ -364,14 +458,14 @@ export const getReportIngestionQueryOptions = <
   TError = unknown,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportIngestion>>, TError, TData>>;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof fetchOrThrow>;
 }) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getReportIngestionQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof reportIngestion>>> = ({ signal }) =>
-    reportIngestion({ signal, ...fetchOptions });
+    reportIngestion({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof reportIngestion>>,
@@ -397,7 +491,7 @@ export function useReportIngestion<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -415,7 +509,7 @@ export function useReportIngestion<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -425,7 +519,7 @@ export function useReportIngestion<
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportIngestion>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -439,7 +533,7 @@ export function useReportIngestion<
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportIngestion>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -460,16 +554,14 @@ export const getStreamEventsUrl = (stream: string) => {
  * Live events as server-sent events (atlas plate 41).
  * @summary Stream Events
  */
-export const streamEvents = async (stream: string, options?: RequestInit): Promise<unknown> => {
-  const res = await fetch(getStreamEventsUrl(stream), {
+export const streamEvents = async (
+  stream: string,
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<unknown> => {
+  return fetchOrThrow<unknown>(getStreamEventsUrl(stream), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: unknown = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getStreamEventsQueryKey = (stream: string) => {
@@ -483,15 +575,15 @@ export const getStreamEventsQueryOptions = <
   stream: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamEvents>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getStreamEventsQueryKey(stream);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof streamEvents>>> = ({ signal }) =>
-    streamEvents(stream, { signal, ...fetchOptions });
+    streamEvents(stream, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -521,7 +613,7 @@ export function useStreamEvents<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -540,7 +632,7 @@ export function useStreamEvents<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -551,7 +643,7 @@ export function useStreamEvents<
   stream: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamEvents>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -566,7 +658,7 @@ export function useStreamEvents<
   stream: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamEvents>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -587,16 +679,11 @@ export const getReportDaysUrl = () => {
  * Posts and comments per day across the history, and the latest day loaded.
  * @summary Report Days
  */
-export const reportDays = async (options?: RequestInit): Promise<Days> => {
-  const res = await fetch(getReportDaysUrl(), {
+export const reportDays = async (options?: Parameters<typeof fetchOrThrow>[1]): Promise<Days> => {
+  return fetchOrThrow<Days>(getReportDaysUrl(), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: Days = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getReportDaysQueryKey = () => {
@@ -608,14 +695,14 @@ export const getReportDaysQueryOptions = <
   TError = unknown,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportDays>>, TError, TData>>;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof fetchOrThrow>;
 }) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getReportDaysQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof reportDays>>> = ({ signal }) =>
-    reportDays({ signal, ...fetchOptions });
+    reportDays({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof reportDays>>,
@@ -638,7 +725,7 @@ export function useReportDays<TData = Awaited<ReturnType<typeof reportDays>>, TE
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -653,14 +740,14 @@ export function useReportDays<TData = Awaited<ReturnType<typeof reportDays>>, TE
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useReportDays<TData = Awaited<ReturnType<typeof reportDays>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportDays>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -671,7 +758,7 @@ export function useReportDays<TData = Awaited<ReturnType<typeof reportDays>>, TE
 export function useReportDays<TData = Awaited<ReturnType<typeof reportDays>>, TError = unknown>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportDays>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -704,17 +791,12 @@ export const getReportTopicsUrl = (params: ReportTopicsParams) => {
  */
 export const reportTopics = async (
   params: ReportTopicsParams,
-  options?: RequestInit,
+  options?: Parameters<typeof fetchOrThrow>[1],
 ): Promise<TopicInRange[]> => {
-  const res = await fetch(getReportTopicsUrl(params), {
+  return fetchOrThrow<TopicInRange[]>(getReportTopicsUrl(params), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: TopicInRange[] = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getReportTopicsQueryKey = (params?: ReportTopicsParams) => {
@@ -728,15 +810,15 @@ export const getReportTopicsQueryOptions = <
   params: ReportTopicsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopics>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getReportTopicsQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof reportTopics>>> = ({ signal }) =>
-    reportTopics(params, { signal, ...fetchOptions });
+    reportTopics(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof reportTopics>>,
@@ -763,7 +845,7 @@ export function useReportTopics<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -782,7 +864,7 @@ export function useReportTopics<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -793,7 +875,7 @@ export function useReportTopics<
   params: ReportTopicsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopics>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -808,7 +890,7 @@ export function useReportTopics<
   params: ReportTopicsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopics>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -839,16 +921,14 @@ export const getReportMapUrl = (params: ReportMapParams) => {
  * Every post and comment written in the range, placed on the range's own map.
  * @summary Report Map
  */
-export const reportMap = async (params: ReportMapParams, options?: RequestInit): Promise<Map> => {
-  const res = await fetch(getReportMapUrl(params), {
+export const reportMap = async (
+  params: ReportMapParams,
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<Map> => {
+  return fetchOrThrow<Map>(getReportMapUrl(params), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: Map = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getReportMapQueryKey = (params?: ReportMapParams) => {
@@ -862,15 +942,15 @@ export const getReportMapQueryOptions = <
   params: ReportMapParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportMap>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getReportMapQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof reportMap>>> = ({ signal }) =>
-    reportMap(params, { signal, ...fetchOptions });
+    reportMap(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof reportMap>>,
@@ -897,7 +977,7 @@ export function useReportMap<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -916,7 +996,7 @@ export function useReportMap<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -927,7 +1007,7 @@ export function useReportMap<
   params: ReportMapParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportMap>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -942,7 +1022,7 @@ export function useReportMap<
   params: ReportMapParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportMap>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -965,7 +1045,7 @@ export const getStartRunUrl = () => {
  */
 export const startRun = async (
   runRequest: RunRequest,
-  options?: RequestInit,
+  options?: Parameters<typeof fetchOrThrow>[1],
 ): Promise<RunStarted> => {
   const getHeaders = (
     h?: NonNullable<RequestInit["headers"]>,
@@ -986,17 +1066,12 @@ export const startRun = async (
     }
     return headers;
   };
-  const res = await fetch(getStartRunUrl(), {
+  return fetchOrThrow<RunStarted>(getStartRunUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
     body: JSON.stringify(runRequest),
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: RunStarted = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getStartRunMutationKey = () => ["startRun"] as const;
@@ -1011,7 +1086,7 @@ export const getStartRunMutationOptions = <
     StartRunMutationVariables,
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof fetchOrThrow>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof startRun>>,
   TError,
@@ -1019,11 +1094,11 @@ export const getStartRunMutationOptions = <
   TContext
 > => {
   const mutationKey = getStartRunMutationKey();
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof startRun>>,
@@ -1031,7 +1106,7 @@ export const getStartRunMutationOptions = <
   > = (props) => {
     const { data } = props ?? {};
 
-    return startRun(data, fetchOptions);
+    return startRun(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1053,7 +1128,7 @@ export const useStartRun = <TError = HTTPValidationError, TContext = unknown>(
       StartRunMutationVariables,
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
@@ -1073,16 +1148,14 @@ export const getReportRunUrl = (runId: string) => {
  * A run's state: running, finished with both versions and their scores, or failed.
  * @summary Report Run
  */
-export const reportRun = async (runId: string, options?: RequestInit): Promise<RunState> => {
-  const res = await fetch(getReportRunUrl(runId), {
+export const reportRun = async (
+  runId: string,
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<RunState> => {
+  return fetchOrThrow<RunState>(getReportRunUrl(runId), {
     ...options,
     method: "GET",
   });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: RunState = body ? JSON.parse(body) : {};
-  return data;
 };
 
 export const getReportRunQueryKey = (runId: string) => {
@@ -1096,15 +1169,15 @@ export const getReportRunQueryOptions = <
   runId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getReportRunQueryKey(runId);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof reportRun>>> = ({ signal }) =>
-    reportRun(runId, { signal, ...fetchOptions });
+    reportRun(runId, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -1134,7 +1207,7 @@ export function useReportRun<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1153,7 +1226,7 @@ export function useReportRun<
         >,
         "initialData"
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1164,7 +1237,7 @@ export function useReportRun<
   runId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1179,11 +1252,270 @@ export function useReportRun<
   runId: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRun>>, TError, TData>>;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof fetchOrThrow>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getReportRunQueryOptions(runId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getReportTopicUrl = (topicId: number) => {
+  return `/api/topics/${topicId}`;
+};
+
+/**
+ * One topic: its engagement each day across the history, its typical posts, and the
+ * tagging decisions that built it. 404 for a topic that doesn't exist.
+ * @summary Report Topic
+ */
+export const reportTopic = async (
+  topicId: number,
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<TopicDetail> => {
+  return fetchOrThrow<TopicDetail>(getReportTopicUrl(topicId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getReportTopicQueryKey = (topicId: number) => {
+  return [`/api/topics/${topicId}`] as const;
+};
+
+export const getReportTopicQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportTopic>>,
+  TError = HTTPValidationError,
+>(
+  topicId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopic>>, TError, TData>>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportTopicQueryKey(topicId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportTopic>>> = ({ signal }) =>
+    reportTopic(topicId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: topicId !== null && topicId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof reportTopic>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type ReportTopicQueryResult = NonNullable<Awaited<ReturnType<typeof reportTopic>>>;
+export type ReportTopicQueryError = HTTPValidationError;
+
+export function useReportTopic<
+  TData = Awaited<ReturnType<typeof reportTopic>>,
+  TError = HTTPValidationError,
+>(
+  topicId: number,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopic>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportTopic>>,
+          TError,
+          Awaited<ReturnType<typeof reportTopic>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportTopic<
+  TData = Awaited<ReturnType<typeof reportTopic>>,
+  TError = HTTPValidationError,
+>(
+  topicId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopic>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportTopic>>,
+          TError,
+          Awaited<ReturnType<typeof reportTopic>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportTopic<
+  TData = Awaited<ReturnType<typeof reportTopic>>,
+  TError = HTTPValidationError,
+>(
+  topicId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopic>>, TError, TData>>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Report Topic
+ */
+
+export function useReportTopic<
+  TData = Awaited<ReturnType<typeof reportTopic>>,
+  TError = HTTPValidationError,
+>(
+  topicId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportTopic>>, TError, TData>>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportTopicQueryOptions(topicId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getReportRetrievalsUrl = (params: ReportRetrievalsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/retrievals?${stringifiedParams}` : `/api/retrievals`;
+};
+
+/**
+ * Which posts written in the range an agent retrieved most, and its retrievals per
+ * topic; from one run, or from every run when none is named.
+ * @summary Report Retrievals
+ */
+export const reportRetrievals = async (
+  params: ReportRetrievalsParams,
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<RetrievalStats> => {
+  return fetchOrThrow<RetrievalStats>(getReportRetrievalsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getReportRetrievalsQueryKey = (params?: ReportRetrievalsParams) => {
+  return [`/api/retrievals`, ...(params ? [params] : [])] as const;
+};
+
+export const getReportRetrievalsQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportRetrievals>>,
+  TError = HTTPValidationError,
+>(
+  params: ReportRetrievalsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRetrievals>>, TError, TData>>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportRetrievalsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportRetrievals>>> = ({ signal }) =>
+    reportRetrievals(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof reportRetrievals>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReportRetrievalsQueryResult = NonNullable<Awaited<ReturnType<typeof reportRetrievals>>>;
+export type ReportRetrievalsQueryError = HTTPValidationError;
+
+export function useReportRetrievals<
+  TData = Awaited<ReturnType<typeof reportRetrievals>>,
+  TError = HTTPValidationError,
+>(
+  params: ReportRetrievalsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRetrievals>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportRetrievals>>,
+          TError,
+          Awaited<ReturnType<typeof reportRetrievals>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportRetrievals<
+  TData = Awaited<ReturnType<typeof reportRetrievals>>,
+  TError = HTTPValidationError,
+>(
+  params: ReportRetrievalsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRetrievals>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportRetrievals>>,
+          TError,
+          Awaited<ReturnType<typeof reportRetrievals>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportRetrievals<
+  TData = Awaited<ReturnType<typeof reportRetrievals>>,
+  TError = HTTPValidationError,
+>(
+  params: ReportRetrievalsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRetrievals>>, TError, TData>>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Report Retrievals
+ */
+
+export function useReportRetrievals<
+  TData = Awaited<ReturnType<typeof reportRetrievals>>,
+  TError = HTTPValidationError,
+>(
+  params: ReportRetrievalsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRetrievals>>, TError, TData>>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportRetrievalsQueryOptions(params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;

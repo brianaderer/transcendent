@@ -2,13 +2,13 @@ from datetime import date
 
 from fastapi.testclient import TestClient
 
-from tests.stand_ins import FakeExplore, FakeRuns, no_events
-from voices.api.main import ApiServices, create_app
+from tests.stand_ins import FakeRuns, stand_in_services
+from voices.api.main import create_app
 from voices.explore.day_range import DayRange
 
 
 def client(runs):
-    return TestClient(create_app(ApiServices({}, dict, no_events, FakeExplore(), runs)))
+    return TestClient(create_app(stand_in_services(runs=runs)))
 
 
 def test_starting_a_run_for_a_range_answers_with_its_id_and_stream():

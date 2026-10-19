@@ -2,13 +2,8 @@ import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 
-import {
-  type DayCount,
-  useReportDays,
-  useReportMap,
-  useReportTopics,
-  useStartRun,
-} from "../api/generated";
+import { type DayCount, useReportMap, useReportTopics, useStartRun } from "../api/generated";
+import { HistoryGate, postsIn } from "../HistoryGate";
 import { RunProgress } from "../runs/RunProgress";
 import { type LiveEvent, useLiveEvents } from "../useLiveEvents";
 import { topicColours } from "./colours";
@@ -20,12 +15,7 @@ import { TopicsPanel } from "./TopicsPanel";
 /** The main page (atlas plate 31, screen 1): one date range governs everything on it. */
 export function ExplorePage() {
   useRefreshWhenADayIsLoaded();
-  const days = useReportDays();
-  if (days.isPending) return <p>Loading the history…</p>;
-  if (days.isError) return <p>The history couldn't be loaded.</p>;
-  const history = loadedDays(days.data.days, days.data.latest_day);
-  if (history.length === 0) return <p>No days are loaded yet; the first start fills them in.</p>;
-  return <ExploreRange history={history} />;
+  return <HistoryGate>{(history) => <ExploreRange history={history} />}</HistoryGate>;
 }
 
 function ExploreRange({ history }: { history: DayCount[] }) {
@@ -108,14 +98,4 @@ function useRefreshWhenADayIsLoaded() {
     [queryClient],
   );
   useLiveEvents("ingestion", refresh);
-}
-
-function loadedDays(days: DayCount[], latest: string | null): DayCount[] {
-  return latest ? days.filter((day) => day.day <= latest) : [];
-}
-
-function postsIn(history: DayCount[], range: DayRange): number {
-  return history
-    .filter((day) => range.start <= day.day && day.day <= range.end)
-    .reduce((sum, day) => sum + day.posts, 0);
 }

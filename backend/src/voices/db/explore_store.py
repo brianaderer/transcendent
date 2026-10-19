@@ -2,12 +2,13 @@
 the posts of a range with their embeddings."""
 
 from collections.abc import Sequence
-from datetime import UTC, date, datetime, time, timedelta
+from datetime import UTC, date
 
-from sqlalchemy import Date, Engine, cast, func, select
+from sqlalchemy import Engine, func, select
 
 from voices.db.day_ledger import latest_day_with_status
 from voices.db.models import DAY_DONE, Post, Thread, Topic, TopicDailyEngagement
+from voices.db.post_columns import excerpt, written_between, written_on
 from voices.explore.shapes import DayCount, MapPost, TopicDay, TopicInfo
 
 EXCERPT_CHARACTERS = 160  # enough for the hover card
@@ -19,8 +20,8 @@ class ExploreStore:
 
     def posts_per_day(self) -> list[DayCount]:
         """Posts and comments written each day, by the day in UTC."""
-        written_on = cast(func.timezone("UTC", Post.created_at), Date).label("day")
-        query = select(written_on, func.count()).group_by(written_on).order_by(written_on)
+        day = written_on().label("day")
+        query = select(day, func.count()).group_by(day).order_by(day)
         with self.engine.connect() as connection:
             return [DayCount(day=d, posts=n) for d, n in connection.execute(query)]
 
@@ -58,28 +59,17 @@ class ExploreStore:
                 Post.author,
                 Post.created_at,
                 Thread.title.label("thread_title"),
-                _excerpt(),
+                excerpt(EXCERPT_CHARACTERS),
                 Thread.topic_id.label("thread_topic_id"),
                 Post.embedding,
             )
             .join(Thread, Thread.source_id == Post.thread_source_id)
-            .where(Post.created_at >= _start_of(first_day))
-            .where(Post.created_at < _start_of(last_day + timedelta(days=1)))
+            .where(*written_between(first_day, last_day))
             .where(Post.embedding.is_not(None))
             .order_by(Post.created_at, Post.source_id)
         )
         with self.engine.connect() as connection:
             return [_map_post(r._mapping) for r in connection.execute(query)]
-
-
-def _excerpt():
-    """The post's opening words, or its thread's title for a post with no text (a link)."""
-    text = func.coalesce(func.nullif(Post.body, ""), Thread.title)
-    return func.left(text, EXCERPT_CHARACTERS).label("excerpt")
-
-
-def _start_of(day: date) -> datetime:
-    return datetime.combine(day, time(), UTC)
 
 
 def _map_post(row) -> MapPost:

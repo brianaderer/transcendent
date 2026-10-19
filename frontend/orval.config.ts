@@ -11,7 +11,10 @@ export default defineConfig({
       httpClient: "fetch",
       baseUrl: "",
       prettier: true,
-      override: { fetch: { includeHttpResponseReturnType: false } },
+      override: {
+        fetch: { includeHttpResponseReturnType: false },
+        mutator: { path: "./src/api/fetchOrThrow.ts", name: "fetchOrThrow" },
+      },
     },
   },
 });

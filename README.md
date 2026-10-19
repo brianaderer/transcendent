@@ -173,8 +173,15 @@ takes a few seconds the first time (**Recomputing map…** shows meanwhile; a we
 read the post, click it to open it on Reddit. The **Topics** list beside it has the range's
 topics, busiest first, each with a line of its daily activity, its post count and a badge:
 **New**, **Rising**, **Steady** or **Fading** against the same number of days before. Hover a
-topic to pick out its dots. The **Dark** (or **Light**) button at the right of the top bar
-switches between dark and light colours.
+topic to pick out its dots, or click its name to open its page: its engagement every day
+across the eight weeks (posts, comments and upvotes stacked, the number of different people
+as a line, your range shaded), three typical posts, and **How this topic was built**, the
+tagging agent's decisions with its reasons. **Retrieval stats** in the top bar shows which
+posts the agents' search and lookup tools retrieved most, as a table you can sort by any
+column, with retrievals per topic as bars above it. It opens on the report agent, which
+has nothing to show until a report is generated; click **Tagging agent** (or **Show the
+tagging agent's retrievals**) to see the tagging agent's. The **Dark** (or **Light**) button
+at the right of the top bar switches between dark and light colours.
 
 **The report, with and without retrieval.** Click **Generate report for …** below the plot.
 The same model writes the Community Voices Document for the range twice: version A on its
@@ -209,7 +216,7 @@ docker compose run --rm --no-deps frontend npm test
 ```
 
 Each should end with every test passed (a `warning` line from a library is fine). The backend
-line also says `55 deselected`: fifty-four tests that need a running database and one that calls the
+line also says `70 deselected`: sixty-nine tests that need a running database and one that calls the
 real model (step 6), which the default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline in seconds.
 

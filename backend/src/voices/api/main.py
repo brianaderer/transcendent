@@ -19,7 +19,9 @@ from pydantic import BaseModel
 
 from voices.config import HISTORY_DAYS, load_settings
 from voices.db.explore_store import ExploreStore
+from voices.db.retrieval_store import RetrievalStore
 from voices.db.store import connect_store
+from voices.db.topic_store import TopicStore
 from voices.events import server_sent_events
 from voices.explore.cache import RedisMapCache
 from voices.explore.day_range import DayRange, InvalidRange
@@ -30,6 +32,10 @@ from voices.health import database_is_reachable, queue_is_reachable
 from voices.log import configure_logging, log_event, tracing
 from voices.report.launcher import RunLauncher, RunStarted
 from voices.report.runs import RunNotFound, RunState, RunStore
+from voices.retrievals.retrieval_stats import RetrievalStatistics
+from voices.retrievals.shapes import Agent, RetrievalFilter, RetrievalStats
+from voices.topics.shapes import TopicDetail
+from voices.topics.topic_detail import TopicDetails, TopicNotFound
 
 HealthChecks = dict[str, Callable[[], bool]]
 STREAMS = {"ingestion"}
@@ -53,6 +59,14 @@ class ExploreReads(Protocol):
     def map(self, days: DayRange) -> Map: ...
 
 
+class TopicReads(Protocol):
+    def detail(self, topic_id: int) -> TopicDetail: ...
+
+
+class RetrievalReads(Protocol):
+    def stats(self, which: RetrievalFilter) -> RetrievalStats: ...
+
+
 @dataclass(frozen=True)
 class ApiServices:
     """What the routes depend on, passed in so tests can use stand-ins."""
@@ -62,6 +76,8 @@ class ApiServices:
     event_stream: Callable[[str], AsyncIterator[str]]
     explore: ExploreReads
     runs: Runs
+    topics: TopicReads
+    retrievals: RetrievalReads
 
 
 logger = logging.getLogger(__name__)
@@ -77,6 +93,7 @@ def create_app(services: ApiServices) -> FastAPI:
     app.middleware("http")(log_each_request)
     app.add_middleware(GZipMiddleware, minimum_size=SMALLEST_RESPONSE_TO_COMPRESS)
     app.exception_handler(InvalidRange)(refuse_the_range)
+    app.exception_handler(TopicNotFound)(say_the_topic_is_not_found)
 
     @app.get("/api/health")
     def report_health() -> JSONResponse:
@@ -128,6 +145,20 @@ def create_app(services: ApiServices) -> FastAPI:
         except RunNotFound as error:
             raise HTTPException(status_code=404, detail=f"no run {run_id}") from error
 
+    @app.get("/api/topics/{topic_id}")
+    def report_topic(topic_id: int) -> TopicDetail:
+        """One topic: its engagement each day across the history, its typical posts, and the
+        tagging decisions that built it. 404 for a topic that doesn't exist."""
+        return services.topics.detail(topic_id)
+
+    @app.get("/api/retrievals")
+    def report_retrievals(
+        start: date, end: date, agent: Agent = "report", run: str | None = None
+    ) -> RetrievalStats:
+        """Which posts written in the range an agent retrieved most, and its retrievals per
+        topic; from one run, or from every run when none is named."""
+        return services.retrievals.stats(RetrievalFilter(agent, DayRange(start, end), run))
+
     return app
 
 
@@ -138,6 +169,10 @@ def name_operation_after_its_function(route: APIRoute) -> str:
 
 async def refuse_the_range(_request: Request, error: Exception) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": str(error)})
+
+
+async def say_the_topic_is_not_found(_request: Request, error: Exception) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": f"no topic with id {error}"})
 
 
 async def log_each_request(
@@ -187,6 +222,8 @@ def create_production_app() -> FastAPI:
             event_stream=lambda stream: server_sent_events(settings.redis_url, stream),
             explore=Explore(ExploreStore(store.engine), map_cache, flatten),
             runs=RunLauncher(RunStore(redis_client), queue_on(settings.redis_url)),
+            topics=TopicDetails(TopicStore(store.engine)),
+            retrievals=RetrievalStatistics(RetrievalStore(store.engine)),
         )
     )
 
