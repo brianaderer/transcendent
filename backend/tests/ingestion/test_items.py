@@ -33,7 +33,9 @@ def test_a_link_post_with_no_text_keeps_just_its_title():
         "selftext": "",
     }
 
-    assert post_from_archive(raw).body == "Sunset"
+    post = post_from_archive(raw)
+
+    assert post.body == post.title == "Sunset"
 
 
 def test_a_comment_knows_its_thread_and_what_it_replies_to():

@@ -7,12 +7,24 @@ DAY = date(2026, 10, 15)
 AT = datetime(2026, 10, 15, 12, tzinfo=UTC)
 
 
-def post(source_id, body="Which anchor for a 32ft sloop?"):
-    return Item(source_id, source_id, "post", "salty", AT, "", 5, None, title=body)
+def post(source_id, title="Which anchor for a 32ft sloop?"):
+    return Item(
+        source_id,
+        source_id,
+        "post",
+        "salty",
+        AT,
+        text="",
+        reddit_score=5,
+        parent_source_id=None,
+        title=title,
+    )
 
 
-def comment(source_id, body, parent, thread="p1", author="deckhand"):
-    return Item(source_id, thread, "comment", author, AT, body, 1, parent)
+def comment(source_id, text, parent, thread="p1", author="deckhand"):
+    return Item(
+        source_id, thread, "comment", author, AT, text=text, reddit_score=1, parent_source_id=parent
+    )
 
 
 class FakeArchive:
@@ -110,7 +122,7 @@ def test_an_agreeing_reply_to_a_post_we_do_not_have_is_dropped():
 
 
 def test_a_comment_on_a_thread_older_than_the_history_brings_the_thread_title_with_it():
-    old = post("p0", body="Winter cover ideas")
+    old = post("p0", title="Winter cover ideas")
     store = FakeStore()
     run(
         FakeArchive(

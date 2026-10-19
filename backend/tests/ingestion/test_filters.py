@@ -6,14 +6,16 @@ from voices.ingestion.filters import REMOVED_TEXT, is_unwanted
 from voices.ingestion.items import Item, post_from_archive
 
 
-def item(author="salty", body="Rocna, every time."):
+def item(author="salty", text="Rocna, every time."):
     at = datetime(2026, 10, 15, tzinfo=UTC)
-    return Item("c1", "abc", "comment", author, at, body, 1, "abc")
+    return Item(
+        "c1", "abc", "comment", author, at, text=text, reddit_score=1, parent_source_id="abc"
+    )
 
 
-@pytest.mark.parametrize("body", sorted(REMOVED_TEXT))
-def test_removed_text_is_dropped(body):
-    assert is_unwanted(item(body=body))
+@pytest.mark.parametrize("text", sorted(REMOVED_TEXT))
+def test_removed_text_is_dropped(text):
+    assert is_unwanted(item(text=text))
 
 
 def test_a_deleted_author_is_dropped():
