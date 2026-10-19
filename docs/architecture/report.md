@@ -13,7 +13,8 @@ store by meaning (atlas OPEN-39).
 ## Public interface
 - `tasks.write_task(days)` and `tasks.predict_task(days)` — what the model is asked, as a
   `Task` (phase, instructions, answer tool). The words are the same for both versions. The report
-  asks for each topic's direction and, for each topic, where it looks to be heading next and
+  asks for each quote to be a Markdown link to its post, using the `link` every post read
+  carries (`voices.reddit_links.post_link`: a post opens its thread, a comment itself), and for each topic's direction and, for each topic, where it looks to be heading next and
   why. Both tasks say to work from what the model can see in the community's posts with its
   tools (A's reading, B's searches) and from what it knows of the community and the season,
   and to say plainly where its evidence is thin (`FROM_WHAT_YOU_CAN_SEE`); the prediction

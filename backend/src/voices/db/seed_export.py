@@ -116,7 +116,8 @@ SEED_TABLES = (
     TableExport(
         "retrieval_events",
         _as_stored("id", "post_source_id", "run", "agent", "tool", "at"),
-        "FROM retrieval_events ORDER BY id",
+        # Report runs are a reviewer's own to make; only the tagging agent's come seeded.
+        "FROM retrieval_events WHERE agent = 'tagging' ORDER BY id",
     ),
     TableExport(
         "noise_threads",

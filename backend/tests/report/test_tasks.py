@@ -44,3 +44,9 @@ def test_both_tasks_define_direction_as_momentum_within_the_period():
         words = " ".join(task.instructions.split())
         assert "growing toward their end, holding, or dying away" in words
         assert "days before" not in words
+
+
+def test_the_report_asks_for_each_quote_to_link_to_its_post():
+    document = write_task(DAYS).answer.model_fields["document"].description
+
+    assert "link" in document and "Markdown" in document

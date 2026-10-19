@@ -12,6 +12,7 @@ from voices.db.models import (
     ClusterDecision,
     IngestedDay,
     Post,
+    RetrievalEvent,
     Thread,
     Topic,
     TopicDailyEngagement,
@@ -93,6 +94,13 @@ def fill(engine):
             [{"topic_id": 1, "day": DAY, "posts": 1}, {"topic_id": 2, "day": DAY, "posts": 3}],
         )
         connection.execute(insert(IngestedDay).values(day=DAY, status="done", counts={"n": 1}))
+        connection.execute(
+            insert(RetrievalEvent),
+            [
+                {"post_source_id": "test-a", "run": "day", "agent": "tagging", "tool": "search"},
+                {"post_source_id": "test-a", "run": "dev", "agent": "report", "tool": "search"},
+            ],
+        )
 
 
 @pytest.fixture
@@ -158,6 +166,12 @@ def test_usernames_are_replaced_by_stand_ins_wherever_they_appear(engine):
 
     assert column_values(posts, "author") == ["sailor-0001", "sailor-0002"]
     assert column_values(posts, "body") == ["Ask u/sailor-0002, they know.", "Which anchor?"]
+
+
+def test_only_the_tagging_agents_retrievals_are_seeded_so_a_reviewer_starts_with_no_reports(
+    engine,
+):
+    assert column_values(seeded(engine)["retrieval_events"], "agent") == ["tagging"]
 
 
 def test_an_exported_seed_loads_into_an_empty_database_as_it_was(engine, tmp_path):

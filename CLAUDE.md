@@ -344,7 +344,8 @@ core feature, not an afterthought:
   settings, prompt wording, the week covered, output format — is identical, so the
   only difference between the two documents is the retrieval.
 - **Reports are ephemeral.** A comparison run's reports and scores are shown when it
-  finishes and are not stored (atlas OPEN-24); they may be made downloadable.
+  finishes and kept only for a day, never in the database (atlas OPEN-24); they may be
+  made downloadable.
 - **The app shows the comparison side by side**, with measurements, not just two
   blocks of text. The document's conclusions are aggregate (which topics, how big,
   which way they're moving), so both versions are scored against one answer key

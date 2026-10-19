@@ -61,7 +61,8 @@ named it keeps its record with no topic. Usernames are replaced as rows are read
 `StandInNames` serves the whole export, so a user's posts and every `u/name` mention of them,
 in a post's text or a thread's title, carry the same stand-in. Tables come in the order they load in, each after
 the tables it points to: topics, cluster decisions, threads, posts, daily upvotes, daily
-engagement, retrieval records, noise markers, and the day ledger last.
+engagement, retrieval records (the tagging agent's only: report runs are the reviewer's own
+to make), noise markers, and the day ledger last.
 
 **Load.** `load_seed` does nothing when `ingested_days` has any row: a database the catch-up
 filled, or one already seeded, is left as it is, so a restart never loads twice and the
