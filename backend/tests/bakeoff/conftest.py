@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-from langchain_core.messages import AIMessage
 
 from voices.bakeoff.sample import Case, Comment, SampleData, SampleThread, SampleTopic
 
@@ -15,6 +14,7 @@ class WordEmbedder:
         return [self.embed_query(text) for text in texts]
 
     def embed_query(self, text):
+        # A small floor on every dimension keeps a text with no known words from being all zeros.
         lowered = text.lower()
         return [float(lowered.count(word)) + 0.01 for word in self.WORDS]
 
@@ -48,24 +48,3 @@ def sample():
 @pytest.fixture
 def embedder():
     return WordEmbedder()
-
-
-USAGE = {"input_tokens": 1000, "output_tokens": 100, "total_tokens": 1100}
-
-
-class AlwaysAttachesToTheft:
-    def bind_tools(self, tools):
-        return self
-
-    def invoke(self, messages):
-        arguments = {"action": "attach", "topic_id": 1, "reason": "Theft."}
-        call = {"name": "Decision", "args": arguments, "id": "1"}
-        return AIMessage(content="", tool_calls=[call], usage_metadata=USAGE)
-
-
-class NeverDecides:
-    def bind_tools(self, tools):
-        return self
-
-    def invoke(self, messages):
-        return AIMessage(content="hmm", usage_metadata=USAGE)

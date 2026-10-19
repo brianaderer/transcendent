@@ -3,10 +3,10 @@
 from datetime import date
 
 from voices.bakeoff.runner import CaseResult, ModelResult
-from voices.bakeoff.sample import CASES_FILE, Case, SampleData
+from voices.bakeoff.sample import CASES_FILE, Case, SampleData, topic_label
 from voices.bakeoff.scoring import Verdict
 
-MISTAKES = [verdict for verdict in Verdict if verdict is not Verdict.RIGHT]
+WRONG_VERDICTS = [verdict for verdict in Verdict if verdict is not Verdict.RIGHT]
 
 
 def render_report(results: list[ModelResult], sample: SampleData, run_on: date) -> str:
@@ -32,10 +32,10 @@ def render_report(results: list[ModelResult], sample: SampleData, run_on: date) 
 def _summary(results: list[ModelResult]) -> list[str]:
     rows = [
         ("Right", lambda r: f"{r.right} of {len(r.cases)} ({r.share_right:.0%})"),
-        *[(verdict.capitalize(), _counter(verdict)) for verdict in MISTAKES],
-        ("Look-ups per decision", lambda r: f"{r.mean(lambda c: c.meter.look_ups):.1f}"),
-        ("Model calls per decision", lambda r: f"{r.mean(lambda c: c.meter.model_calls):.1f}"),
-        ("Seconds per decision", lambda r: f"{r.mean(lambda c: c.seconds):.1f}"),
+        *[(verdict.capitalize(), _counter(verdict)) for verdict in WRONG_VERDICTS],
+        ("Look-ups per decision", lambda r: f"{r.look_ups_per_decision:.1f}"),
+        ("Model calls per decision", lambda r: f"{r.model_calls_per_decision:.1f}"),
+        ("Seconds per decision", lambda r: f"{r.seconds_per_decision:.1f}"),
         ("Tokens read, written", lambda r: f"{r.tokens_in:,}, {r.tokens_out:,}"),
         ("Cost of the run", lambda r: f"${r.cost:.4f}"),
     ]
@@ -60,8 +60,7 @@ def _case_table(results: list[ModelResult], sample: SampleData) -> list[str]:
 
 def right_answer(case: Case, sample: SampleData) -> str:
     if case.expected == "attach":
-        labels = {topic.topic_id: topic.label for topic in sample.topics}
-        return f"attach: {labels[case.topic_id]}"
+        return f"attach: {topic_label(sample, case.topic_id)}"
     return case.expected
 
 

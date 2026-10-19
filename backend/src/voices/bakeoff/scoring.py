@@ -17,7 +17,7 @@ class Verdict(StrEnum):
 
 
 # (right answer, given answer) for every way of giving the wrong action.
-_MISTAKES = {
+_WRONG_ACTION_VERDICTS = {
     ("attach", "mint"): Verdict.DUPLICATE_TOPIC,
     ("attach", "noise"): Verdict.REAL_CALLED_NOISE,
     ("mint", "noise"): Verdict.REAL_CALLED_NOISE,
@@ -29,7 +29,7 @@ _MISTAKES = {
 
 def judge(case: Case, decision: Decision) -> Verdict:
     if decision.action != case.expected:
-        return _MISTAKES[(case.expected, decision.action)]
+        return _WRONG_ACTION_VERDICTS[(case.expected, decision.action)]
     if case.expected == "attach" and decision.topic_id != case.topic_id:
         return Verdict.WRONG_TOPIC
     return Verdict.RIGHT

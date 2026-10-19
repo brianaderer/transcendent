@@ -11,10 +11,13 @@ from pydantic import BaseModel, Field
 SAME_NEW_TOPIC_SIMILARITY = 0.90
 
 
+Action = Literal["attach", "mint", "noise"]
+
+
 class Decision(BaseModel):
     """The tagging agent's answer for one cluster of posts."""
 
-    action: Literal["attach", "mint", "noise"] = Field(
+    action: Action = Field(
         description="attach: these posts continue an existing topic; mint: a new topic; "
         "noise: chatter that belongs to no topic"
     )

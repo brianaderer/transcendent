@@ -10,9 +10,12 @@ import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import get_args
+
+from voices.tagging.decisions import Action
 
 CASES_FILE = Path(__file__).with_name("tagging_cases.json")
-ACTIONS = ("attach", "mint", "noise")
+ACTIONS = get_args(Action)
 
 
 @dataclass(frozen=True)
@@ -46,7 +49,7 @@ class SampleTopic:
 class Case:
     name: str
     thread_ids: list[str]
-    expected: str  # one of ACTIONS
+    expected: Action
     topic_id: int | None  # the topic to attach to; None unless expected is attach
 
 
@@ -64,6 +67,11 @@ def load_sample_data(path: Path = CASES_FILE) -> SampleData:
         threads={source_id: _thread(source_id, t) for source_id, t in raw["threads"].items()},
         cases=[_case(case) for case in raw["cases"]],
     )
+
+
+def topic_label(sample: SampleData, topic_id: int | None) -> str:
+    labels = {topic.topic_id: topic.label for topic in sample.topics}
+    return labels.get(topic_id, f"topic {topic_id}, which does not exist")
 
 
 def _topic(raw: dict) -> SampleTopic:

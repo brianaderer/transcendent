@@ -1,6 +1,8 @@
 import pytest
 
-from voices.bakeoff.sample_store import SampleStore
+from tests.bakeoff.conftest import thread
+from voices.bakeoff.sample import Comment
+from voices.bakeoff.sample_store import THREAD_TEXT_CHARACTERS, SampleStore, thread_text
 from voices.db.tagging_store import PostNotFound
 
 
@@ -41,3 +43,17 @@ def test_searching_topics_finds_the_closest_by_meaning(sample, embedder):
     [nearest, *_] = SampleStore(sample, embedder).search_topics(embedder.embed_query("learn"), 5)
 
     assert nearest["label"] == "Learning to sail"
+
+
+def test_thread_text_keeps_only_the_best_scored_comments():
+    comments = [Comment(f"c{n}", "u", f"reply{n}", "t", score=n) for n in range(6)]
+
+    text = thread_text(thread("t", "The post", comments))
+
+    assert "reply5" in text and "reply1" in text and "reply0" not in text
+
+
+def test_thread_text_is_cut_at_the_character_limit():
+    long_reply = Comment("c", "u", "x" * THREAD_TEXT_CHARACTERS, "t", score=1)
+
+    assert len(thread_text(thread("t", "The post", [long_reply]))) == THREAD_TEXT_CHARACTERS

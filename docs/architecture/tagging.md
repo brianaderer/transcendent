@@ -28,7 +28,7 @@ both have happened.
   valid decision, which stops the day.
 - `graph.decide_all(decider, briefs)` — every cluster decided in parallel (a LangGraph
   fan-out), returned in the briefs' order.
-- `decisions.Decision` (attach / mint / noise, with topic id, label, description, reason),
+- `decisions.Decision` (attach / mint / noise, the `decisions.Action` type, with topic id, label, description, reason),
   `ClusterBrief`, `CandidateTopic`, `TypicalPost`, `DecidedCluster`, `settle_mints(...)`.
 - `tools.TaggingTools(store, embedder, day).run(name, arguments)` — `search`, `lookup`,
   `search_tags`; returns what the agent reads back, as JSON text (or a sentence naming the

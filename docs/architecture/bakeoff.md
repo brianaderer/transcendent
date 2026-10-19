@@ -15,19 +15,27 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
   models, so it needs `OPENROUTER_API_KEY` and spends money (about 20 cents for both models).
 - `sample.load_sample_data(path=CASES_FILE) -> SampleData` — the committed sample: topics,
   threads with their top comments, and cases. `Case` holds a group of thread ids, the right
-  action (`attach`, `mint` or `noise`) and, for attach, the right topic.
+  action (an `Action` from tagging: `attach`, `mint` or `noise`) and, for attach, the right
+  topic. `sample.topic_label(sample, topic_id)` names a topic, or says it does not exist.
 - `sample_store.SampleStore(sample, embedder)` — the sample behind the tagging tools' store
   interface (`search_posts`, `lookup_post`, `search_topics`, `record_retrievals`), searched
   by meaning with the real embedding model; `brief(case)` builds the case's brief the way
-  production builds a cluster's; `case_day(case)`, `topic_label(topic_id)`.
+  production builds a cluster's; `tools_for(case)` gives the production `TaggingTools`
+  reading the store, as on the case's day (`case_day(case)`). The store keeps the embedder
+  it was given, and embeds everything once when it is built.
   `thread_text(thread)` is a thread as one text: its post and its five best-scored comments.
 - `scoring.judge(case, decision) -> Verdict` — right, or which mistake: wrong topic, a
   duplicate of an existing topic, a real conversation called noise, a new subject attached
   to an old topic, noise kept, or no decision.
-- `runner.run_bakeoff(model_names, store, embedder, connect) -> list[ModelResult]` — checks
+- `live.run_live_bakeoff(model_names) -> list[ModelResult]` — the bake-off against the real
+  models: the committed sample, the real embedding model, and the key from the settings.
+  Used by `python -m voices.bakeoff` and the `bakeoff`-marked test.
+- `runner.run_bakeoff(model_names, store, connect) -> list[ModelResult]` — checks
   every model has a price before calling any, then runs each case through the production
   `ToolLoopDecider` and `TaggingTools`. `ModelResult` gives `right`, `share_right`,
-  `count(verdict)`, `tokens_in`, `tokens_out`, `cost`, `mean(measure)` and every `CaseResult`.
+  `count(verdict)`, `tokens_in`, `tokens_out`, `cost`, `look_ups_per_decision`,
+  `model_calls_per_decision`, `seconds_per_decision` and every `CaseResult` (its `verdict`,
+  `answer` and `judged` reason).
 - `metering.MeteredModel`, `metering.CountingTools`, `metering.Meter` — wrap a chat model and
   the tools to count model calls, tokens read and written, and look-ups. A reply without token
   counts raises `MissingUsage`.
@@ -47,7 +55,7 @@ decision is judged against the case's right answer and the meter's counts are ke
 Cases run one after another, so the time per decision is not affected by other decisions.
 
 ## Uses
-[tagging](tagging.md) (`ToolLoopDecider`, `NoDecision`, `TaggingTools`, `Decision`,
+[tagging](tagging.md) (`ToolLoopDecider`, `NoDecision`, `TaggingTools`, `Decision`, `Action`,
 `ClusterBrief`, `TypicalPost`, `CandidateTopic`, `connect_model`, and the brief sizes
 `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`),
 [database](database.md) (`PostNotFound` and the excerpt lengths from `tagging_store`),
