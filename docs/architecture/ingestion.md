@@ -56,7 +56,8 @@ their parent, embed the rest, and save it all in one transaction. A day whose lo
 leaves nothing behind. In the worker, `process` loads the day and then tags it; if tagging
 fails, the loaded posts stay (their threads undecided) and the day is marked failed. Either way the
 day is redone from the start at the next catch-up (the worker retries a failed one after ten
-minutes), and saving it again adds nothing.
+minutes), and saving it again adds nothing; a thread deleted as noise since the day was
+first loaded stays deleted, its post and comments dropped like any later comment on it.
 
 - **The archive** returns at most 100 items a request, so reads are paged by creation time;
   an item repeated across a page boundary is kept once, and a page that never advances is
