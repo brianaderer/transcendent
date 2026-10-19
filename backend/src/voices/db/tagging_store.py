@@ -193,7 +193,7 @@ class _DecisionApplier:
             "noise_waiting": 0,
             "noise_deleted": 0,
             "left_waiting": 0,
-            "kept_first_days_topic": 0,
+            "settled_unchanged": 0,
         }
 
     def apply(self, item: DecidedCluster) -> None:
@@ -221,13 +221,13 @@ class _DecisionApplier:
         their first day's topic, if any, and are settled."""
         decision_id = self._record(item, topic_id)
         if topic_id is None:
-            self._leave_waiting_on_first_day(item)
+            self._count_left_waiting_on_first_day(item)
             self._settle_on_third_day(item)
             return
-        topics_left = self._current_topics(_members(item))
+        topics_before = self._current_topics(_members(item))
         statement = _tag_threads(_members(item), topic_id, decision_id, self.day)
         self.counts["attached"] += self.connection.execute(statement).rowcount
-        self._refresh_centres(topics_left | {topic_id})
+        self._refresh_centres(topics_before | {topic_id})
         self._mark_seen_today(topic_id)
 
     def mint_topic(self, item: DecidedCluster) -> int:
@@ -238,7 +238,7 @@ class _DecisionApplier:
         return topic_id
 
     def _delete_on_third_day(self, item: DecidedCluster) -> None:
-        on_third_day = and_(_members(item), _on_or_after_third_day(self.day))
+        on_third_day = self._members_on_third_day(item)
         topics_left = self._current_topics(on_third_day)
         doomed = select(Thread.source_id).where(on_third_day)
         self.connection.execute(delete(Post).where(Post.thread_source_id.in_(doomed)))
@@ -247,7 +247,7 @@ class _DecisionApplier:
         self._refresh_centres(topics_left)
 
     def _wait_for_third_day(self, item: DecidedCluster, decision_id: int) -> None:
-        on_first_day = and_(_members(item), not_(_on_or_after_third_day(self.day)))
+        on_first_day = self._members_on_first_day(item)
         statement = (
             update(Thread)
             .where(on_first_day)
@@ -255,15 +255,21 @@ class _DecisionApplier:
         )
         self.counts["noise_waiting"] += self.connection.execute(statement).rowcount
 
-    def _leave_waiting_on_first_day(self, item: DecidedCluster) -> None:
-        on_first_day = and_(_members(item), not_(_on_or_after_third_day(self.day)))
+    def _count_left_waiting_on_first_day(self, item: DecidedCluster) -> None:
+        on_first_day = self._members_on_first_day(item)
         members = select(func.count()).select_from(Thread).where(on_first_day)
         self.counts["left_waiting"] += self.connection.scalar(members)
 
     def _settle_on_third_day(self, item: DecidedCluster) -> None:
-        on_third_day = and_(_members(item), _on_or_after_third_day(self.day))
+        on_third_day = self._members_on_third_day(item)
         statement = update(Thread).where(on_third_day).values(stage="settled")
-        self.counts["kept_first_days_topic"] += self.connection.execute(statement).rowcount
+        self.counts["settled_unchanged"] += self.connection.execute(statement).rowcount
+
+    def _members_on_first_day(self, item: DecidedCluster) -> ColumnElement[bool]:
+        return and_(_members(item), not_(_on_or_after_third_day(self.day)))
+
+    def _members_on_third_day(self, item: DecidedCluster) -> ColumnElement[bool]:
+        return and_(_members(item), _on_or_after_third_day(self.day))
 
     def _refresh_centres(self, topic_ids: set[int]) -> None:
         for topic_id in topic_ids:
