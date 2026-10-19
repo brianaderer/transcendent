@@ -98,7 +98,8 @@ Events go out on the run's stream: `run.started`, per version `step.started` /
 `step.finished` / `usage` / `tool.called` / `tool.returned`, then a `measurement.done` per
 score, then `run.finished` (or `run.failed` with the reason). `run.finished` is sent by the
 worker task (`run_and_keep_result`) only after the result is saved, so a page that rereads the
-run on hearing it finds the result. The result is kept in Redis for a
+run on hearing it finds the result; likewise `run.failed` is sent only after the run is marked
+failed with its reason. The result is kept in Redis for a
 day so the Document and Comparison pages can read it; nothing else is kept.
 
 ## Uses

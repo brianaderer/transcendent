@@ -123,11 +123,12 @@ function LaneBar({ lane }: { lane: Lane }) {
   );
 }
 
-/** Both versions have answered; their topics are being matched and scored. */
+/** The run has finished or failed, and its ending is already kept. */
 function endsTheRun(event: LiveEvent): boolean {
   return event.type === "run.finished" || event.type === "run.failed";
 }
 
+/** Both versions have answered; their topics are being matched and scored. */
 function isScoring(progress: Progress): boolean {
   return progress.measuring || VERSION_ORDER.every((v) => progress.lanes[v].stage === "done");
 }

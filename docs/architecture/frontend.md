@@ -118,8 +118,9 @@ Screens and parts:
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 - `runs/RunProgress` — below Explore's plot once a run is started. Once both lanes are done and
   the scores are being worked out it shows "Scoring both versions…" with the shared `Spinner`, and
-  on `run.finished` or `run.failed` it rereads the run at once, so the Document and Comparison
-  links appear as soon as the result is saved. One lane per version, each
+  on `run.finished` or `run.failed` (`endsTheRun`) it rereads the run at once, rather than at
+  its next check every 3 seconds; the worker keeps the run's ending before announcing it, so
+  the Document and Comparison links, or the failure, appear as soon as they are saved. One lane per version, each
   with a progress bar fed by the live events (`laneProgress`: waiting, writing the report,
   predicting the range, done; each phase's share fills with its tool calls, up to the writer's
   cap) and a label such as "Writing the report · 3 tool calls"; under it,
