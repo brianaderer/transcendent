@@ -118,7 +118,8 @@ function Counts({ stats, range, onShowTagging }: CountsProps) {
   );
 }
 
-/** Today only the tagging agent has retrieved anything until a report is generated. */
+/** On a fresh install only the tagging agent has retrieved anything, so the empty report view
+ * offers the tagging agent's counts. */
 function NoRetrievals({ agent, onShowTagging }: { agent: Agent; onShowTagging: () => void }) {
   return (
     <div className="space-y-3 rounded-lg border border-dashed border-slate-300 p-6 dark:border-slate-700">

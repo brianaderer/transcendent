@@ -41,7 +41,7 @@ history and fills the quiet days with zeros.
 
 ## Uses
 [database](database.md) (`topics`, `topic_daily_engagement`, `threads`, `posts`,
-`cluster_decisions`; `voices.db.post_columns` for the excerpt; `UNKNOWN_AUTHOR` from
+`cluster_decisions`; `voices.db.post_columns` for the excerpt and the thread's UTC day (`written_on`); `UNKNOWN_AUTHOR` from
 `voices.db.tagging_store`), Pydantic.
 
 ## Used by

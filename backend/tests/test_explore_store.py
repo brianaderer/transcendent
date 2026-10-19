@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import delete, insert
 
 from voices.config import load_settings
-from voices.db.explore_store import EXCERPT_CHARACTERS, ExploreStore
+from voices.db.explore_store import ExploreStore
 from voices.db.models import (
     DAY_DONE,
     DAY_RUNNING,
@@ -17,6 +17,7 @@ from voices.db.models import (
     Topic,
     TopicDailyEngagement,
 )
+from voices.db.post_columns import SHORT_EXCERPT_CHARACTERS
 from voices.db.store import connect_store
 
 pytestmark = pytest.mark.database
@@ -138,7 +139,7 @@ def test_a_post_with_no_text_is_shown_by_its_title_and_long_text_is_cut(store):
     excerpts = {p.id: p.excerpt for p in explore.posts_in(DAY, DAY)}
 
     assert excerpts["test-t"] == "Impellers"
-    assert len(excerpts["test-c"]) == EXCERPT_CHARACTERS
+    assert len(excerpts["test-c"]) == SHORT_EXCERPT_CHARACTERS
 
 
 def test_topics_are_read_by_id(store):

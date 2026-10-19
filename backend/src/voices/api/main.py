@@ -1,7 +1,6 @@
 """The web API. Every route lives under /api, which the frontend's server passes through."""
 
 import logging
-import re
 import time
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -31,7 +30,7 @@ from voices.explore.shapes import Days, Map, TopicInRange
 from voices.health import database_is_reachable, queue_is_reachable
 from voices.log import configure_logging, log_event, tracing
 from voices.report.launcher import RunLauncher, RunStarted
-from voices.report.runs import RunNotFound, RunState, RunStore
+from voices.report.runs import RunNotFound, RunState, RunStore, is_run_stream
 from voices.retrievals.retrieval_stats import RetrievalStatistics
 from voices.retrievals.shapes import Agent, RetrievalFilter, RetrievalStats
 from voices.topics.shapes import TopicDetail
@@ -39,7 +38,6 @@ from voices.topics.topic_detail import TopicDetails, TopicNotFound
 
 HealthChecks = dict[str, Callable[[], bool]]
 STREAMS = {"ingestion"}
-RUN_STREAM = re.compile(r"run-[0-9a-f]{12}")  # each comparison run has its own (plate 41)
 SMALLEST_RESPONSE_TO_COMPRESS = 1000  # bytes; a range's map runs to megabytes
 
 
@@ -113,7 +111,7 @@ def create_app(services: ApiServices) -> FastAPI:
     @app.get("/api/streams/{stream}/events")
     def stream_events(stream: str) -> StreamingResponse:
         """Live events as server-sent events (atlas plate 41)."""
-        if stream not in STREAMS and not RUN_STREAM.fullmatch(stream):
+        if stream not in STREAMS and not is_run_stream(stream):
             raise HTTPException(status_code=404, detail=f"no stream named {stream}")
         return StreamingResponse(services.event_stream(stream), media_type="text/event-stream")
 

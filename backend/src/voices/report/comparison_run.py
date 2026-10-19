@@ -24,6 +24,7 @@ from voices.report.writer import ChatModel, Emit, ReportWriter, Written
 Version = Literal["A", "B"]
 VERSIONS: tuple[Version, ...] = ("A", "B")
 DAYS_SEEN_BEFORE_A_PREDICTION = 28  # what version B may search when predicting a range
+NO_TOOLS = (None, None)  # version A: the model on its own, no way to reach our store
 
 
 class VersionResult(BaseModel):
@@ -112,9 +113,9 @@ class _OneRun:
 
     def version(self, version: Version, emit: Emit) -> VersionResult:
         emit = _for_version(emit, version)
-        tools = self._tools_for if version == "B" else _no_tools
-        written = self._phase(write_task(self.days), tools("write"), emit)
-        predicted = self._phase(predict_task(self.days), tools("predict"), emit)
+        report_tools, prediction_tools = self._tools_of(version)
+        written = self._phase(write_task(self.days), report_tools, emit)
+        predicted = self._phase(predict_task(self.days), prediction_tools, emit)
         report: Report = written.answer  # type: ignore[assignment]
         prediction: Prediction = predicted.answer  # type: ignore[assignment]
         marking, scores = self._marked(
@@ -142,23 +143,27 @@ class _OneRun:
         )
         return written
 
-    def _tools_for(self, phase: str) -> ReportTools:
-        """The report sees its own range; the prediction only the days before it (OPEN-22)."""
-        data, embedder = self.parts.data, self.parts.embedder
-        if phase == "write":
-            measured = lambda: [t.model_dump() for t in topics_in_range(data, self.days)]  # noqa: E731
-            return ReportTools(data, embedder, self.days, self.run_name, measured)
+    def _tools_of(self, version: Version) -> tuple[ReportTools | None, ReportTools | None]:
+        """Version B reads our store in both phases; version A has none (CLAUDE.md §7)."""
+        if version == "A":
+            return NO_TOOLS
+        return self._tools_for_the_report(), self._tools_for_the_prediction()
+
+    def _tools_for_the_report(self) -> ReportTools:
+        """The report sees its own range and the range's measured topics."""
+        data = self.parts.data
+        measured = lambda: [t.model_dump() for t in topics_in_range(data, self.days)]  # noqa: E731
+        return ReportTools(data, self.parts.embedder, self.days, self.run_name, measured)
+
+    def _tools_for_the_prediction(self) -> ReportTools:
+        """The prediction sees only the days before the range, and their trends (OPEN-22)."""
+        data, before = self.parts.data, _days_before(self.days)
         projected = lambda: [t.model_dump() for t in topic_trends(data, self.days)]  # noqa: E731
-        return ReportTools(data, embedder, _days_before(self.days), self.run_name, projected)
+        return ReportTools(data, self.parts.embedder, before, self.run_name, projected)
 
     def _marked(self, report: Commitment, prediction: Commitment) -> tuple[Marking, Scores]:
         marking = mark(self.active, report, prediction, self.parts.embedder)
         return marking, score(report, prediction, marking)
-
-
-def _no_tools(_phase: str) -> None:
-    """Version A: the model on its own, with no way to reach our store (CLAUDE.md §7)."""
-    return None
 
 
 def _days_before(days: DayRange) -> DayRange:

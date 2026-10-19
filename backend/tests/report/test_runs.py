@@ -2,20 +2,17 @@ from datetime import date
 
 import pytest
 
+from tests.stand_ins import FakeRedis
 from voices.explore.day_range import DayRange
 from voices.report.launcher import COMPARE_TASK, RunLauncher
-from voices.report.runs import KEPT_SECONDS, RunNotFound, RunStore
-
-
-class FakeRedis:
-    def __init__(self):
-        self.values, self.expiries = {}, {}
-
-    def get(self, key):
-        return self.values.get(key)
-
-    def set(self, key, value, ex):
-        self.values[key], self.expiries[key] = value.encode(), ex
+from voices.report.runs import (
+    KEPT_SECONDS,
+    RunNotFound,
+    RunStore,
+    is_run_stream,
+    new_run_id,
+    stream_of,
+)
 
 
 def test_a_started_run_is_marked_running_and_queued_with_its_range():
@@ -43,3 +40,12 @@ def test_a_failed_run_keeps_its_reason_for_a_day():
 def test_a_run_never_started_is_not_found():
     with pytest.raises(RunNotFound):
         RunStore(FakeRedis()).state("nope")
+
+
+def test_a_runs_own_stream_is_recognised_and_other_names_are_not():
+    run_id = new_run_id()
+
+    assert is_run_stream(stream_of(run_id))
+    assert not is_run_stream("run-abc")
+    assert not is_run_stream(f"{stream_of(run_id)}0")
+    assert not is_run_stream("ingestion")

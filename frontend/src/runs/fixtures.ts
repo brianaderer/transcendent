@@ -1,5 +1,6 @@
 /** A finished run as the API returns it, for the runs' tests. */
 import type { RunState, VersionResult } from "../api/generated";
+import type { Version } from "./versions";
 
 const SCORES = {
   main_topics: 10,
@@ -15,7 +16,7 @@ const SCORES = {
   prediction_score: 0.6,
 };
 
-function version(name: "A" | "B", overrides: Partial<VersionResult>): VersionResult {
+function version(name: Version, overrides: Partial<VersionResult>): VersionResult {
   return {
     version: name,
     document: `## The period in brief\n\nVersion ${name} on winterizing.`,

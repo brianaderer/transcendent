@@ -84,6 +84,19 @@ def topic_day(topic_id, on, engagement):
     return TopicDay(topic_id=topic_id, day=on, engagement=engagement, posts=1)
 
 
+class FakeRedis:
+    """Keeps values in memory, recording each one's expiry."""
+
+    def __init__(self):
+        self.values, self.expiries = {}, {}
+
+    def get(self, key):
+        return self.values.get(key)
+
+    def set(self, key, value, ex):
+        self.values[key], self.expiries[key] = value.encode(), ex
+
+
 class FakeRuns:
     """Starts nothing; remembers the range asked for and answers one known run."""
 

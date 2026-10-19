@@ -16,10 +16,11 @@ Describes the tables and keeps the database in step with them. The tables follow
   [topics](topics.md).
 - `voices.db.retrieval_store.RetrievalStore` — the Retrieval stats page's reads; described
   in [retrievals](retrievals.md).
-- `voices.db.post_columns` — column expressions the reading stores share: `written_on()`
-  (a post's day in UTC), `written_between(first, last)` (both days included) and
+- `voices.db.post_columns` — column expressions the reading stores share: `written_on(column)`
+  (the UTC day of a timestamp column: `Post.created_at` or `Thread.created_at`), `written_between(first, last)` (both days included) and
   `excerpt(characters)` (a post's opening words, or its thread's title for a post with no
-  text).
+  text); `SHORT_EXCERPT_CHARACTERS = 160`, the one-line excerpt the Explore hover card and
+  the Retrieval stats table both show.
 - `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
   for ingestion: `known_post_ids`, `known_thread_ids`, `noise_thread_ids` (those of the given threads deleted as noise), `save_day(batch)` (threads, posts
   and upvotes in one transaction; a new thread is recorded as first seen on the batch's day; saving a day again adds nothing — the day's upvote rows

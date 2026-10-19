@@ -12,7 +12,7 @@ import {
 import { ApiError } from "../api/fetchOrThrow";
 import { redditLink } from "../explore/links";
 import { type DayRange, dayAndMonth, rangeFrom } from "../explore/range";
-import { BADGES } from "../explore/TopicsPanel";
+import { BADGES } from "../explore/badges";
 import { HistoryGate } from "../HistoryGate";
 import { engagementSeries } from "./engagement";
 import { EngagementChart } from "./EngagementChart";
@@ -24,12 +24,12 @@ export function TopicPage() {
   const { topicId } = useParams({ from: "/topics/$topicId" });
   return (
     <HistoryGate>
-      {(history) => <TopicInRange topicId={Number(topicId)} history={history} />}
+      {(history) => <TopicPageForRange topicId={Number(topicId)} history={history} />}
     </HistoryGate>
   );
 }
 
-function TopicInRange({ topicId, history }: { topicId: number; history: DayCount[] }) {
+function TopicPageForRange({ topicId, history }: { topicId: number; history: DayCount[] }) {
   const asked = useSearch({ from: "/topics/$topicId" });
   const days = useMemo(() => history.map((day) => day.day), [history]);
   const range = rangeFrom(asked, days);

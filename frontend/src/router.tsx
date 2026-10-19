@@ -3,6 +3,7 @@ import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/re
 import { ExplorePage } from "./explore/ExplorePage";
 import { ComparisonPage } from "./runs/ComparisonPage";
 import { ReportPage } from "./runs/ReportPage";
+import { isVersion, type Version } from "./runs/versions";
 import type { DayRange } from "./explore/range";
 import { RetrievalsPage } from "./retrievals/RetrievalsPage";
 import { type RetrievalSearch, retrievalSearch } from "./retrievals/search";
@@ -53,8 +54,8 @@ const retrievals = createRoute({
 const report = createRoute({
   getParentRoute: () => root,
   path: "/runs/$runId/report",
-  validateSearch: (search: Record<string, unknown>): { version?: "A" | "B" } => ({
-    version: search.version === "A" || search.version === "B" ? search.version : undefined,
+  validateSearch: (search: Record<string, unknown>): { version?: Version } => ({
+    version: isVersion(search.version) ? search.version : undefined,
   }),
   component: ReportPage,
 });

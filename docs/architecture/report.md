@@ -31,7 +31,9 @@ only difference is whether the model gets tools that read our store.
   comparison: for each version, the report for the range (B's tools see the range, and
   `topic_trends` gives the range's measured topics) and the prediction for the range made as
   of the day before (B's tools see only the 28 days before, and `topic_trends` gives the
-  projected trends, plate 50). Both are scored against the same answer key
+  projected trends, plate 50). Each phase's tools are built by their own method
+  (`_tools_for_the_report`, `_tools_for_the_prediction`); version A gets `NO_TOOLS` for
+  both. Both are scored against the same answer key
   ([comparison](comparison.md)'s `mark` then `score`). `RunParts.data` is anything with
   explore's `TopicData` reads and the `ReportStore` reads; `RunParts.embedder` anything with
   `embed_query` and `embed_for_comparison` (`QueryEmbedder` and ingestion's
@@ -40,7 +42,9 @@ only difference is whether the model gets tools that read our store.
   reasoning, scores, the matches behind them, tool calls, posts seen, tokens, seconds).
 - `runs.RunStore(redis)` — a run's `RunState` (`running`, `finished` with its result, or
   `failed` with the reason), kept for a day (`KEPT_SECONDS`) and then gone: there is no run
-  history (atlas OPEN-24). `stream_of(run_id)` is its live-event stream, `run-<id>`.
+  history (atlas OPEN-24). `stream_of(run_id)` is its live-event stream, `run-<id>`, and
+  `is_run_stream(name)` says whether a name is one (the API's stream route uses it; the
+  frontend's `runStream(runId)` must match it).
 - `launcher.RunLauncher(store, queue)` — `start(days)` marks a new run running and queues the
   worker's `voices.compare` task, returning a `RunStarted` (run id and stream); `state(run_id)`.
 - API: `POST /api/runs` (`{start, end}`) and `GET /api/runs/{run_id}` ([api](api.md)); a run's
@@ -53,8 +57,11 @@ only difference is whether the model gets tools that read our store.
 
 ## How it works
 The worker's `voices.compare` task (`compare_now`; `in_parallel` runs the two versions in
-threads, each in a copy of the run's logging context so its lines carry the run's trace id) builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
-through OpenRouter), the stores and the embedder, and runs the comparison.
+threads, one per version, each in a copy of the run's logging context so its lines carry the
+run's trace id) builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
+through OpenRouter), the stores and the embedder, and hands the comparison to
+`run_and_keep_result(comparison, record, job)`, which keeps the result or, on any failure,
+the reason ([worker](worker.md)).
 Events go out on the run's stream: `run.started`, per version `step.started` /
 `step.finished` / `usage` / `tool.called` / `tool.returned`, then a `measurement.done` per
 score and `run.finished` (or `run.failed` with the reason). The result is kept in Redis for a

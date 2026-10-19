@@ -3,6 +3,7 @@ finished with its result, or failed with its reason. Kept in Redis for a day, th
 is no run history."""
 
 import json
+import re
 import uuid
 from typing import Literal, Protocol
 
@@ -33,9 +34,18 @@ def new_run_id() -> str:
     return uuid.uuid4().hex[:RUN_ID_HEX_DIGITS]
 
 
+RUN_STREAM_PREFIX = "run-"
+_RUN_STREAM = re.compile(rf"{RUN_STREAM_PREFIX}[0-9a-f]{{{RUN_ID_HEX_DIGITS}}}")
+
+
 def stream_of(run_id: str) -> str:
     """The live-event stream a run is announced on (atlas plate 41)."""
-    return f"run-{run_id}"
+    return f"{RUN_STREAM_PREFIX}{run_id}"
+
+
+def is_run_stream(name: str) -> bool:
+    """Whether the name is a stream `stream_of` could have given a run."""
+    return _RUN_STREAM.fullmatch(name) is not None
 
 
 class RunStore:

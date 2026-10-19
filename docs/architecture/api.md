@@ -13,8 +13,8 @@ The web API the frontend calls. Every route lives under `/api`.
   `latest_day`, `running_day`, `failed_day`, `failed_reason` (the error recorded for the
   latest failed day, as the error's message; `null` when no day has failed).
 - `GET /api/streams/{stream}/events` — live events as server-sent events ([events](events.md));
-  the streams are `ingestion` and one per comparison run, `run-<id>` (twelve hex digits); 404
-  for any other name.
+  the streams are `ingestion` and one per comparison run, `run-<id>` (twelve hex digits, checked by
+  `is_run_stream` in [report](report.md)'s `runs`); 404 for any other name.
 - `GET /api/days`, `GET /api/topics?start=YYYY-MM-DD&end=YYYY-MM-DD`,
   `GET /api/map?start=…&end=…` — the Explore page's reads ([explore](explore.md)): posts per
   day, the range's topics with their badges, and the range's map. Both ends of a range are

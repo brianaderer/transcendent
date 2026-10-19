@@ -1,16 +1,19 @@
-"""Column expressions the stores share when they read posts: when a post was written, and
-the opening words it is shown by."""
+"""Column expressions the stores share when they read posts: when a post or thread was
+written, and the opening words it is shown by."""
 
 from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import ColumnElement, Date, cast, func
+from sqlalchemy.orm import InstrumentedAttribute
 
 from voices.db.models import Post, Thread
 
+SHORT_EXCERPT_CHARACTERS = 160  # one line's worth: a hover card or a table cell
 
-def written_on() -> ColumnElement[date]:
-    """The day the post was written, in UTC."""
-    return cast(func.timezone("UTC", Post.created_at), Date)
+
+def written_on(column: InstrumentedAttribute[datetime]) -> ColumnElement[date]:
+    """The day a timestamp column falls on, in UTC: when a post or a thread was written."""
+    return cast(func.timezone("UTC", column), Date)
 
 
 def written_between(first_day: date, last_day: date) -> list[ColumnElement[bool]]:

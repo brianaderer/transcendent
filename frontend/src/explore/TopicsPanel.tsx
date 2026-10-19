@@ -1,15 +1,9 @@
 import { Link, useSearch } from "@tanstack/react-router";
 
 import type { TopicInRange } from "../api/generated";
+import { BADGES } from "./badges";
 import { colourOf } from "./colours";
 import { useUiState } from "./uiState";
-
-export const BADGES: Record<TopicInRange["direction"], string> = {
-  new: "New",
-  rising: "Rising",
-  steady: "Steady",
-  fading: "Fading",
-};
 
 type Props = { topics: TopicInRange[]; colours: Map<number, string> };
 

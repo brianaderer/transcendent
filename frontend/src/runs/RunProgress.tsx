@@ -3,7 +3,8 @@ import { useCallback, useReducer } from "react";
 
 import { useReportRun } from "../api/generated";
 import { type LiveEvent, useLiveEvents } from "../useLiveEvents";
-import { folded, type Lane, STARTING } from "./runEvents";
+import { folded, type Lane, runStream, STARTING, whyTheRunStopped } from "./runEvents";
+import { VERSION_ORDER, VERSIONS } from "./versions";
 
 const STATE_CHECK_MS = 3000; // in case a live event was missed, the run's state is read again
 
@@ -11,15 +12,14 @@ const STATE_CHECK_MS = 3000; // in case a live event was missed, the run's state
 export function RunProgress({ runId }: { runId: string }) {
   const [progress, fold] = useReducer(folded, STARTING);
   const onEvent = useCallback((event: LiveEvent) => fold(event), []);
-  useLiveEvents(`run-${runId}`, onEvent);
+  useLiveEvents(runStream(runId), onEvent);
   const run = useReportRun(runId, {
     query: {
       refetchInterval: (query) => (query.state.data?.state === "running" ? STATE_CHECK_MS : false),
     },
   });
   const state = run.data?.state;
-  const failed =
-    progress.failed ?? (state === "failed" ? (run.data?.reason ?? "the run failed") : null);
+  const failed = whyTheRunStopped(progress, run.data);
 
   return (
     <section
@@ -27,8 +27,13 @@ export function RunProgress({ runId }: { runId: string }) {
       className="mt-4 rounded-md border border-slate-200 p-4 dark:border-slate-700"
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <LaneView title="A · without our data" lane={progress.lanes.A} />
-        <LaneView title="B · with retrieval" lane={progress.lanes.B} />
+        {VERSION_ORDER.map((version) => (
+          <LaneView
+            key={version}
+            title={`${version} · ${VERSIONS[version].short}`}
+            lane={progress.lanes[version]}
+          />
+        ))}
       </div>
       {progress.measuring && state === "running" && <p className="mt-3 text-sm">Measuring…</p>}
       {failed && <p className="mt-3 text-sm text-red-600">The run stopped: {failed}</p>}

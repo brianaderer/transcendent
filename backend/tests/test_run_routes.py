@@ -28,8 +28,11 @@ def test_a_backwards_range_is_refused():
     assert response.status_code == 422
 
 
-def test_a_runs_state_is_read_back_and_an_unknown_run_is_not_found():
+def test_a_runs_state_is_read_back():
     assert client(FakeRuns()).get("/api/runs/0123456789ab").json()["state"] == "running"
+
+
+def test_an_unknown_run_is_not_found():
     assert client(FakeRuns()).get("/api/runs/ffffffffffff").status_code == 404
 
 

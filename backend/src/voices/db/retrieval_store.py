@@ -4,11 +4,14 @@ agents' search and lookup tools record, counted by post, by topic and by run."""
 from sqlalchemy import ColumnElement, Engine, Select, func, nulls_last, select
 
 from voices.db.models import Post, RetrievalEvent, Thread, Topic
-from voices.db.post_columns import excerpt, written_between, written_on
+from voices.db.post_columns import (
+    SHORT_EXCERPT_CHARACTERS,
+    excerpt,
+    written_between,
+    written_on,
+)
 from voices.explore.day_range import DayRange
 from voices.retrievals.shapes import Agent, RetrievalFilter, RetrievedPost, TopicRetrievals
-
-EXCERPT_CHARACTERS = 160  # one table cell's worth
 
 times_retrieved = func.count(RetrievalEvent.id).label("times_retrieved")
 last_retrieved = func.max(RetrievalEvent.at).label("last_retrieved")
@@ -80,8 +83,8 @@ def _post_columns() -> list[ColumnElement]:
         Post.thread_source_id.label("thread_id"),
         Post.kind,
         Post.author,
-        written_on().label("day"),
-        excerpt(EXCERPT_CHARACTERS),
+        written_on(Post.created_at).label("day"),
+        excerpt(SHORT_EXCERPT_CHARACTERS),
         Thread.topic_id,
         Topic.label.label("topic_label"),
     ]

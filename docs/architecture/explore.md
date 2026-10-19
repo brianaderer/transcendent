@@ -85,4 +85,4 @@ run data, and the worker's run data is built on `ExploreStore`); [api](api.md) a
 ## Configuration and data
 `REDIS_URL` (read by the API, which builds the cache). Fixed in code: `CHANGE_THAT_COUNTS =
 0.25`, `SEED = 0`, `LARGEST_PERPLEXITY = 30`, `FEWEST_FOR_TSNE = 5`, `KEPT_SECONDS` (two
-days), `EXCERPT_CHARACTERS = 160`. Reads only; writes nothing to Postgres.
+days), `SHORT_EXCERPT_CHARACTERS = 160` (from `voices.db.post_columns`). Reads only; writes nothing to Postgres.

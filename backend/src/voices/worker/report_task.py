@@ -5,8 +5,10 @@ import logging
 from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextvars import copy_context
+from dataclasses import dataclass
 from datetime import date
 from functools import lru_cache, partial
+from typing import Protocol
 
 import redis
 from sqlalchemy import Engine
@@ -19,8 +21,15 @@ from voices.events import RedisEvents
 from voices.explore.day_range import DayRange
 from voices.ingestion.embedder import NomicEmbedder, load_embedder
 from voices.log import log_event, tracing
-from voices.report.comparison_run import ComparisonRun, RunParts, Version, VersionResult
+from voices.report.comparison_run import (
+    ComparisonRun,
+    RunParts,
+    RunResult,
+    Version,
+    VersionResult,
+)
 from voices.report.runs import RunStore, stream_of
+from voices.report.writer import Emit
 from voices.tagging.model import connect_model
 
 logger = logging.getLogger(__name__)
@@ -31,21 +40,53 @@ class RunData(ExploreStore, TaggingStore):
     and retrieval counting. Both stores are built on the same engine."""
 
 
+@dataclass(frozen=True)
+class RunJob:
+    """Which run this is and the range it reports on."""
+
+    run_id: str
+    days: DayRange
+
+
+@dataclass(frozen=True)
+class RunRecord:
+    """Where a run's outcome goes: its state in the run store, and its own live stream."""
+
+    runs: RunStore
+    emit: Emit
+
+
+class Comparison(Protocol):
+    def run(self, run_id: str, days: DayRange) -> RunResult: ...
+
+
 def compare_now(run_id: str, start: date, end: date) -> None:
-    """Runs the comparison; on any failure the run is marked failed with the reason, which the
-    page shows, and the error is raised for the worker's log."""
+    """Runs the comparison for the range and keeps its outcome for the page."""
     client = redis.Redis.from_url(load_settings().redis_url)
-    runs = RunStore(client)
     emit = partial(RedisEvents(client).emit, stream_of(run_id))
     with tracing(f"run-{run_id}"):
-        try:
-            result = ComparisonRun(_parts(), emit, in_parallel).run(run_id, DayRange(start, end))
-        except Exception as error:
-            log_event(logger, "run.failed", run_id=run_id, reason=str(error))
-            emit("run.failed", reason=str(error))
-            runs.mark_failed(run_id, str(error))
-            raise
-        runs.mark_finished(run_id, result)
+        run_and_keep_result(
+            ComparisonRun(_parts(), emit, in_parallel),
+            RunRecord(RunStore(client), emit),
+            RunJob(run_id, DayRange(start, end)),
+        )
+
+
+def run_and_keep_result(comparison: Comparison, record: RunRecord, job: RunJob) -> None:
+    """Marks the run finished with its result; on any failure marks it failed with the reason,
+    which the page shows, announces and logs `run.failed`, and raises for the worker's log."""
+    try:
+        result = comparison.run(job.run_id, job.days)
+    except Exception as error:
+        _record_failure(record, job.run_id, str(error))
+        raise
+    record.runs.mark_finished(job.run_id, result)
+
+
+def _record_failure(record: RunRecord, run_id: str, reason: str) -> None:
+    log_event(logger, "run.failed", run_id=run_id, reason=reason)
+    record.emit("run.failed", reason=reason)
+    record.runs.mark_failed(run_id, reason)
 
 
 def in_parallel(
@@ -54,7 +95,7 @@ def in_parallel(
     """Both versions at once: each spends most of its time waiting for the model. Each runs in
     a copy of the caller's context, so its log lines carry the run's trace id."""
     contexts = {version: copy_context() for version in versions}
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=len(contexts)) as pool:
         return iter(list(pool.map(lambda v: contexts[v].run(work, v), contexts)))
 
 

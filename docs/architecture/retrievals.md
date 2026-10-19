@@ -28,7 +28,7 @@ back: the [tagging](tagging.md) agent's, and the [report](report.md) agent's (ve
   `per_topic`, `runs`), so tests pass a stand-in.
 - `voices.db.retrieval_store.RetrievalStore(engine)` — the real `RetrievalData`. Posts are
   ordered by times retrieved, then the latest retrieval, then id; topics by times
-  retrieved, then label. The excerpt is the post's first `EXCERPT_CHARACTERS` (160)
+  retrieved, then label. The excerpt is the post's first `SHORT_EXCERPT_CHARACTERS` (160, from `voices.db.post_columns`)
   characters, or its thread's title for a post with no text.
 
 ## How it works
@@ -48,4 +48,4 @@ topics' counts for the total. On the real data, a week of the tagging agent's re
 page calls.
 
 ## Configuration and data
-Fixed in code: `MOST_RETRIEVED_SHOWN = 100`, `EXCERPT_CHARACTERS = 160`. Reads only.
+Fixed in code: `MOST_RETRIEVED_SHOWN = 100`, `SHORT_EXCERPT_CHARACTERS = 160` (shared). Reads only.

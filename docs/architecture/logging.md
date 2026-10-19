@@ -25,7 +25,7 @@ can never overwrite it. A field named like an attribute of Python's log record (
 back on the line under its own name; the side attribute itself never appears. The trace id
 lives in a context variable, so it follows the code that runs inside a `tracing` block; code
 run in another thread carries it only when the thread runs in a copy of the context (as the
-worker's `in_parallel` does).
+worker's `in_parallel` does, one thread per version).
 
 ## Uses
 Python's standard `logging`.

@@ -8,10 +8,13 @@ from sqlalchemy import Engine, func, select
 
 from voices.db.day_ledger import latest_day_with_status
 from voices.db.models import DAY_DONE, Post, Thread, Topic, TopicDailyEngagement
-from voices.db.post_columns import excerpt, written_between, written_on
+from voices.db.post_columns import (
+    SHORT_EXCERPT_CHARACTERS,
+    excerpt,
+    written_between,
+    written_on,
+)
 from voices.explore.shapes import DayCount, MapPost, TopicDay, TopicInfo
-
-EXCERPT_CHARACTERS = 160  # enough for the hover card
 
 
 class ExploreStore:
@@ -20,7 +23,7 @@ class ExploreStore:
 
     def posts_per_day(self) -> list[DayCount]:
         """Posts and comments written each day, by the day in UTC."""
-        day = written_on().label("day")
+        day = written_on(Post.created_at).label("day")
         query = select(day, func.count()).group_by(day).order_by(day)
         with self.engine.connect() as connection:
             return [DayCount(day=d, posts=n) for d, n in connection.execute(query)]
@@ -59,7 +62,7 @@ class ExploreStore:
                 Post.author,
                 Post.created_at,
                 Thread.title.label("thread_title"),
-                excerpt(EXCERPT_CHARACTERS),
+                excerpt(SHORT_EXCERPT_CHARACTERS),
                 Thread.topic_id.label("thread_topic_id"),
                 Post.embedding,
             )

@@ -18,7 +18,10 @@ It also runs each comparison run the page starts ([report](report.md)).
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
 - `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` in
   `catch_up_task.py`.
-- `compare_now(run_id, start, end)` and `in_parallel(work, versions)` in `report_task.py`.
+- `compare_now(run_id, start, end)`, `run_and_keep_result(comparison, record, job)` and
+  `in_parallel(work, versions)` in `report_task.py`. `RunJob` is the run's id and range;
+  `RunRecord` is where its outcome goes (the `RunStore` and the run's stream); `Comparison`
+  is anything with `run(run_id, days)`, so the outcome handling is tested with stand-ins.
 
 ## How it works
 - **When the catch-up runs:** when a worker starts (so first start and every restart catch
@@ -45,9 +48,10 @@ It also runs each comparison run the page starts ([report](report.md)).
   until the key is added and the worker re-created; the reason shows on the page.
 
 - **A comparison run** (`voices.compare`, queued by `POST /api/runs`) runs under the trace id
-  `run-<id>`. Both versions of the report run at once in two threads (`in_parallel`), each in
+  `run-<id>`. Both versions of the report run at once, one thread per version (`in_parallel`), each in
   a copy of the run's logging context, so their log lines carry the same trace id. Progress
-  is announced on the run's own stream, `run-<id>`. When it finishes, the result is kept in
+  is announced on the run's own stream, `run-<id>`. `compare_now` only builds the parts;
+  `run_and_keep_result` does the rest. When it finishes, the result is kept in
   Redis for a day; if anything fails, the run is marked failed with the reason (which the
   page shows), `run.failed` is emitted and logged, and the error is raised for the worker's
   log. The database connection and the embedding model are loaded once per worker process

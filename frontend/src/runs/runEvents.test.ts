@@ -34,10 +34,10 @@ test("a version is done once its prediction is", () => {
   expect(progress.lanes.B.done).toBe(false);
 });
 
-test("measuring, then finished; or failed with the reason", () => {
+test("measuring until the run finishes; or failed with the reason", () => {
   const measured = folded(STARTING, { type: "measurement.done", name: "topics_found", A: 2, B: 8 });
   expect(measured.measuring).toBe(true);
-  expect(folded(measured, { type: "run.finished" }).finished).toBe(true);
+  expect(folded(measured, { type: "run.finished" }).measuring).toBe(false);
   expect(folded(STARTING, { type: "run.failed", reason: "no key" }).failed).toBe("no key");
 });
 

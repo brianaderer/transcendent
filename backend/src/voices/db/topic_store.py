@@ -1,10 +1,10 @@
 """Reads for the Topic detail page (atlas plate 31, screen 4): one topic, its daily
 engagement, the threads closest to its centre, and the tagging decisions that built it."""
 
-from sqlalchemy import Date, Engine, cast, func, literal, select
+from sqlalchemy import Engine, func, literal, select
 
 from voices.db.models import ClusterDecision, Post, Thread, Topic, TopicDailyEngagement
-from voices.db.post_columns import excerpt
+from voices.db.post_columns import excerpt, written_on
 from voices.db.tagging_store import UNKNOWN_AUTHOR
 from voices.topics.shapes import EngagementDay, PostCard, TopicDecision, TopicSummary
 from voices.topics.topic_detail import TopicNotFound
@@ -82,7 +82,7 @@ def _card_columns() -> list:
         Thread.source_id.label("thread_id"),
         literal("post").label("kind"),
         func.coalesce(Post.author, UNKNOWN_AUTHOR).label("author"),
-        cast(func.timezone("UTC", Thread.created_at), Date).label("day"),
+        written_on(Thread.created_at).label("day"),
         Thread.title,
         excerpt(CARD_EXCERPT_CHARACTERS),
     ]

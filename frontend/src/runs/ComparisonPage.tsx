@@ -5,13 +5,14 @@ import type { KeyTopic, RunResult, VersionResult } from "../api/generated";
 import { describeDays } from "../explore/range";
 import { scoreboard } from "./scoreboard";
 import { useFinishedRun } from "./useFinishedRun";
+import { VERSION_ORDER, VERSIONS } from "./versions";
 
 /** Version A against version B (atlas plate 31, screen 3, and plate 70). */
 export function ComparisonPage() {
   const { runId } = useParams({ from: "/runs/$runId/comparison" });
   const run = useFinishedRun(runId);
   if ("notice" in run) return <p>{run.notice}</p>;
-  const [a, b] = ["A", "B"].map((v) => run.result.versions.find((r) => r.version === v)!);
+  const [a, b] = VERSION_ORDER.map((v) => run.result.versions.find((r) => r.version === v)!);
   return (
     <div className="space-y-8">
       <header>
@@ -24,18 +25,8 @@ export function ComparisonPage() {
       <Scoreboard a={a} b={b} />
       <TopicGrid result={run.result} a={a} b={b} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Column
-          version={a}
-          title="Without our data — the model on its own"
-          runId={runId}
-          accent="text-amber-700"
-        />
-        <Column
-          version={b}
-          title="With retrieval — the model searching r/sailing's posts"
-          runId={runId}
-          accent="text-teal-700"
-        />
+        <Column version={a} title={VERSIONS.A.long} runId={runId} accent="text-amber-700" />
+        <Column version={b} title={VERSIONS.B.long} runId={runId} accent="text-teal-700" />
       </div>
     </div>
   );

@@ -50,8 +50,8 @@ Screens and parts:
   drawn faint, so the line shows what the badge compares), posts and comments, and
   the badge **New**, **Rising**, **Steady** or **Fading**. Hovering a row, or moving the
   keyboard focus onto it, highlights that topic on the dot plot; the topic's name links to
-  its Topic detail page with the range in the address. `BADGES` (the badge words) is shared
-  with Topic detail.
+  its Topic detail page with the range in the address. `BADGES` (the badge words, in
+  `explore/badges.ts`) is shared with Topic detail.
 - `topic/TopicPage` — one topic (`GET /api/topics/{id}`), with the range from the address
   (or the last seven days, as on Explore): a **← Back to Explore** link keeping the range;
   the name with its badge (taken from `GET /api/topics` for the same range, so it matches
@@ -91,10 +91,10 @@ Screens and parts:
   a day failed), fetched again whenever a live `ingestion` event arrives.
   `describeIngestion(status)` in `src/ingestion.ts` writes the sentence.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
-- `runs/RunProgress` — below Explore's plot once a run is started: two lanes, "A · without
-  our data" and "B · with retrieval", each listing its steps ("Writing the report…",
+- `runs/RunProgress` — below Explore's plot once a run is started: one lane per version,
+  "A · without our data" and "B · with retrieval", each listing its steps ("Writing the report…",
   "Predicting the range: done (41s)") and version B's tool calls with how many posts each
-  returned, from the run's live events (`run-<id>`). While the run is going it also rereads
+  returned, from the run's live events (`runStream(runId)`, `run-<id>`). While the run is going it also rereads
   the run's state (`GET /api/runs/{run_id}`) every three seconds, in case an event was
   missed; it shows "Measuring…" or the reason a run stopped, and when the run has finished
   it links to **Read the report** and **See the comparison**.
@@ -121,8 +121,14 @@ Logic, each in its own small module with its own tests:
   `#db2777`) passed the dataviz palette check (lightness, colour-blind separation and
   contrast) on both the light and the dark page.
 - `runs/runEvents.ts` — `folded(progress, event)`: folds a run's live events into the
-  progress panel's two lanes; `lineFor(event)` writes one line, such as
-  `search(“winterizing”)` and then `→ 15 posts`.
+  progress panel's two lanes, whether it is measuring, and the reason it failed, if a
+  `run.failed` event came; `lineFor(event)` writes one line, such as
+  `search(“winterizing”)` and then `→ 15 posts`; `whyTheRunStopped(progress, runState)` — the
+  live event's reason if one came, else the reason kept with the run's state, else null;
+  `runStream(runId)` — the run's stream name, which must match the backend's `stream_of`.
+- `runs/versions.ts` — `Version` (`"A" | "B"`), `VERSIONS` (each version's short name, as in
+  "Written without our data", and its long column title), `VERSION_ORDER` and `isVersion`;
+  every page that names a version takes its words from here.
 - `runs/scoreboard.ts` — `scoreboard(a, b)`: each measurement as A against B in words (main
   topics found, topics invented, order of importance as close, partly or poor with its
   number, directions right, prediction score, tokens and time, posts looked at).

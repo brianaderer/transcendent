@@ -5,8 +5,7 @@ import type { RunResult, VersionResult } from "../api/generated";
 import { SUBREDDIT } from "../community";
 import { describeDays } from "../explore/range";
 import { useFinishedRun } from "./useFinishedRun";
-
-const VERSION_NAMES = { A: "Written without our data", B: "Written with retrieval" } as const;
+import { VERSIONS } from "./versions";
 
 /** The Community Voices Document (atlas plate 31, screen 2). */
 export function ReportPage() {
@@ -25,7 +24,7 @@ function Document({ result, version }: { result: RunResult; version: VersionResu
         <h1 className="font-serif text-3xl font-semibold">Community Voices — r/{SUBREDDIT}</h1>
         <p className="mt-1 text-slate-500">{describeDays(result)}</p>
         <p className="mt-1 text-sm text-slate-500">
-          {VERSION_NAMES[version.version]} · {result.model} ·{" "}
+          Written {VERSIONS[version.version].short} · {result.model} ·{" "}
           <Link
             to="/runs/$runId/comparison"
             params={{ runId: result.run_id }}

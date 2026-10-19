@@ -7,7 +7,8 @@ from sqlalchemy import delete, insert
 
 from voices.config import load_settings
 from voices.db.models import EMBEDDING_DIMENSIONS, Post, RetrievalEvent, Thread, Topic
-from voices.db.retrieval_store import EXCERPT_CHARACTERS, RetrievalStore
+from voices.db.post_columns import SHORT_EXCERPT_CHARACTERS
+from voices.db.retrieval_store import RetrievalStore
 from voices.db.store import connect_store
 from voices.explore.day_range import DayRange
 from voices.retrievals.shapes import RetrievalFilter
@@ -118,7 +119,7 @@ def test_a_retrieved_post_comes_with_its_topic_and_its_last_retrieval(store):
         "test-rs-impellers",
         LATEST,
     )
-    assert (busy.day, len(busy.excerpt)) == (DAY, EXCERPT_CHARACTERS)
+    assert (busy.day, len(busy.excerpt)) == (DAY, SHORT_EXCERPT_CHARACTERS)
     assert (untagged.topic_id, untagged.topic_label) == (None, None)
 
 
