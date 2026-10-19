@@ -134,11 +134,12 @@ constants, not Brian's decisions.
   under a second.
 - **A schema change the plan didn't name:** migration `0007` lets `topics.centroid` be
   missing, since seeded topics arrive without one until the backfill.
-- **The seed migration itself is not in the repo yet.** It is written as the last build step
-  (specified): the export into `backend/migrations/versions/0008_seed_snapshot.json.gz`, and a
-  migration of a few lines calling `load_seed` with that file. The exact command and file are
-  in [database](../architecture/database.md) → *Writing the seed migration*; that exact file,
-  with a real export, was run through setup on an empty scratch database and loaded every row.
+- **The seed migration is in the repo** (written last, as specified, 2026-10-19):
+  `backend/migrations/versions/0008_seed_snapshot.py` loads
+  `0008_seed_snapshot.json.gz` beside it (1.88 MB: 12,726 posts and comments by 4,188
+  stand-in authors, 644 threads, 150 topics, 57 days, 23 Aug to 18 Oct 2026). Run through
+  setup on an empty database, it loaded every row in under a second. How to take it again:
+  [database](../architecture/database.md) → *Writing the seed migration*.
 - **The backfill** runs first in every catch-up, under its lock, and does nothing when no
   vector is missing. Batches of 256 (`ROWS_PER_BATCH`), each saved before the next; posts,
   then threads (as of their third day once settled, their first while they wait, read
