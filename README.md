@@ -142,6 +142,11 @@ hasn't started yet. Either way, wait a few seconds and it updates by itself. To 
 the back end directly, open http://localhost:5173/api/health; it should show
 `"status":"ok"`.
 
+> **Usernames in the seed were changed to comply with Reddit's public data policy.** The
+> seeded posts and comments are real r/sailing text, but every author is a stand-in
+> (`sailor-0001`, `sailor-0002`, …), and a post that mentions a user names the same stand-in.
+> Posts the app fetches after the seed, on your own machine, keep their real usernames there.
+
 Beside it, the top bar shows the r/sailing history loading, as one line for the whole first
 start. It may say **Waiting to start loading r/sailing history** for a few seconds; the first
 time, the worker also downloads the 130 MB model that prepares posts for search. When the
