@@ -129,9 +129,11 @@ docker compose up --build
 ```
 
 The first run downloads and builds everything, which takes a few minutes. It's ready
-when the log stops scrolling and shows lines from `api`, `worker` and `frontend`. A line
-`setup-1 exited with code 0` is normal: that step brings the database up to date, then
-stops.
+when `api` prints `Uvicorn running on http://0.0.0.0:8000`; open the page then. The log keeps
+scrolling after that, because the worker logs everything it does while it loads the history;
+that's normal. A line `setup-1 exited with code 0` is normal too: that step brings the
+database up to date, then stops. Warnings during the build (a chunk-size note from the
+frontend) or from `postgres-1` (about trust authentication) are expected.
 
 Open **http://localhost:5173** in your browser. You should see **Community Voices**
 and **Backend running**. If it says **Backend unreachable**, the API is still starting;
@@ -178,7 +180,8 @@ across the eight weeks (posts, comments and upvotes stacked, the number of diffe
 as a line, your range shaded), three typical posts, and **How this topic was built**, the
 tagging agent's decisions with its reasons. **Retrieval stats** in the top bar shows which
 posts the agents' search and lookup tools retrieved most, as a table you can sort by any
-column, with retrievals per topic as bars above it. It opens on the report agent, which
+column, with retrievals per topic as bars above it (posts whose thread has no topic yet are
+counted under **No topic yet**). It opens on the report agent, which
 has nothing to show until a report is generated; click **Tagging agent** (or **Show the
 tagging agent's retrievals**) to see the tagging agent's. The **Dark** (or **Light**) button
 at the right of the top bar switches between dark and light colours.
@@ -219,7 +222,7 @@ docker compose run --rm --no-deps frontend npm test
 Each should end with every test passed (a `warning` line from a library is fine). The backend
 line also says `70 deselected`: sixty-nine tests that need a running database and one that calls the
 real model (step 6), which the default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
-tests never call a real AI model or a real website, so they run offline in seconds.
+tests never call a real AI model or a real website, so they run offline: about a minute for the backend and fifteen seconds for the frontend.
 
 ### 6. Compare tagging models (optional; spends a little money)
 
