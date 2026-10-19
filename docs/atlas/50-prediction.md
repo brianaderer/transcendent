@@ -8,13 +8,14 @@ How the "next week" half of the Community Voices Document is produced.
 [21](20-data-model/21-topics.md)), so any period is a range of days. Lining those
 periods up gives each tag a **trend
 vector**, and next week is predicted by **extrapolating** each tag's trend.
-**Everything else is *proposed*.**
+**Everything else is *proposed*,** except where a section says what build step 5 has
+already built (`backend/src/voices/prediction/`, see `docs/architecture/prediction.md`).
 
 ```mermaid
 flowchart LR
     ENG[("topic_daily_engagement<br/>see 21")]
-    VEC["Trend vector per tag<br/>one entry per period: posts, comments, upvotes,<br/>distinct people, new threads, unanswered questions"]
-    FIT["Extrapolate one period ahead<br/>(damped trend: growth slows rather than running away)"]
+    VEC["Trend vector per tag<br/>engagement in each of the four periods before the range"]
+    FIT["Extrapolate one period ahead<br/>damped trend on a log scale: growth slows rather than running away"]
     RANK["Rank tags<br/>rising · steady · fading · new"]
     CTX["Signals the numbers can't see<br/>(dates mentioned in posts, threads still open)"]
     LLM["LLM writes the prediction<br/>each claim cites its numbers and posts"]
@@ -27,29 +28,40 @@ flowchart LR
     class CTX,BT open
 ```
 
-## The trend vector *(proposed)*
+## The trend vector *(built in step 5)*
 
-For each tag, one row per period with the period's engagement: posts, comments,
-upvotes (agreeing replies),
-distinct people, new threads, unanswered questions, all summed from plate 21's daily
-table. A tag minted recently has a short vector. That's the "new" case, and the most
-interesting one to call out.
+For each tag, one number per period: its engagement (posts, comments and upvotes, that
+is agreeing replies, added together), summed from plate 21's daily table. The vector
+covers the **four periods** before the range, each as long as the range (so four weeks
+for a weekly report), and is read only up to the day before the range begins. The
+daily table also counts distinct people, new threads and unanswered questions; the
+projection does not use them yet. A tag minted recently has zeros in its early periods,
+and the fit starts at its first period with any engagement. Tags quiet in all four
+periods are left out.
 
-## Extrapolating *(proposed)*
+## Extrapolating *(built in step 5)*
 
-- **A damped trend, not a straight line.** With five to eight weeks of history a
+- **A damped trend, not a straight line.** With only a few periods of history a
   straight-line projection overreacts: one viral thread looks like a rocket. A damped
   trend (Holt's method with damping) follows the direction but expects it to level off,
-  which is how online conversations usually behave.
-- **On a log scale,** so a topic going from 2 to 4 posts and one going from 50 to 100
-  read as the same growth.
-- **The output per tag:** expected engagement next period, a range, and a label —
-  rising, steady, fading, or new.
+  which is how online conversations usually behave. The fit starts with a flat trend, so
+  a single spike can't launch it: 10, 10, 10, 1000 projects about 900, not past the
+  spike, while 10, 20, 40, 80 projects about 104. The settings (how quickly the level
+  and the trend follow new values, and how much of the trend each step ahead keeps)
+  are fixed in code and listed in `docs/architecture/prediction.md`.
+- **On a log scale** (one plus the engagement, so a silent period is zero), so a topic
+  going from 2 to 4 posts and one going from 50 to 100 read as the same growth.
+- **The output per tag:** expected engagement for the period, a range (one typical
+  fitting error either side, never narrower than about two thirds to one and a half times
+  the expected value), and a label: **new** if the tag was first seen in the last period
+  before the range, otherwise **rising**, **steady** or **fading** by the Explore page's
+  rule (more than a quarter above or below the last period).
 
 ## What extrapolation can't see, and how it's covered *(proposed)*
 
-- **A topic with no history** can't be extrapolated. New tags are flagged by their
-  `first_seen` date and growth within the week.
+- **A topic with no history** can't be extrapolated. A tag first seen on or after the
+  range's first day is left out of the projection; one first seen in the last period
+  before it is labelled new.
 - **Scheduled things:** a contest deadline or a software release mentioned in posts.
   These are pulled from the period's posts and handed to the LLM alongside the
   numbers.

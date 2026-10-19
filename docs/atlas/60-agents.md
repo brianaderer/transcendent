@@ -92,9 +92,10 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
   of the code doesn't depend on it and tests can swap in LangChain's fake chat models
   and run offline.
 - **The comparison's measurements are not a third agent.** Both reports are scored by
-  code against the same answer key computed from the topic data ([70](70-comparison.md));
-  the one judging prompt (matching a named topic to a tag) is fixed and identical for
-  both versions.
+  code against the same answer key computed from the topic data ([70](70-comparison.md)).
+  Matching a named topic to a tag is done by meaning in code, with no model call (built
+  in step 5); if a judging prompt for borderline matches is added, it is fixed and
+  identical for both versions.
 
 ## Choosing the tagging model: the bake-off
 

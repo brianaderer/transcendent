@@ -4,7 +4,9 @@
 
 The brief's step 5: how the model writes the Community Voices Document **without** our
 store (version A) and **with** it (version B), compared inside the app. Brian asked for
-this plate (OPEN-15); everything on it is *proposed*.
+this plate (OPEN-15); everything on it is *proposed*, except where it says what build
+step 5 has already built (`backend/src/voices/comparison/`, see
+`docs/architecture/comparison.md`).
 
 ```mermaid
 flowchart LR
@@ -43,24 +45,33 @@ each sentence traces to a post. Per-sentence checking is dropped (OPEN-21).
 The answer key is computed by code from the topic tags and the daily engagement table
 ([21](20-data-model/21-topics.md)) for the date range: which topics were biggest, in
 what order, which rose, which fell, which were new. Both versions are scored against
-that same answer key *(proposed details below)*.
+that same answer key. **Built in step 5:** the answer key is the Explore page's own topic
+list for the range (the same engagement figures and the same new, rising, steady or
+fading badges a reviewer sees there), ranked by engagement; topics with equal engagement
+share a rank. The **main topics** are those ranked ten or better, so a tie at the cut
+keeps every tied topic.
 
-| Measurement | What it shows | How it's computed *(proposed)* |
+| Measurement | What it shows | How it's computed *(built in step 5, except cost and time)* |
 |---|---|---|
-| **Topics found** | Did the report name the range's real main topics? | Each topic the report names is matched to the nearest tag; count how many of the range's top topics (by engagement) it found |
-| **Topics invented** | Topics the report names that the community didn't discuss in the range | Named topics that match no tag with real activity in the range |
-| **Order of importance** | Did it rank the topics the way the data does? | How closely the report's ranking agrees with the ranking by engagement |
-| **Direction** | For each topic it names, did it say rising, steady or fading correctly? | Compared with the measured trend for that tag |
-| **Prediction** | Did the topics it said would be prominent next actually become prominent, moving the way it said? | Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began; scored against what happened in the range (OPEN-22, plate [50](50-prediction.md)) |
-| **Cost and time** | What retrieval costs | Tokens, tool calls, seconds |
+| **Topics found** | Did the report name the range's real main topics? | Each topic the report names is matched to a tag by meaning (below); count how many distinct main topics it found |
+| **Topics invented** | Topics the report names that the community didn't discuss in the range | Named topics that match no tag with any activity in the range. A name matching an active tag below the top ten is neither found nor invented |
+| **Order of importance** | Did it rank the topics the way the data does? | Spearman's rank correlation (from 1, the same order, to -1, reversed) between the report's ranks and the answer key's ranks, over the topics it found; not measured with fewer than two |
+| **Direction** | For each topic it names, did it say rising, steady or fading correctly? | Over the topics it found: how many directions match the answer key's badge |
+| **Prediction** | Did the topics it said would be prominent next actually become prominent, moving the way it said? | Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began (OPEN-22, plate [50](50-prediction.md)). Counted: how many it named, how many became main topics, how many never came up, and how many became main topics moving the way it said; the prediction score is that last count divided by the number named |
+| **Cost and time** | What retrieval costs | Tokens, tool calls, seconds *(proposed, not built yet)* |
 
 - **The report states its conclusions in a fixed form** alongside its prose: a list of
   topics, each with its rank and direction, plus the predicted ones (OPEN-25). That
   form is what gets scored, so scoring is code, not judgment.
 - **Matching a named topic to a tag** is the one step that needs judgment ("winter
-  prep" versus the tag "Winterizing and haul-out"). It's done by meaning, with one
-  fixed judging prompt for borderline matches, saved with the run and the same for
-  both versions.
+  prep" versus the tag "Winterizing and haul-out"). **Built in step 5,** it's done by
+  meaning in code, with no model call: each name and each tag (its label and
+  description) is turned into an embedding, and a name matches its most similar tag when
+  the similarity is at least 0.7, a starting value to be tuned against names real
+  reports produce. Each tag can be claimed by one name only; when two names point at
+  the same tag, the closer one keeps it. The plan's fixed judging prompt for borderline
+  matches is not built; if it is added, it is saved with the run and the same for both
+  versions.
 
 ## No run history
 
@@ -71,4 +82,5 @@ only way a report outlives the page *(maybe, Brian)*.
 ## Open in this draft
 
 - `?` How many of the range's top topics count as "main topics" for scoring — proposed
-  the top ten by engagement.
+  the top ten by engagement, and built that way (one setting in code, with ties at the
+  cut all kept) until Brian decides.

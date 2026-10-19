@@ -18,7 +18,7 @@ PERIODS_SHOWN = 4  # periods of history behind each projection, each as long as 
 LEVEL_SMOOTHING = 0.7  # how far each period moves the level towards what was measured
 TREND_SMOOTHING = 0.5  # how far each period moves the trend towards the latest change
 DAMPING = 0.8  # each period ahead keeps this share of the trend, so growth levels off
-SMALLEST_SPREAD = 0.4  # on the log scale; the range is never narrower than about ±50%
+SMALLEST_SPREAD = 0.4  # on the log scale; never narrower than a third below to a half above
 
 
 class TopicTrend(BaseModel):

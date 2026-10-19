@@ -710,13 +710,13 @@ const PLATES={
 "50":{t:"Prediction",draft:true,file:"50-prediction.md",
  sum:"Per-tag trend vectors across periods, extrapolated to predict the next period, and the backtest that scores it",
  links:["01","21","90"],
- lead:"How the \"next week\" half of the Community Voices Document is produced. **Specified by Brian:** posts are tagged day by day on intake (plate [21](21)), so any period is a range of days. Lining those periods up gives each tag a **trend vector**, and next week is predicted by **extrapolating** each tag's trend. **Everything else is *proposed*.**",
- facts:[["input","topic_daily_engagement (plate 21)"],["method","damped trend, Holt's method (proposed)",1],["scale","log (proposed)",1],["labels","rising · steady · fading · new"],["history","eight weeks (OPEN-7)"],["A/B scoring","a committed list of topics and directions (OPEN-22)"],["scored","at once, on a range that has already happened"]],
+ lead:"How the \"next week\" half of the Community Voices Document is produced. **Specified by Brian:** posts are tagged day by day on intake (plate [21](21)), so any period is a range of days. Lining those periods up gives each tag a **trend vector**, and next week is predicted by **extrapolating** each tag's trend. **Everything else is *proposed*,** except where a section says what build step 5 has already built (`backend/src/voices/prediction/`, see `docs/architecture/prediction.md`).",
+ facts:[["input","topic_daily_engagement (plate 21)"],["method","damped trend, Holt's method (built)"],["scale","log, one plus engagement (built)"],["periods","four before the range, each as long as it (built)"],["labels","rising · steady · fading · new"],["history","eight weeks (OPEN-7)"],["A/B scoring","a committed list of topics and directions (OPEN-22)"],["scored","at once, on a range that has already happened"]],
  figs:[{h:"From engagement to a written prediction",cw:200,gx:52,gy:48,
   boxes:[
    ["ENG",0,0,"data","topic_daily_engagement",[]],
-   ["VEC",1,0,"step","Trend vector per tag",["one entry per period: posts, comments, upvotes,","distinct people, new threads, unanswered questions"]],
-   ["FIT",2,0,"step","Extrapolate one period ahead",["(damped trend: growth slows rather than running away)"]],
+   ["VEC",1,0,"step","Trend vector per tag",["engagement in each of the four","periods before the range"]],
+   ["FIT",2,0,"step","Extrapolate one period ahead",["damped trend on a log scale:","growth slows rather than running away"]],
    ["RANK",3,0,"step","Rank tags",["rising · steady · fading · new"]],
    ["LLM",4,0,"llm","LLM writes the prediction",["each claim cites its numbers and posts"]],
    ["BT",2,1,"out","Prediction score",["predict the range from the day before it,","score against what happened"],{p:1}],
@@ -724,13 +724,13 @@ const PLATES={
   ],
   arrows:[["ENG","VEC",""],["VEC","FIT",""],["FIT","RANK",""],["RANK","LLM",""],["CTX","LLM",""],["FIT","BT",""]]}],
  notes:[
-  {h:"The trend vector (proposed)",p:["For each tag, one row per period with the period's engagement: posts, comments, upvotes (agreeing replies), distinct people, new threads, unanswered questions, all summed from plate 21's daily table. A tag minted recently has a short vector. That's the \"new\" case, and the most interesting one to call out."]},
-  {h:"Extrapolating (proposed)",li:[
-   "**A damped trend, not a straight line.** With five to eight weeks of history a straight-line projection overreacts: one viral thread looks like a rocket. A damped trend (Holt's method with damping) follows the direction but expects it to level off, which is how online conversations usually behave.",
-   "**On a log scale,** so a topic going from 2 to 4 posts and one going from 50 to 100 read as the same growth.",
-   "**The output per tag:** expected engagement next period, a range, and a label — rising, steady, fading, or new."]},
+  {h:"The trend vector (built in step 5)",p:["For each tag, one number per period: its engagement (posts, comments and upvotes, that is agreeing replies, added together), summed from plate 21's daily table. The vector covers the **four periods** before the range, each as long as the range (so four weeks for a weekly report), and is read only up to the day before the range begins. The daily table also counts distinct people, new threads and unanswered questions; the projection does not use them yet. A tag minted recently has zeros in its early periods, and the fit starts at its first period with any engagement. Tags quiet in all four periods are left out."]},
+  {h:"Extrapolating (built in step 5)",li:[
+   "**A damped trend, not a straight line.** With only a few periods of history a straight-line projection overreacts: one viral thread looks like a rocket. A damped trend (Holt's method with damping) follows the direction but expects it to level off, which is how online conversations usually behave. The fit starts with a flat trend, so a single spike can't launch it: 10, 10, 10, 1000 projects about 900, not past the spike, while 10, 20, 40, 80 projects about 104. The settings (how quickly the level and the trend follow new values, and how much of the trend each step ahead keeps) are fixed in code and listed in `docs/architecture/prediction.md`.",
+   "**On a log scale** (one plus the engagement, so a silent period is zero), so a topic going from 2 to 4 posts and one going from 50 to 100 read as the same growth.",
+   "**The output per tag:** expected engagement for the period, a range (one typical fitting error either side, never narrower than about two thirds to one and a half times the expected value), and a label: **new** if the tag was first seen in the last period before the range, otherwise **rising**, **steady** or **fading** by the Explore page's rule (more than a quarter above or below the last period)."]},
   {h:"What extrapolation can't see, and how it's covered (proposed)",li:[
-   "**A topic with no history** can't be extrapolated. New tags are flagged by their `first_seen` date and growth within the week.",
+   "**A topic with no history** can't be extrapolated. A tag first seen on or after the range's first day is left out of the projection; one first seen in the last period before it is labelled new.",
    "**Scheduled things:** a contest deadline or a software release mentioned in posts. These are pulled from the period's posts and handed to the LLM alongside the numbers.",
    "**Brand-new conversations next week** can't be predicted by any method. The document says so rather than inventing them."]},
   {h:"The written prediction (proposed)",p:["The LLM receives the ranked tags with their trend numbers, the scheduled-event signals, and the most typical posts for each tag. It writes the prediction, and every claim names its evidence (\"up from 3 to 11 threads over three weeks\"). Version A of the comparison (`CLAUDE.md` §7) receives none of this, only the community and the dates."]},
@@ -783,7 +783,7 @@ const PLATES={
    "**Everything the agents do is streamed live** to the frontend — steps, tool calls and results, decisions, the report as it's written, token use — as server-sent events (specified by Brian; see [41](41)).",
    "**A cap on tool calls per run** (for example 30), so an agent that keeps searching ends with what it has instead of running up cost. The cap is saved with the run.",
    "**LangChain is wrapped behind our own small interfaces** (`CLAUDE.md` §8), so the rest of the code doesn't depend on it and tests can swap in LangChain's fake chat models and run offline.",
-   "**The comparison's measurements are not a third agent.** Both reports are scored by code against the same answer key computed from the topic data ([70](70)); the one judging prompt (matching a named topic to a tag) is fixed and identical for both versions."]},
+   "**The comparison's measurements are not a third agent.** Both reports are scored by code against the same answer key computed from the topic data ([70](70)). Matching a named topic to a tag is done by meaning in code, with no model call (built in step 5); if a judging prompt for borderline matches is added, it is fixed and identical for both versions."]},
   {h:"Choosing the tagging model: the bake-off",li:[
    "**Specified by Brian (2026-10-18):** tests that compare the models' performance on sample data, committed into the repo, documented in the architecture docs and the README, and benchmarked; then a bake-off between Claude Haiku 5.5 and Claude Sonnet 5.5.",
    "*(Proposed)* **Sample data:** a fixed set of about thirty tagging cases cut from real r/sailing threads, committed as a file of test data. Each case is one group of threads, a short list of existing topics written for the bake-off, and the right answer: attach to a named topic, start a new topic, or noise. The right answers are labelled by Claude from reading the threads, and marked as such until Brian reviews them.",
@@ -802,8 +802,8 @@ const PLATES={
 "70":{t:"Comparison: with and without retrieval",draft:true,file:"70-comparison.md",
  sum:"Version A without retrieval against version B with it: what makes it fair, and each measurement against one answer key",
  links:["01","50","60","90"],
- lead:"The brief's step 5: how the model writes the Community Voices Document **without** our store (version A) and **with** it (version B), compared inside the app. Brian asked for this plate (OPEN-15); everything on it is *proposed*.",
- facts:[["fairness","one code path, one switch — only the tools differ"],["runs","both from the same request, in parallel"],["answer key","tags + daily engagement for the range"],["conclusions","aggregate, per-sentence checking dropped (OPEN-21)"],["scored form","fixed list of topics, ranks, directions (OPEN-25)"],["main topics","top ten by engagement (proposed, open)",1],["history","none — reports are ephemeral (OPEN-24)"]],
+ lead:"The brief's step 5: how the model writes the Community Voices Document **without** our store (version A) and **with** it (version B), compared inside the app. Brian asked for this plate (OPEN-15); everything on it is *proposed*, except where it says what build step 5 has already built (`backend/src/voices/comparison/`, see `docs/architecture/comparison.md`).",
+ facts:[["fairness","one code path, one switch — only the tools differ"],["runs","both from the same request, in parallel"],["answer key","tags + daily engagement for the range"],["conclusions","aggregate, per-sentence checking dropped (OPEN-21)"],["scored form","fixed list of topics, ranks, directions (OPEN-25)"],["main topics","top ten by engagement, ties kept (built as proposed, open)",1],["matching","by meaning, similarity at least 0.7, no model call (built)"],["order","Spearman's rank correlation (built)"],["history","none — reports are ephemeral (OPEN-24)"]],
  figs:[{h:"One request, two versions, one answer key",cw:206,gx:60,gy:48,
   boxes:[
    ["A",1,0,"llm","Report agent, version A",["no tools"]],
@@ -820,24 +820,24 @@ const PLATES={
    ["A","MEAS","","",{ex:.28}],["B","MEAS",""],
    ["MEAS","SCR",""],["BT","SCR",""]
   ]}],
- tables:[{h:"The measurements",cols:["Measurement","What it shows","How it's computed (proposed)"],rows:[
-  ["**Topics found**","Did the report name the range's real main topics?","Each topic the report names is matched to the nearest tag; count how many of the range's top topics (by engagement) it found"],
-  ["**Topics invented**","Topics the report names that the community didn't discuss in the range","Named topics that match no tag with real activity in the range"],
-  ["**Order of importance**","Did it rank the topics the way the data does?","How closely the report's ranking agrees with the ranking by engagement"],
-  ["**Direction**","For each topic it names, did it say rising, steady or fading correctly?","Compared with the measured trend for that tag"],
-  ["**Prediction**","Did the topics it said would be prominent next actually become prominent, moving the way it said?","Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began; scored against what happened in the range (OPEN-22, plate [50](50))"],
-  ["**Cost and time**","What retrieval costs","Tokens, tool calls, seconds"]]}],
+ tables:[{h:"The measurements",cols:["Measurement","What it shows","How it's computed (built in step 5, except cost and time)"],rows:[
+  ["**Topics found**","Did the report name the range's real main topics?","Each topic the report names is matched to a tag by meaning (below); count how many distinct main topics it found"],
+  ["**Topics invented**","Topics the report names that the community didn't discuss in the range","Named topics that match no tag with any activity in the range. A name matching an active tag below the top ten is neither found nor invented"],
+  ["**Order of importance**","Did it rank the topics the way the data does?","Spearman's rank correlation (from 1, the same order, to -1, reversed) between the report's ranks and the answer key's ranks, over the topics it found; not measured with fewer than two"],
+  ["**Direction**","For each topic it names, did it say rising, steady or fading correctly?","Over the topics it found: how many directions match the answer key's badge"],
+  ["**Prediction**","Did the topics it said would be prominent next actually become prominent, moving the way it said?","Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began (OPEN-22, plate [50](50)). Counted: how many it named, how many became main topics, how many never came up, and how many became main topics moving the way it said; the prediction score is that last count divided by the number named"],
+  ["**Cost and time**","What retrieval costs","Tokens, tool calls, seconds *(proposed, not built yet)*"]]}],
  notes:[
   {h:"What makes it a fair test",li:[
    "**One code path, one switch** ([60](60), `CLAUDE.md` §7). Same model, same settings, same prompt wording, same date range, same output structure. The only difference is that version B has tools that read our store.",
    "**Both run from the same request,** in parallel."]},
   {h:"The measurements",p:[
    "**Specified by Brian:** the document's conclusions are **aggregate** — which topics the community talked about, how much, and which way each was moving — drawn from the topic and engagement data, not from individual posts. So the two versions are scored on whether their aggregate conclusions match what the data shows, **not** on whether each sentence traces to a post. Per-sentence checking is dropped (OPEN-21).",
-   "The answer key is computed by code from the topic tags and the daily engagement table ([21](21)) for the date range: which topics were biggest, in what order, which rose, which fell, which were new. Both versions are scored against that same answer key *(proposed details)*."],li:[
+   "The answer key is computed by code from the topic tags and the daily engagement table ([21](21)) for the date range: which topics were biggest, in what order, which rose, which fell, which were new. Both versions are scored against that same answer key. **Built in step 5:** the answer key is the Explore page's own topic list for the range (the same engagement figures and the same new, rising, steady or fading badges a reviewer sees there), ranked by engagement; topics with equal engagement share a rank. The **main topics** are those ranked ten or better, so a tie at the cut keeps every tied topic."],li:[
    "**The report states its conclusions in a fixed form** alongside its prose: a list of topics, each with its rank and direction, plus the predicted ones (OPEN-25). That form is what gets scored, so scoring is code, not judgment.",
-   "**Matching a named topic to a tag** is the one step that needs judgment (\"winter prep\" versus the tag \"Winterizing and haul-out\"). It's done by meaning, with one fixed judging prompt for borderline matches, saved with the run and the same for both versions."]},
+   "**Matching a named topic to a tag** is the one step that needs judgment (\"winter prep\" versus the tag \"Winterizing and haul-out\"). **Built in step 5,** it's done by meaning in code, with no model call: each name and each tag (its label and description) is turned into an embedding, and a name matches its most similar tag when the similarity is at least 0.7, a starting value to be tuned against names real reports produce. Each tag can be claimed by one name only; when two names point at the same tag, the closer one keeps it. The plan's fixed judging prompt for borderline matches is not built; if it is added, it is saved with the run and the same for both versions."]},
   {h:"No run history",p:["Reports are ephemeral (Brian, OPEN-24): the two reports and their scores are shown when the run finishes, and nothing keeps them. They may be made downloadable — that's the only way a report outlives the page *(maybe, Brian)*."]}],
- open:["How many of the range's top topics count as \"main topics\" for scoring — proposed the top ten by engagement."]},
+ open:["How many of the range's top topics count as \"main topics\" for scoring — proposed the top ten by engagement, and built that way (one setting in code, with ties at the cut all kept) until Brian decides."]},
 
 "90":{t:"Open Questions",draft:false,file:"90-open-questions.md",
  sum:"Decisions still waiting on the owner, and the log of decisions made",

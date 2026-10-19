@@ -52,6 +52,6 @@ before the range is used, never anything from inside it (OPEN-11).
 
 ## Configuration and data
 Fixed in code: `PERIODS_SHOWN = 4`, `LEVEL_SMOOTHING = 0.7`, `TREND_SMOOTHING = 0.5`,
-`DAMPING = 0.8`, `SMALLEST_SPREAD = 0.4` (on the log scale, about ±50%). Reads
+`DAMPING = 0.8`, `SMALLEST_SPREAD = 0.4` (on the log scale, so the range is never narrower than about a third below to a half above the projection). Reads
 `topic_daily_engagement` and `topics` through its data interface; writes nothing.
 Labels and descriptions are read as they are now, not as they stood before the range.
