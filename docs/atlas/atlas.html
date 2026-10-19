@@ -267,7 +267,7 @@ const PLATES={
  sum:"The whole app: frontend, API, store, worker, agents, archive source and model provider",
  links:["90"],
  lead:"The whole Community Voices app at the highest level. Every box here is specified by Brian; the details behind each are on its own plate.",
- facts:[["frontend","React · TanStack Query + Router · Zustand"],["backend","FastAPI"],["store","Postgres + pgvector"],["queue","Redis"],["jobs","Celery worker + Beat"],["agents","two LangGraph agents: tagging · report"],["model","Claude Sonnet 5.5 via OpenRouter"],["source","Arctic Shift · r/sailing"],["runs under","Docker Compose, every data store on a mounted volume"]],
+ facts:[["frontend","React · TanStack Query + Router · Zustand"],["backend","FastAPI"],["store","Postgres + pgvector"],["queue","Redis"],["jobs","Celery worker + Beat"],["agents","two LangGraph agents: tagging · report"],["model","report: Claude Sonnet 5.5 · tagging: Claude Haiku 5.5, via OpenRouter"],["source","Arctic Shift · r/sailing"],["runs under","Docker Compose, every data store on a mounted volume"]],
  figs:[{h:"The whole app",cw:196,gx:58,gy:56,padTop:74,
   lanes:[["REVIEWER",0],["FRONTEND",1],["BACKEND",2],["STORES",3],["BACKGROUND WORK",4],["OUTSIDE",5]],
   boxes:[
@@ -279,7 +279,7 @@ const PLATES={
    ["WORKER",4,1,"svc","Celery worker + Beat",["daily catch-up · report runs"]],
    ["AGENTS",4,2,"llm","Two LangGraph agents",["tagging · report"],{tag:"AGENTS"}],
    ["SRC",5,1,"svc","Arctic Shift",["r/sailing"],{tag:"OUTSIDE"}],
-   ["OR",5,2,"llm","OpenRouter",["Claude Sonnet 5.5"],{tag:"OUTSIDE"}]
+   ["OR",5,2,"llm","OpenRouter",["Claude Sonnet 5.5 · Haiku 5.5"],{tag:"OUTSIDE"}]
   ],
   groups:[["COMPOSE",["FE","API","STORE","QUEUE","WORKER","AGENTS"],"DOCKER COMPOSE"]],
   arrows:[
@@ -300,7 +300,7 @@ const PLATES={
   "**Backend** — FastAPI, specified. Its modules are on [40 Backend](40).",
   "**Store** — Postgres with pgvector, specified. Tables on [21](21).",
   "**Worker** — Celery with Beat, specified; one catch-up operation over a range of days ([40](40)).",
-  "**Agents** — two LangGraph agents, specified ([60](60)), on Claude Sonnet 5.5 through OpenRouter.",
+  "**Agents** — two LangGraph agents, specified ([60](60)), on Claude through OpenRouter: the report on Sonnet 5.5, tagging on Haiku 5.5.",
   "**Live events** — detailed server-sent events to the frontend, specified ([41](41)).",
   "**Ingestion** — fetches posts daily, specified; from r/sailing (OPEN-3, resolved); fetched from the Arctic Shift archive (OPEN-8, resolved).",
   "Everything runs under Docker Compose, with every data store on a mounted volume — see [04 Environment](04)."]}],
@@ -468,7 +468,7 @@ const PLATES={
    "*(Proposed:)* grouping is by closeness of meaning with a fixed cutoff (cosine distance 0.3 measured well), so every thread gets a decision, even one on its own.",
    "**Why the LLM decides rather than a threshold:** closeness in meaning-space alone can't tell \"the same conversation continuing\" from \"a new conversation next door to an old one\". The LLM reads the posts and the candidate tags' descriptions.",
    "**Tagging always moves forward in time**, one day after another. After a thread's day-three decision nothing about it is re-decided, so a tag's history older than three days never changes under it.",
-   "**Cost:** one LLM call per group, twice per thread. Measured groups suggest roughly twenty a day each time, so about forty calls a day and around two thousand for the eight-week history *(estimate, not yet measured)*.",
+   "**Cost:** one LLM call per group, twice per thread. Measured groups suggest roughly twenty a day each time, so about forty calls a day and around two thousand for the eight-week history *(estimate, not yet measured)*. On Claude Haiku 5.5 with at most three look-ups (Brian, 2026-10-18), that is about a fifth of a cent a call, so under $5 for the eight weeks *(estimate, not yet measured)*.",
    "**Tests** replace the LLM and the embedder with stand-ins (`CLAUDE.md` §7)."]},
   {h:"Where similarity search is used",p:["Comparing a cluster with the tags, and the agents' search tool ([60](60)), are both \"find the closest vectors\" questions, which pgvector answers inside Postgres (OPEN-4, resolved)."]}],
  open:[
@@ -566,7 +566,7 @@ const PLATES={
  sum:"FastAPI, the stack, the modules, and the one catch-up operation that does all ingestion",
  links:["01","30","90"],
  lead:"The server side: the API the frontend calls, and the modules behind it that ingest, store, retrieve, write and compare. Brian specified **FastAPI** and **Postgres**. Everything else on this plate is *proposed*.",
- facts:[["web","FastAPI, publishes OpenAPI (OPEN-1)"],["language","Python 3.12 (proposed)",1],["data shapes","Pydantic (proposed)",1],["dependencies","uv + lockfile (proposed)",1],["tests","pytest with stand-ins (proposed)",1],["lint","Ruff (proposed)",1],["store","Postgres + pgvector (OPEN-4)"],["migrations","Alembic, from SQLAlchemy models (OPEN-28)"],["model","Claude Sonnet 5.5 via OpenRouter (OPEN-5)"],["embedding","small open long-input model in the container, e.g. nomic-embed-text"],["jobs","Celery + Celery Beat; broker Redis (proposed)"],["schedule","Beat at 06:00 UTC, yesterday"],["record","ingested_days"],["live","server-sent events, plate 41"],["agents","LangGraph / LangChain, plate 60"]],
+ facts:[["web","FastAPI, publishes OpenAPI (OPEN-1)"],["language","Python 3.12 (proposed)",1],["data shapes","Pydantic (proposed)",1],["dependencies","uv + lockfile (proposed)",1],["tests","pytest with stand-ins (proposed)",1],["lint","Ruff (proposed)",1],["store","Postgres + pgvector (OPEN-4)"],["migrations","Alembic, from SQLAlchemy models (OPEN-28)"],["model","report: Claude Sonnet 5.5 (OPEN-5) · tagging: Claude Haiku 5.5, via OpenRouter"],["embedding","small open long-input model in the container, e.g. nomic-embed-text"],["jobs","Celery + Celery Beat; broker Redis (proposed)"],["schedule","Beat at 06:00 UTC, yesterday"],["record","ingested_days"],["live","server-sent events, plate 41"],["agents","LangGraph / LangChain, plate 60"]],
  figs:[
   {h:"Modules (proposed) — the arrows are who calls whom",cw:200,gx:60,gy:56,
    boxes:[
@@ -705,7 +705,7 @@ const PLATES={
  sum:"The two LangGraph agents (one ratifies topic tags, one writes the report with retrieval on or off) and their search and lookup tools",
  links:["01","21","50","90"],
  lead:"The LLM side of the app. **Specified by Brian:** a standard LangGraph / LangChain flow with **two agents**: one that **ratifies the topic tags**, and one that **generates the report**. Both agents have a **search** tool, to search posts for any term when they want to hone in on a concept, and a **lookup** tool, to read one post by its database id. Everything else on this plate is *proposed*.",
- facts:[["framework","LangGraph / LangChain"],["model","Claude Sonnet 5.5 via OpenRouter"],["search(term)","semantic, at most 20 hits (limit proposed)"],["lookup(id)","one post or comment in full"],["tagging tools","search · lookup · search tags"],["report B tools","search · lookup · topic trends · upcoming events"],["report A","no tools at all"],["tool-call cap","for example 30 per run (proposed)",1],["tests","LangChain fake chat models, offline"]],
+ facts:[["framework","LangGraph / LangChain"],["model","report: Claude Sonnet 5.5 · tagging: Claude Haiku 5.5, via OpenRouter"],["search(term)","semantic, at most 20 hits (limit proposed)"],["lookup(id)","one post or comment in full"],["tagging tools","search · lookup · search tags"],["tagging look-ups","at most three, then it must decide"],["report B tools","search · lookup · topic trends · upcoming events"],["report A","no tools at all"],["tool-call cap","for example 30 per run (proposed)",1],["tests","LangChain fake chat models, offline"]],
  figs:[{h:"Two agents",cw:210,gx:56,gy:62,padTop:40,
   boxes:[
    ["C",0,0,"step","The day's clusters",[]],
@@ -730,6 +730,7 @@ const PLATES={
    "Every post either tool returns is counted in the retrieval statistics.",
    "Both tools are read-only, and run through the same small query module the rest of the backend uses."]},
   {h:"Tagging agent (proposed details)",li:[
+   "**Specified by Brian (2026-10-18):** the tagging agent runs on **Claude Haiku 5.5** through OpenRouter, and gets **at most three look-ups** before it must decide. Both are for cost.",
    "**One graph run per day, during intake.** Clustering happens first in plain code (plate [21](21)); the graph then sends every cluster to its own decision step, all in parallel (LangGraph's fan-out).",
    "**Each decision is one LLM call with a structured answer:** attach (which tag), mint (label + description) or noise, plus a reason. It's shown the cluster's typical posts and the nearest tags with their descriptions and recent engagement.",
    "**Tools:** search and lookup (above), to read more of a cluster's conversation before deciding; and **search tags**, to search all tags by meaning when none of the nearest candidates fits, before minting a duplicate.",
@@ -796,7 +797,7 @@ const PLATES={
   ["OPEN-2","The embedding map is drawn with Apache ECharts.","2026-10-18"],
   ["OPEN-3","The community is r/sailing on Reddit, fetched from Reddit through the Arctic Shift archive (OPEN-8). Trawler Forum was ruled out because it blocks automated access and bans AI crawlers in its robots.txt; r/trawlers was ruled out because it isn't busy enough for eight weeks of clusters and trends.","2026-10-18"],
   ["OPEN-4","Similarity search is done in Postgres with the pgvector extension, for both jobs: comparing clusters with topic tags, and retrieving posts for the document.","2026-10-18"],
-  ["OPEN-5","Writing and tag decisions: Claude Sonnet 5.5 through OpenRouter. Embeddings: a small open long-input model inside the container. Reviewers need one key, an OpenRouter key Brian sends in the submission email; the README says so.","2026-10-18"],
+  ["OPEN-5","Writing and tag decisions: Claude Sonnet 5.5 through OpenRouter; tag decisions later moved to Claude Haiku 5.5, with at most three look-ups, for cost (Brian, 2026-10-18). Embeddings: a small open long-input model inside the container. Reviewers need one key, an OpenRouter key Brian sends in the submission email; the README says so.","2026-10-18"],
   ["OPEN-6","Posts are fetched daily. (Superseded by OPEN-10: clustering is no longer on demand; posts are tagged day by day on intake.)","2026-10-18"],
   ["OPEN-7","The stored history covers eight weeks: seven to fit trends, one held back for the backtest.","2026-10-18"],
   ["OPEN-8","r/sailing's posts and comments are fetched from Arctic Shift (arctic-shift.photon-reddit.com), a free research archive of Reddit that needs no key, for both the eight-week history and the daily fetch. Reddit's own API was ruled out for now because creating an app requires approval under its Responsible Builder Policy.","2026-10-18"],

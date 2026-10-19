@@ -18,7 +18,7 @@ Everything else on this plate is *proposed*.
 | Lint and format | Ruff for both *(proposed)* |
 | Data store | **Postgres with pgvector** — specified (OPEN-4, resolved) |
 | Tables and migrations | **Alembic** — specified (OPEN-28). Tables described once as SQLAlchemy models; migrations generated from them and applied by `setup` on every start |
-| Writing and decision model | **Claude Sonnet 5.5, through OpenRouter** — specified (OPEN-5). One OpenRouter key, sent to reviewers in the submission email |
+| Writing and decision model | **Claude Sonnet 5.5, through OpenRouter** — specified (OPEN-5); **tagging decisions on Claude Haiku 5.5** — specified (2026-10-18, for cost). One OpenRouter key, sent to reviewers in the submission email |
 | Embedding model | **A small open model that takes long inputs (for example nomic-embed-text), run inside the container** — specified (OPEN-5); no key needed |
 | Background jobs | **Celery** workers, with **Celery Beat** scheduling the archive pulls — specified. Broker: Redis, its own container *(proposed)* |
 | Live updates | **Server-sent events**, detailed, from every agent and job — specified. See [41](40-backend/41-live-events.md) |

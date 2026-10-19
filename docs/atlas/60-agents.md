@@ -46,6 +46,9 @@ Specified by Brian; the details are *proposed*.
 
 ## Tagging agent *(proposed details)*
 
+**Specified by Brian (2026-10-18):** the tagging agent runs on **Claude Haiku 5.5** through
+OpenRouter, and gets **at most three look-ups** before it must decide. Both are for cost.
+
 - **One graph run per day, during intake.** Clustering happens first in plain code
   (plate [21](20-data-model/21-topics.md)); the graph then sends every cluster to its
   own decision step, all in parallel (LangGraph's fan-out).

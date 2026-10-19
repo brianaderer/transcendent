@@ -195,7 +195,9 @@ flowchart TB
   three days never changes under it.
 - **Cost:** one LLM call per group, twice per thread. Measured groups suggest roughly
   twenty a day each time, so about forty calls a day and around two thousand for the
-  eight-week history *(estimate, not yet measured)*.
+  eight-week history *(estimate, not yet measured)*. On Claude Haiku 5.5 with at most
+  three look-ups (Brian, 2026-10-18), that is about a fifth of a cent a call, so under
+  $5 for the eight weeks *(estimate, not yet measured)*.
 - **Tests** replace the LLM and the embedder with stand-ins (`CLAUDE.md` §7).
 
 ## Where similarity search is used
