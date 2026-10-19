@@ -37,7 +37,8 @@ class FakeStore:
         return {"attached": 3}
 
     def expire_noise(self, day):
-        self.steps.append(("expire", day))
+        self.expired_on = day
+        self.steps.append("expire")
         return 2
 
     def rebuild_engagement(self, first_day, last_day):
@@ -107,7 +108,8 @@ def test_threads_still_without_a_topic_are_expired_after_the_decisions_before_en
 
     counts = run(store)
 
-    assert store.steps == ["apply", ("expire", DAY), "rebuild"]
+    assert store.steps == ["apply", "expire", "rebuild"]
+    assert store.expired_on == DAY
     assert counts["noise_expired"] == 2
 
 

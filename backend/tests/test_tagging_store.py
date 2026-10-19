@@ -126,6 +126,12 @@ def topic_of(store, thread_id):
         return connection.scalar(select(Thread.topic_id).where(Thread.source_id == thread_id))
 
 
+def thread_exists(store, thread_id):
+    with store.engine.connect() as connection:
+        found = select(Thread.source_id).where(Thread.source_id == thread_id)
+        return connection.scalar(found) is not None
+
+
 def ours(threads):
     return sorted(t.source_id for t in threads if t.source_id.startswith("test-"))
 
@@ -394,14 +400,16 @@ def test_a_first_day_noise_thread_sent_to_a_missing_topic_on_its_third_day_is_ex
     store.expire_noise(THIRD_DAY)
 
     assert counts["settled_unchanged"] == 1
+    assert not thread_exists(store, "test-1")
     with pytest.raises(PostNotFound):
-        store.lookup_post("test-2")
+        store.lookup_post("test-1")
 
 
 def test_threads_with_no_topic_by_their_third_day_are_expired_with_their_posts(store):
     expired = store.expire_noise(THIRD_DAY)
 
     assert expired == 2
+    assert not thread_exists(store, "test-1") and not thread_exists(store, "test-4")
     for post_id in ["test-1", "test-2", "test-4"]:
         with pytest.raises(PostNotFound):
             store.lookup_post(post_id)
@@ -411,7 +419,7 @@ def test_a_thread_with_no_topic_is_kept_before_its_third_day(store):
     expired = store.expire_noise(DAY + timedelta(days=1))
 
     assert expired == 0
-    assert store.lookup_post("test-4")["post_id"] == "test-4"
+    assert thread_exists(store, "test-4")
 
 
 def test_a_thread_with_a_topic_is_never_expired(store):
@@ -419,7 +427,7 @@ def test_a_thread_with_a_topic_is_never_expired(store):
 
     store.expire_noise(THIRD_DAY)
 
-    assert store.lookup_post("test-2")["post_id"] == "test-2"
+    assert thread_exists(store, "test-1")
 
 
 @pytest.mark.parametrize(("days_later", "revived"), [(7, 0), (8, 1)])

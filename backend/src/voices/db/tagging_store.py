@@ -173,8 +173,8 @@ class TaggingStore:
         return applier.counts
 
     def expire_noise(self, day: date) -> int:
-        """Deletes, with their posts, the threads past their third day that have no topic
-        (atlas OPEN-14): what three days never placed is noise. Returns how many threads."""
+        """Deletes, with their posts, the threads whose third day has come that still have no
+        topic (atlas OPEN-14): what three days never placed is noise. Returns how many threads."""
         expired = and_(_on_or_after_third_day(day), Thread.topic_id.is_(None))
         with self.engine.begin() as connection:
             return _delete_threads(connection, expired)
@@ -229,7 +229,8 @@ class _DecisionApplier:
     def attach(self, item: DecidedCluster, topic_id: int | None) -> None:
         """Tags the group's threads with the topic. With no topic (the agent named one that
         doesn't exist) first-day threads wait for their third day, and third-day threads keep
-        their first day's topic, if any, and are settled; one with none is then expired."""
+        their first day's topic, if any, and are settled; one left with no topic is deleted
+        afterwards by TaggingStore.expire_noise."""
         decision_id = self._record(item, topic_id)
         if topic_id is None:
             self._count_left_waiting_on_first_day(item)

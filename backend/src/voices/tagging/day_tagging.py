@@ -1,6 +1,6 @@
 """Tags one day's threads (atlas plate 21): each thread on its first or third day is encoded
 as one text, the threads are grouped by meaning, the agent decides each group, the decisions
-are applied, threads past their third day with no topic are expired as noise, and daily
+are applied, threads whose third day has come with no topic are expired as noise, and daily
 engagement is rebuilt."""
 
 from collections.abc import Callable, Sequence
