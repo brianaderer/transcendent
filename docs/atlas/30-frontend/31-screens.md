@@ -193,8 +193,41 @@ and the retrieved-posts toggle arrives with it, since it needs a report.
 - **Linking:** the range lives in the address (`?start=…&end=…`, TanStack Router), so a
   reviewer can share exactly what they see; hover highlighting is browser-only state
   (Zustand).
-- **Clicking a dot** opens the post on Reddit; clicking a topic waits for Topic detail
-  (step 6).
+- **Clicking a dot** opens the post on Reddit; clicking a topic's name opens Topic detail
+  (step 6, below).
+
+## How Topic detail and Retrieval stats are built (build step 6) *(proposed)*
+
+Screens 4 and 5 above are the target; these are the details underneath, all proposed.
+
+- **Two more reads from the API:**
+  - `GET /api/topics/{id}` — the topic's label, description, keywords, first and last day
+    seen; its engagement on each day it had any, across the whole history (posts,
+    comments, upvotes, distinct people); its three typical posts; and the tagging decisions
+    that built it. 404 for a topic that doesn't exist.
+  - `GET /api/retrievals?start=…&end=…&agent=…&run=…` — the most retrieved posts, each
+    with its rank, author, topic, times retrieved and last retrieval; retrievals per topic;
+    the runs there are to choose from; and the total.
+- **Typical posts** are the three threads closest to the topic's centre (cosine distance
+  to the average of its threads' encodings), each shown by its opening post, or by its
+  title when the post isn't stored.
+- **The timeline** lists the decisions that minted the topic or attached threads to it,
+  oldest first, each with how many threads carry it now. A thread decided again on its
+  third day carries the later decision, so an early decision can show no threads.
+- **The badge** on Topic detail is the one Explore shows for the same range; a topic with
+  nothing in the range reads "Quiet in these days".
+- **The chart** spans every loaded day. The dashed projection band waits for prediction
+  (plate [50](../50-prediction.md), step 5).
+- **The date range on Retrieval stats** picks the posts *written* in those days, not the
+  days they were retrieved, so a range means the same thing on every screen.
+- **The table** holds the 100 most retrieved posts, sortable by any column (TanStack
+  Table); **the bars** show the twelve most retrieved topics. Posts whose thread has no
+  topic yet count together as "No topic yet".
+- **The agent filter** opens on the report agent. Until a report has been generated only
+  the tagging agent has retrieved anything, so both agents are always shown as buttons, and
+  an empty report view says why and offers the tagging agent's counts in one click.
+- **Every screen keeps the range**: the top bar's links, the topic links and the back link
+  carry `?start=…&end=…` with them.
 
 ## Open in this draft
 
