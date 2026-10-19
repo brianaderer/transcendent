@@ -10,6 +10,7 @@
 
 | ID | Decision | Date |
 |---|---|---|
+| OPEN-38 | The report agent's comparison run is a LangGraph graph, as plate 60 specifies: one branch per version (A and B), fanned out from the start the way the tagging agent's day is; inside each branch the writer's tool loop is a plain loop over LangChain, as the tagging agent's decision is. Brian chose this over keeping the plain threads and recording a deviation. | 2026-10-19 |
 | OPEN-35 | The seed is an Alembic data migration, written as the last build step on whatever schema the app has then: a point-in-time snapshot of the data. If the schema changes after that, a later migration changes it, seeded rows included, like any other data. | 2026-10-19 |
 | OPEN-36 | After the seed, the app stays live: the catch-up fetches and tags the days since the seed's last day. A few days of catch-up on a reviewer's machine is fine, even good; the seed's purpose is only to spare a cold boot from processing the whole history (about 30,000 posts and comments fetched). | 2026-10-19 |
 | OPEN-34 | Embeddings are stored at half precision (pgvector's halfvec: two bytes a number instead of four), for posts, threads and topic centres, so the database stays small. Measured before the change: 75 MB for the eight weeks once compacted, of which 37 MB is embeddings and 2.7 MB the posts' text; expected about 40 MB after, and measured 44 MB once it was in. Fewer numbers per embedding (256) was ruled out because search gets blurrier. | 2026-10-19 |
