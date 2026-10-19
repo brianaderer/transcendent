@@ -139,18 +139,20 @@ class _Conversation:
         calls gets a reminder. A turn that looks nothing up still spends one, so the loop ends."""
         if not reply.tool_calls:
             self._say(HumanMessage(f"Decide now by calling {DECIDE}."))
-        if not _looks_anything_up(reply):
-            self.look_ups_left -= 1
         for call in reply.tool_calls:
             self._say(
-                ToolMessage(self._answer_spending_a_look_up(call), tool_call_id=call["id"]),
-                tool=call["name"],
+                ToolMessage(self._answer_to(call), tool_call_id=call["id"]), tool=call["name"]
             )
+        if not _looks_anything_up(reply):
+            self.look_ups_left -= 1
 
-    def _answer_spending_a_look_up(self, call: dict) -> str:
+    def _answer_to(self, call: dict) -> str:
         """A reply being answered made no valid decision, so a Decision call here is malformed."""
         if call["name"] == DECIDE:
             return _why_malformed(call["args"])
+        return self._look_up_if_any_left(call)
+
+    def _look_up_if_any_left(self, call: dict) -> str:
         if not self.has_look_ups_left():
             return f"No look-ups left; decide now by calling {DECIDE}."
         self.look_ups_left -= 1
