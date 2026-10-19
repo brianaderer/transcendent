@@ -1,8 +1,8 @@
 """Runs the catch-up as a worker job, at most one at a time (atlas plate 40).
 
-Beat, a starting worker, or someone queuing `voices.catch_up` by hand can all ask for a
-catch-up; a lock makes the second request do nothing while one is running, so two runs
-never fetch the same days.
+Beat, a starting worker, the page's Sync now button (POST /api/catch-up) or someone queuing
+`voices.catch_up` by hand can all ask for a catch-up; a lock makes the second request do
+nothing while one is running, so two runs never fetch the same days.
 """
 
 import logging

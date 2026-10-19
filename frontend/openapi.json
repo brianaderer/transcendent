@@ -25,7 +25,7 @@
     "/api/ingestion": {
       "get": {
         "summary": "Report Ingestion",
-        "description": "How far the catch-up has got through the history.",
+        "description": "How far the catch-up has got through the history, and, while the first boot\nrebuilds the seed's vectors, how far that has got (atlas plate 07).",
         "operationId": "report_ingestion",
         "responses": {
           "200": {
@@ -36,6 +36,25 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Report Ingestion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catch-up": {
+      "post": {
+        "summary": "Sync Now",
+        "description": "The Sync now button: queues the daily catch-up when a complete day is missing and\nnone is running, and says which days it will fetch or why nothing was queued.",
+        "operationId": "sync_now",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncAnswer"
                 }
               }
             }
@@ -1054,6 +1073,50 @@
           "prediction_score"
         ],
         "title": "Scores"
+      },
+      "SyncAnswer": {
+        "properties": {
+          "queued": {
+            "type": "boolean",
+            "title": "Queued"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "days_missing",
+              "nothing_new",
+              "already_running"
+            ],
+            "title": "Reason"
+          },
+          "missing_days": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Missing Days"
+          },
+          "next_complete_day": {
+            "type": "string",
+            "format": "date",
+            "title": "Next Complete Day"
+          },
+          "next_complete_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Complete At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "queued",
+          "reason",
+          "missing_days",
+          "next_complete_day",
+          "next_complete_at"
+        ],
+        "title": "SyncAnswer"
       },
       "TopicDecision": {
         "properties": {

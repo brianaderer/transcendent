@@ -79,7 +79,8 @@ Screens and parts:
   opens sorted by rank; clicking a column heading sorts by it, clicking again reverses it,
   and the heading carries `aria-sort`.
 - `TopBar` — the app's name, the **Explore** and **Retrieval stats** links (each keeping
-  the range in the address, the current screen's in teal), `IngestionStatus`,
+  the range in the address, the current screen's in teal), `IngestionStatus` (with the
+  Sync now button),
   `BackendStatus` and `ThemeToggle` (light or dark, starting from the system's choice).
 - `BackendStatus` — "Checking the backend…" until the first answer, then "Backend running",
   or "Not answering:" with each service that isn't, or "Backend unreachable" when the API
@@ -94,7 +95,17 @@ Screens and parts:
   a day failed. It is fetched again whenever a live `ingestion` event arrives
   (`backfill.progress` after every saved batch, then the days' events), so a page opened
   mid-way shows where the first boot has got.
-  `describeIngestion(status)` in `src/ingestion.ts` writes the sentence.
+  `describeIngestion(status)` in `src/ingestion.ts` writes the sentence. Beside it,
+  `SyncNow`.
+- `SyncNow` — the **Sync now** button (`src/SyncNow.tsx`): asks `POST /api/catch-up`
+  through the generated `useSyncNow` for the daily catch-up now ([api](api.md),
+  [atlas plate 40](../atlas/40-backend.md)). Disabled while a day is loading or the seed is
+  being prepared (the status's `running_day` or `backfill`; the same rule as the backend's
+  `a_catch_up_is_busy`), and while its request is out. Its answer shows for eight seconds
+  (`ANSWER_SHOWN_MS`): "Fetching 19 Oct…" (or "Fetching 3 days, 17 Oct to 19 Oct…"),
+  "Nothing new: 20 Oct can be fetched after 06:00 UTC on 21 Oct", or "A catch-up is already
+  running"; `describeSync(answer)` in `src/sync.ts` writes it. After that the live
+  `ingestion` events move the loading line as the days load.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 - `runs/RunProgress` — below Explore's plot once a run is started: one lane per version, each
   with a progress bar fed by the live events (`laneProgress`: waiting, writing the report,
@@ -194,7 +205,7 @@ The backend answers 503 with the same body when something is down, so the status
 body either way.
 
 ## Uses
-[api](api.md) (`GET /api/health`, `GET /api/ingestion`, `GET /api/days`, `GET /api/topics`,
+[api](api.md) (`GET /api/health`, `GET /api/ingestion`, `POST /api/catch-up`, `GET /api/days`, `GET /api/topics`,
 `GET /api/map`, `GET /api/topics/{topic_id}`, `GET /api/retrievals`, `POST /api/runs`,
 `GET /api/runs/{run_id}`), [events](events.md) (`GET /api/streams/ingestion/events` and
 `GET /api/streams/run-<id>/events`), [explore](explore.md), [topics](topics.md),

@@ -54,7 +54,8 @@ function describeFullHistory(status: IngestionStatus, latestDay: string): string
   return `History up to date through ${shortDate(latestDay)} · ${count(status.posts)} posts`;
 }
 
-function shortDate(isoDay: string): string {
+/** A day as the page writes it, "19 Oct". */
+export function shortDate(isoDay: string): string {
   const [year, month, day] = isoDay.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });

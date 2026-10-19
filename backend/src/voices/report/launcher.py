@@ -1,15 +1,12 @@
 """Starts comparison runs for the API and reads their state back (atlas plate 70)."""
 
-from collections.abc import Callable
-
 from pydantic import BaseModel
 
 from voices.explore.day_range import DayRange
 from voices.report.runs import RunState, RunStore, new_run_id, stream_of
+from voices.tasks import Queue
 
 COMPARE_TASK = "voices.compare"  # the worker's task (voices.worker.app.compare)
-
-Queue = Callable[[str, list[str]], object]  # a task's name and its arguments
 
 
 class RunStarted(BaseModel):

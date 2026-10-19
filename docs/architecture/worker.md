@@ -12,7 +12,8 @@ It also runs each comparison run the page starts ([report](report.md)).
 - `celery_app` — the Celery application.
 - Task `voices.compare(run_id, start, end)` — one comparison run for a date range
   ([report](report.md)), queued by `POST /api/runs`.
-- Task `voices.catch_up` — loads and tags every complete day not yet done; returns whether
+- Task `voices.catch_up` — loads and tags every complete day not yet done, queued by Beat,
+  a starting worker, and the page's Sync now button (`POST /api/catch-up`); returns whether
   it ran (it does nothing while another catch-up is running); on failure, retries itself
   ten minutes later.
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
@@ -26,8 +27,9 @@ It also runs each comparison run the page starts ([report](report.md)).
 
 ## How it works
 - **When the catch-up runs:** when a worker starts (so first start and every restart catch
-  up), and daily at 06:00 UTC from Beat. Nothing in the web app queues it yet; it can be
-  queued by hand as the `voices.catch_up` task.
+  up), daily at 06:00 UTC from Beat, and whenever someone presses Sync now in the page's
+  top bar: `POST /api/catch-up` ([api](api.md)) queues it when a complete day is missing
+  and no catch-up is busy. It can still be queued by hand as the `voices.catch_up` task.
 - **One at a time:** a Redis lock (`lock:catch-up`) makes a second request do nothing while a
   catch-up is running. A worker that is starting clears any leftover lock first: none can be
   running yet, so a held lock belongs to a run that died with its worker. That holds while there is exactly one worker
@@ -81,7 +83,7 @@ startup (`broker_connection_retry_on_startup`), which also silences its startup 
 ## Used by
 [environment](environment.md) runs it twice, as the `worker` and `beat` services. Beat and
 the worker's own start-up queue `voices.catch_up`; [api](api.md) queues `voices.compare`
-(`POST /api/runs`).
+(`POST /api/runs`) and `voices.catch_up` (`POST /api/catch-up`, the Sync now button).
 
 ## Configuration and data
 `REDIS_URL`, `DATABASE_URL`, `MODEL_DIR`, `LOG_DIR`, `SERVICE_NAME`, `OPENROUTER_API_KEY`,

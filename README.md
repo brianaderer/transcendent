@@ -160,7 +160,9 @@ sorting eight weeks into topics) took about 1 hour 40 minutes on a laptop, measu
 runs, and used about $1.30 to $1.70 of OpenRouter credit. The worker uses about 1 GB of memory while it runs. You can leave it
 running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are
-missing. If it reads **Loading stopped at** a date, something went wrong on that day, and
+missing. The **Sync now** button beside the line fetches any day that has finished since,
+without waiting for the daily 06:00 UTC run: a day can be fetched from six hours after it
+ends (UTC), and the button says which days it is fetching or when the next one can be. If it reads **Loading stopped at** a date, something went wrong on that day, and
 the reason follows (the archive not answering, for example, or the key missing from step 3).
 If the archive or another service failed, the app tries that day again by itself ten minutes
 later, and keeps trying every ten minutes. A missing key is not tried again: add the key as

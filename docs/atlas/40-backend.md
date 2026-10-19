@@ -76,7 +76,7 @@ days missing are all the same operation over different ranges. Details are
 
 ```mermaid
 flowchart LR
-    TRIG["Something asks: catch up<br/>first start · Beat at 06:00 UTC ·<br/>worker restart · by hand"]
+    TRIG["Something asks: catch up<br/>first start · Beat at 06:00 UTC ·<br/>worker restart · the Sync now button"]
     GAP["Find the missing days<br/>every complete day after the last processed one,<br/>at most eight weeks back"]
     CHAIN["One catch-up job walks the days,<br/>oldest first, one at a time"]
     DAY["Process one day<br/>fetch · filter · upvotes · embed ·<br/>cluster · tag · expire noise · roll up<br/>see 21"]
@@ -113,6 +113,11 @@ flowchart LR
   A day that fails stays not-done, the chain stops there, and the next catch-up retries
   it. Progress is streamed live ([41](40-backend/41-live-events.md)); this table gives the
   measured prewarm time (OPEN-13).
+- **Sync now** (specified by Brian, 2026-10-19): a button in the top bar grabs new posts
+  and advances the high-water mark (the last day marked done in `ingested_days`) on
+  demand. It runs this same catch-up; it obeys the complete-days rule above, so it can't
+  fetch a partial day, and it says which days it will fetch or when the next one can be.
+  While a catch-up is already running it queues nothing and says so *(proposed)*.
 - **Catch-up is safe to trigger twice.** A lock means a second request while a chain is
   running does nothing, so Beat, a restart and a click can't start parallel chains.
 - **What only-new fetching gives up: upvote counts.** Reddit's score keeps changing

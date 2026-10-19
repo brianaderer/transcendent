@@ -5,7 +5,7 @@ import time
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Protocol
 
 import redis
@@ -21,7 +21,7 @@ from voices.backfill.progress import RedisBackfillProgress
 from voices.config import HISTORY_DAYS, load_settings
 from voices.db.explore_store import ExploreStore
 from voices.db.retrieval_store import RetrievalStore
-from voices.db.store import connect_store
+from voices.db.store import Store, connect_store
 from voices.db.topic_store import TopicStore
 from voices.events import server_sent_events
 from voices.explore.cache import RedisMapCache
@@ -30,11 +30,13 @@ from voices.explore.explore import Explore
 from voices.explore.projection import flatten
 from voices.explore.shapes import Days, Map, TopicInRange
 from voices.health import database_is_reachable, queue_is_reachable
+from voices.ingestion.sync_now import CatchUpProgress, SyncAnswer, SyncNow, a_catch_up_is_busy
 from voices.log import configure_logging, log_event, tracing
 from voices.report.launcher import RunLauncher, RunStarted
 from voices.report.runs import RunNotFound, RunState, RunStore, is_run_stream
 from voices.retrievals.retrieval_stats import RetrievalStatistics
 from voices.retrievals.shapes import Agent, RetrievalFilter, RetrievalStats
+from voices.tasks import Queue
 from voices.topics.shapes import TopicDetail
 from voices.topics.topic_detail import TopicDetails, TopicNotFound
 
@@ -52,6 +54,10 @@ class RunRequest(BaseModel):
 class Runs(Protocol):
     def start(self, days: DayRange) -> RunStarted: ...
     def state(self, run_id: str) -> RunState: ...
+
+
+class Syncs(Protocol):
+    def request(self, now: datetime) -> SyncAnswer: ...
 
 
 class ExploreReads(Protocol):
@@ -80,6 +86,7 @@ class ApiServices:
     runs: Runs
     topics: TopicReads
     retrievals: RetrievalReads
+    sync: Syncs
 
 
 logger = logging.getLogger(__name__)
@@ -116,6 +123,12 @@ def create_app(services: ApiServices) -> FastAPI:
             "days_wanted": HISTORY_DAYS,
             "backfill": services.backfill_progress(),
         }
+
+    @app.post("/api/catch-up")
+    def sync_now() -> SyncAnswer:
+        """The Sync now button: queues the daily catch-up when a complete day is missing and
+        none is running, and says which days it will fetch or why nothing was queued."""
+        return services.sync.request(datetime.now(UTC))
 
     @app.get(LIVE_EVENTS_PATH + "{stream}/events")
     def stream_events(stream: str) -> StreamingResponse:
@@ -234,6 +247,8 @@ def create_production_app() -> FastAPI:
     store = connect_store(settings.database_url)
     redis_client = redis.Redis.from_url(settings.redis_url)
     map_cache = RedisMapCache(redis_client)
+    backfill_progress = RedisBackfillProgress(redis_client).read
+    queue = queue_on(settings.redis_url)
     return create_app(
         ApiServices(
             health_checks={
@@ -241,17 +256,27 @@ def create_production_app() -> FastAPI:
                 "queue": lambda: queue_is_reachable(settings.redis_url),
             },
             ingestion_status=store.ingestion_status,
-            backfill_progress=RedisBackfillProgress(redis_client).read,
+            backfill_progress=backfill_progress,
             event_stream=lambda stream: server_sent_events(settings.redis_url, stream),
             explore=Explore(ExploreStore(store.engine), map_cache, flatten),
-            runs=RunLauncher(RunStore(redis_client), queue_on(settings.redis_url)),
+            runs=RunLauncher(RunStore(redis_client), queue),
             topics=TopicDetails(TopicStore(store.engine)),
             retrievals=RetrievalStatistics(RetrievalStore(store.engine)),
+            sync=SyncNow(catch_up_progress(store, backfill_progress), queue),
         )
     )
 
 
-def queue_on(redis_url: str) -> Callable[[str, list[str]], object]:
+def catch_up_progress(
+    store: Store, backfill_progress: Callable[[], dict | None]
+) -> CatchUpProgress:
+    return CatchUpProgress(
+        done_days=store.done_days,
+        busy=lambda: a_catch_up_is_busy(store.ingestion_status(), backfill_progress()),
+    )
+
+
+def queue_on(redis_url: str) -> Queue:
     """Sends a task to the worker by name, so the API doesn't import the worker's code."""
     celery = Celery(broker=redis_url)
     return lambda name, arguments: celery.send_task(name, args=arguments)
