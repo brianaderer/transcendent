@@ -365,7 +365,9 @@ core feature, not an afterthought:
 - **Topics are found thread by thread** (atlas OPEN-29): each thread is encoded as one
   text, its post and its top comments, on day one and again on day three, and the
   tagging agent attaches it to a topic, starts a new one, or calls it noise. Comments
-  arriving later, and old threads that come back to life, count as heat.
+  arriving later, and old threads that come back to life, count as heat. A thread whose
+  post we don't have (removed, or older than our history) is tagged from its title and
+  comments, counting its days from the first comment we see (OPEN-30).
 - **Too much data** is handled as Brian decided (atlas OPEN-14, OPEN-19, OPEN-29): drop
   deleted, removed and bot posts, fold short agreeing replies into their parent's
   upvotes, and delete threads the agent calls noise.

@@ -25,6 +25,9 @@ topic's engagement has been moving, not guessed from one week of text.
   2026-10-18). Day one avoids a three-day lag before a topic shows; day three uses the
   comments that have arrived since. This replaces the three-day lookahead above: a
   thread gets its decision on day one and its second decision on day three.
+- **A thread whose opening post we don't have** (removed, or started before our history and
+  brought in by a new comment) is tagged from its **title plus its top comments**, and its
+  days count from the **first comment we see** (OPEN-30, 2026-10-19).
 - Deleted posts and bot posts are dropped. **Short agreeing replies** ("+1", "this",
   "same here") are significant and inform the trend, but aren't saved as posts. A basic
   semantic check finds them, and each one adds to an **`upvotes`** count on the post it
@@ -47,7 +50,8 @@ erDiagram
     THREADS {
         text source_id "Reddit's id, unique"
         text title
-        timestamptz created_at
+        timestamptz created_at "when it was started; revival counts from here"
+        date first_seen_on "first stored; its day one and day three count from here"
         vector embedding "post + top comments, as one text (proposed)"
         int topic_id "the thread's tag; its comments share it (proposed)"
         text stage "new, decided_once (day one), settled (day three) (proposed)"
@@ -217,4 +221,3 @@ are both "find the closest vectors" questions, which pgvector answers inside Pos
 - `?` The grouping cutoff, and how many nearest tags the LLM is shown — tuned against
   the real data.
 - `?` Whether tags that go quiet are ever merged or retired.
-- `?` How to tag a thread whose opening post we don't have: removed, or older than our history (OPEN-30).
