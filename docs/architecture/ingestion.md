@@ -58,6 +58,12 @@ minutes), and saving it again adds nothing.
   failure (about two minutes over seven tries), or as long as the archive's
   `x-ratelimit-reset` header says (never more than five minutes), whichever is longer. The archive answers "slow down" when
   pushed, especially when two copies of the app fetch at once.
+- **Removed, deleted, and bot posts** (atlas OPEN-14, `filters.py`): an item is dropped when
+  its author is `[deleted]`, when its own text is exactly `[deleted]`, `[removed]`, or
+  `[ Removed by Reddit ]`, or when its author's name ends in "bot" or is AutoModerator. A
+  post's stored body is its title followed by its text, and the title survives removal, so
+  the check looks only at the text after the title. A post with a title and no text at all
+  is kept.
 - **Agreeing replies** (atlas OPEN-19): eight words or fewer, no question mark or link, and
   close in meaning (≥ 0.80) to examples such as "+1", "same here", "good point". They are
   not stored; each adds one to the parent's `upvotes` and to that day's
