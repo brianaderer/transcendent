@@ -15,9 +15,9 @@ from voices.ingestion.items import Item
 pytestmark = pytest.mark.database
 
 DAY = date(1999, 1, 2)  # far outside any real history, so the test can't touch real rows
+OTHER_DAY = date(1999, 1, 3)  # the day after, for a later save
 AT = datetime(1999, 1, 2, 12, tzinfo=UTC)
 VECTOR = [0.0] * EMBEDDING_DIMENSIONS
-OTHER_DAY = date(1999, 1, 3)
 
 
 @pytest.fixture
@@ -38,6 +38,11 @@ def batch(upvotes):
     return DayBatch(
         DAY, [NewThread("test-p", "Which anchor?", AT)], [EmbeddedItem(post, VECTOR)], upvotes
     )
+
+
+def first_seen_on_of(store, thread_id):
+    with store.engine.connect() as connection:
+        return connection.scalar(select(Thread.first_seen_on).where(Thread.source_id == thread_id))
 
 
 def upvotes_of(store, post_id):
@@ -65,22 +70,14 @@ def test_a_thread_is_first_seen_on_the_day_it_is_saved_not_the_day_it_started(st
     old = NewThread("test-old", "Old thread", datetime(1990, 5, 1, tzinfo=UTC))
     store.save_day(DayBatch(DAY, [old], [], {}))
 
-    with store.engine.connect() as connection:
-        first_seen = connection.scalar(
-            select(Thread.first_seen_on).where(Thread.source_id == "test-old")
-        )
-    assert first_seen == DAY
+    assert first_seen_on_of(store, "test-old") == DAY
 
 
 def test_a_thread_saved_again_on_a_later_day_keeps_its_first_seen_day(store):
     store.save_day(batch({}))
     store.save_day(replace(batch({}), day=OTHER_DAY))
 
-    with store.engine.connect() as connection:
-        first_seen = connection.scalar(
-            select(Thread.first_seen_on).where(Thread.source_id == "test-p")
-        )
-    assert first_seen == DAY
+    assert first_seen_on_of(store, "test-p") == DAY
 
 
 def test_saving_the_same_day_twice_does_not_double_its_upvotes(store):
