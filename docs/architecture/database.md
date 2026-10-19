@@ -23,7 +23,8 @@ Describes the tables and keeps the database in step with them. The tables follow
 - `voices.db.models` — the tables as SQLAlchemy classes (`Thread`, `Topic`,
   `ClusterDecision`, `Post`, `PostUpvotesDaily`, `TopicDailyEngagement`,
   `RetrievalEvent`, `IngestedDay`, `NoiseThread`) on `Base.metadata`, and an ingested day's
-  statuses as `DAY_RUNNING`, `DAY_DONE`, `DAY_FAILED`. `voices.db.day_ledger.latest_day_with_status`
+  statuses as `DAY_RUNNING`, `DAY_DONE`, `DAY_FAILED`, gathered in `DAY_STATUSES`, from which
+  the `ingested_days` table's check that a status is one of these three is built. `voices.db.day_ledger.latest_day_with_status`
   is the one query for the latest day in a status, used by both `Store` and `ExploreStore`. This is the one description of
   the database; migrations are generated from it.
 - `python -m voices.db.setup` — waits for Postgres, then runs every migration not yet
