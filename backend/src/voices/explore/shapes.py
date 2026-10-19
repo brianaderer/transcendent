@@ -29,6 +29,7 @@ class TopicInRange(TopicInfo):
     engagement: int  # posts, comments and upvotes in the range
     posts: int  # posts and comments in the range
     daily: list[int]  # engagement on each day of the range, in order
+    daily_before: list[int]  # the same for the period the badge compares with, just before
     direction: Direction
 
 

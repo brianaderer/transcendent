@@ -46,7 +46,8 @@ Screens and parts:
   or comment on Reddit (`redditLink`). Hovering a topic in the panel fades every other
   topic's dots.
 - `explore/TopicsPanel` — the range's topics busiest first (`GET /api/topics`): colour, label
-  (the description on hover), a sparkline of the daily engagement, posts and comments, and
+  (the description on hover), a sparkline of the daily engagement (the period before the range
+  drawn faint, so the line shows what the badge compares), posts and comments, and
   the badge **New**, **Rising**, **Steady** or **Fading**. Hovering a row, or moving the
   keyboard focus onto it, highlights that topic on the dot plot; the topic's name links to
   its Topic detail page with the range in the address. `BADGES` (the badge words) is shared

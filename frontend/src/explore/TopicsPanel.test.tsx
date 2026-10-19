@@ -13,6 +13,7 @@ const TOPIC: TopicInRange = {
   engagement: 5,
   posts: 2,
   daily: [1, 4],
+  daily_before: [],
   direction: "steady",
 };
 
@@ -55,4 +56,22 @@ test("a one-day sparkline is a single point at the start", () => {
 
 test("a sparkline of quiet days lies along the bottom, inside its box", () => {
   expect(drawnPoints([0, 0, 0])).toBe("0,16 30,16 60,16");
+});
+
+test("the days before the range are drawn faint, joined to the range's own line", () => {
+  const { container } = render(<Sparkline before={[0, 4]} values={[8, 2]} />);
+  const [faint, range] = [...container.querySelectorAll("polyline")].map((line) =>
+    line.getAttribute("points"),
+  );
+
+  expect(faint).toBe("0,16 20,8 40,0");
+  expect(range).toBe("40,0 60,12");
+});
+
+test("each topic's line shows the days before the range as well as the range", async () => {
+  const withHistory = { ...TOPIC, daily_before: [3, 1] };
+
+  await renderInRouter(<TopicsPanel topics={[withHistory]} colours={new Map()} />);
+
+  expect(document.querySelectorAll("polyline")).toHaveLength(2);
 });

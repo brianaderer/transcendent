@@ -107,6 +107,7 @@ test("the badge is the topic's badge on Explore for the same range", async () =>
       engagement: 9,
       posts: 4,
       daily: [],
+      daily_before: [],
       direction: "rising",
     },
   ];

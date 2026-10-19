@@ -45,6 +45,7 @@ def _topic(info: TopicInfo, rows: list[TopicDay], days: DayRange) -> TopicInRang
         engagement=engagement,
         posts=sum(r.posts for r in in_range),
         daily=_daily(in_range, days),
+        daily_before=_daily(rows, days.period_before()),
         direction="new" if is_new(info.first_seen, days) else trend(engagement, before),
     )
 

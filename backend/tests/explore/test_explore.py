@@ -144,3 +144,12 @@ def test_the_cached_map_is_the_map_as_sent():
     [stored] = cache.values.values()
 
     assert json.loads(stored) == json.loads(sent.model_dump_json())
+
+
+def test_a_topic_also_has_one_number_a_day_for_the_period_its_badge_compares_with():
+    days = [day(1, date(2026, 10, 9), 4), day(1, date(2026, 10, 11), 6), day(1, START, 5)]
+    data = FakeData(days, [topic(1)])
+
+    [only] = explore(data).topics(DAYS)
+
+    assert only.daily_before == [4, 0, 6]

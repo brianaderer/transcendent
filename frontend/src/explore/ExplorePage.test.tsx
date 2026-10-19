@@ -31,6 +31,7 @@ function topic(id: number, label: string, direction: TopicInRange["direction"]):
     engagement: 9,
     posts: 4,
     daily: [1, 2],
+    daily_before: [],
     direction,
   };
 }

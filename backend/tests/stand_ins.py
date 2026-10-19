@@ -50,6 +50,7 @@ class FakeExplore:
             engagement=7,
             posts=2,
             daily=[5, 2],
+            daily_before=[1, 1],
             direction="rising",
         )
         return [topic]

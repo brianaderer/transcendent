@@ -283,6 +283,7 @@ export interface TopicInRange {
   engagement: number;
   posts: number;
   daily: number[];
+  daily_before: number[];
   direction: TopicInRangeDirection;
 }
 

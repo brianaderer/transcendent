@@ -1186,6 +1186,13 @@
             "type": "array",
             "title": "Daily"
           },
+          "daily_before": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Daily Before"
+          },
           "direction": {
             "type": "string",
             "enum": [
@@ -1206,6 +1213,7 @@
           "engagement",
           "posts",
           "daily",
+          "daily_before",
           "direction"
         ],
         "title": "TopicInRange"

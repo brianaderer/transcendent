@@ -19,7 +19,7 @@ dot plot, recomputed for each range (atlas OPEN-20).
   - `topics(days)` — a list of `TopicInRange` (a `TopicInfo` with the range's numbers): every topic with engagement in the range,
     busiest first (ties by id), with its range's `engagement` (posts, comments and upvotes),
     `posts` (posts and comments), `daily` (engagement on each day of the range, zeros on
-    quiet days) and `direction`.
+    quiet days), `daily_before` (the same for the period the badge compares with) and `direction`.
   - `map(days)` — a `Map`: every embedded post and comment written in the range, oldest
     first, each with its place (`x`, `y`, in the square from −1 to 1), thread, author, day,
     `thread_title`, a short excerpt and `thread_topic_id` (`null` while the thread waits for a

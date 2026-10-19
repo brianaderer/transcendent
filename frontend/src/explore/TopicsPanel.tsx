@@ -45,7 +45,7 @@ export function TopicsPanel({ topics, colours }: Props) {
           >
             {topic.label}
           </Link>
-          <Sparkline values={topic.daily} />
+          <Sparkline before={topic.daily_before} values={topic.daily} />
           <span className="w-10 text-right text-xs tabular-nums text-slate-500">{topic.posts}</span>
           <span className="w-14 text-right text-xs font-medium">{BADGES[topic.direction]}</span>
         </li>
@@ -56,17 +56,38 @@ export function TopicsPanel({ topics, colours }: Props) {
 
 const SPARK_WIDTH = 60;
 const SPARK_HEIGHT = 16;
+const BEFORE_OPACITY = 0.35;
 
-/** The topic's engagement on each day of the range. */
-export function Sparkline({ values }: { values: number[] }) {
-  const highest = Math.max(1, ...values);
-  const step = values.length > 1 ? SPARK_WIDTH / (values.length - 1) : 0;
-  const points = values
-    .map((value, day) => `${day * step},${SPARK_HEIGHT - (value / highest) * SPARK_HEIGHT}`)
-    .join(" ");
+type SparklineProps = { values: number[]; before?: number[] };
+
+/**
+ * The topic's engagement on each day of the range, drawn after the same number of days just
+ * before it, faint: the period its badge compares with, so the line and the badge agree.
+ */
+export function Sparkline({ values, before = [] }: SparklineProps) {
+  const all = [...before, ...values];
+  const highest = Math.max(1, ...all);
+  const step = all.length > 1 ? SPARK_WIDTH / (all.length - 1) : 0;
+  const point = (value: number, day: number) =>
+    `${day * step},${SPARK_HEIGHT - (value / highest) * SPARK_HEIGHT}`;
+  const points = all.map(point);
   return (
     <svg width={SPARK_WIDTH} height={SPARK_HEIGHT} aria-hidden="true" className="shrink-0">
-      <polyline points={points} fill="none" stroke="currentColor" strokeWidth={1.5} />
+      {before.length > 0 && (
+        <polyline
+          points={points.slice(0, before.length + 1).join(" ") /* up to the range's first day */}
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity={BEFORE_OPACITY}
+          strokeWidth={1.5}
+        />
+      )}
+      <polyline
+        points={points.slice(before.length).join(" ")}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+      />
     </svg>
   );
 }
