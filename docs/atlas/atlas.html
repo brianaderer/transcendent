@@ -394,17 +394,17 @@ const PLATES={
  open:[]},
 
 "21":{t:"Topics and engagement over time",draft:true,file:"20-data-model/21-topics.md",
- sum:"The posts (with their agreeing-reply upvotes) and topic tags tables, the daily engagement table that graphs each tag over time, and the daily intake that clusters with a three-day lookahead and lets an LLM attach, mint or drop",
+ sum:"The posts (with their agreeing-reply upvotes) and topic tags tables, the daily engagement table that graphs each tag over time, and the daily intake that encodes each thread on day one and again on day three and lets an LLM attach, mint or drop",
  links:["01","40","50","60","90"],
  lead:"How the community's conversation is stored as **topics** that can be followed day by day. This is what the prediction stands on: next week is forecast from how each topic's engagement has been moving, not guessed from one week of text.",
- facts:[["store","Postgres + pgvector (OPEN-4)"],["embedding","one per post or comment, never cut into pieces"],["lookahead","three days to fall into a cluster"],["clustering","HDBSCAN (proposed)",1],["decision","LLM per cluster: attach · mint · noise"],["noise","deleted, not marked"],["cost","about ten LLM calls a day; a few hundred for eight weeks (estimate)",1],["graph table","topic_daily_engagement, under 2,000 rows for eight weeks"]],
+ facts:[["store","Postgres + pgvector (OPEN-4)"],["embedding","one per post or comment, never cut into pieces"],["unit","the thread: post + top comments (OPEN-29)"],["encoded","day one, then again on day three (OPEN-29)"],["grouping","by meaning, fixed cutoff (proposed)",1],["decision","LLM per cluster: attach · mint · noise"],["noise","deleted, not marked"],["cost","about ten LLM calls a day; a few hundred for eight weeks (estimate)",1],["graph table","topic_daily_engagement, under 2,000 rows for eight weeks"]],
  figs:[
   {h:"Tables",cw:250,gx:170,gy:70,valign:"top",
    boxes:[
-    ["THREADS",0,0,"data","THREADS",["source_id text — Reddit's id, unique","title text","created_at timestamptz"],{tag:"TABLE"}],
+    ["THREADS",0,0,"data","THREADS",["source_id text — Reddit's id, unique","title text","created_at timestamptz","embedding vector — post + top comments, as one text (proposed)","topic_id int — the thread's tag; its comments share it (proposed)"],{tag:"TABLE"}],
     ["POSTS",1,0,"data","POSTS",["source_id text — Reddit's id, unique, so a repeat is dropped","kind text — post or comment","author text","created_at timestamptz","body text","reddit_score int — Reddit's own score at fetch time, not used for trends","upvotes int — agreeing replies it received","parent_source_id text — what it replies to","embedding vector — its meaning, as numbers","status text — pending, tagged","topic_similarity float — how close it sits to its tag's center"],{tag:"TABLE"}],
     ["TOPICS",2,0,"data","TOPICS",["label text — short name, written by the LLM","description text — one or two sentences, written by the LLM","keywords text_array — the words that most set it apart","centroid vector — the average meaning of its posts","first_seen date","last_seen date"],{tag:"TABLE"}],
-    ["TDE",3,0,"data","TOPIC_DAILY_ENGAGEMENT",["day date","posts int","comments int","upvotes int — agreeing replies","unique_authors int","new_threads int","unanswered_questions int"],{tag:"TABLE"}],
+    ["TDE",3,0,"data","TOPIC_DAILY_ENGAGEMENT",["day date","posts int","comments int","upvotes int — agreeing replies","unique_authors int","new_threads int","revived_threads int — older than seven days, new comments today (proposed)","unanswered_questions int"],{tag:"TABLE"}],
     ["RE",0,1,"data","RETRIEVAL_EVENTS",["run text — which run","agent text — report or tagging","tool text — search or lookup","at timestamptz"],{tag:"TABLE"}],
     ["PUD",1,1,"data","POST_UPVOTES_DAILY",["day date — when the agreeing replies were written","count int"],{tag:"TABLE"}],
     ["CD",2,1,"data","CLUSTER_DECISIONS",["day date","decision text — attach, mint or noise","reason text — the LLM's explanation","candidate_tags jsonb — the nearest tags and how close each was","prompt text — exactly what the LLM was shown","model text"],{tag:"TABLE"}]
@@ -423,24 +423,25 @@ const PLATES={
     ["PULL",1,0,"step","Fetch new posts and comments",["(Arctic Shift, since the newest stored)"]],
     ["DROP",1,1,"step","Drop deleted and removed posts, and bots",["(AutoModerator and other known bot accounts)"]],
     ["SHORT",1,2,"step","Agreeing reply?",["(short, and close in meaning to '+1', 'this', 'same here')"],{tag:"IF"}],
-    ["EMB",1,3,"llm","Embed each post or comment whole",["status: pending"],{tag:"EMBED"}],
+    ["EMB",1,3,"llm","Embed each post or comment whole",["for search and the map"],{tag:"EMBED"}],
     ["REACT",3,3,"step","Add one to the parent's upvotes",["reply itself not saved"]],
-    ["EXPIRE",0,4,"out","Pending for three days and still in no cluster:",["noise, delete"]],
-    ["CL",1,4,"step","Cluster the last three days of posts",["(HDBSCAN · tagged posts in the window act as anchors)"]],
-    ["CMP",1,5,"step","Compare each cluster with the tags' centroids",["places it in the domain space"]],
-    ["LLM",1,6,"llm","Tagging agent decides, per cluster",[]],
-    ["ADD",0,7,"out","Attach to an existing tag",[]],
-    ["MINT",1,7,"out","Mint a new tag",[]],
-    ["NOISE",2,7,"out","Noise: delete",[]],
-    ["ROLL",1,8,"step","Rebuild topic_daily_engagement",["for the days touched"]]
+    ["ENC",1,4,"llm","Encode each thread one day old and three days old",["post + top comments so far, as one text"],{tag:"EMBED"}],
+    ["LATE",3,4,"step","Comments after day three",["take their thread's tag"]],
+    ["CL",1,5,"step","Group those threads by meaning",["(a thread alone is its own group)"]],
+    ["CMP",1,6,"step","Compare each group with the tags' centroids",["places it in the domain space"]],
+    ["LLM",1,7,"llm","Tagging agent decides, per group",[]],
+    ["ADD",0,8,"out","Attach to an existing tag",[]],
+    ["MINT",1,8,"out","Mint a new tag",[]],
+    ["NOISE",2,8,"out","Noise",["(day one: waits for day three · day three: delete the thread)"]],
+    ["ROLL",1,9,"step","Rebuild topic_daily_engagement",["for the days touched"]]
    ],
    arrows:[
     ["PULL","DROP",""],["DROP","SHORT",""],
     ["SHORT","REACT","yes","cond"],["SHORT","EMB","no","cond"],
-    ["EMB","CL",""],["CL","CMP",""],["CMP","LLM",""],
+    ["EMB","ENC",""],["ENC","CL",""],["CL","CMP",""],["CMP","LLM",""],
+    ["EMB","LATE",""],
     ["LLM","ADD",""],["LLM","MINT",""],["LLM","NOISE",""],
-    ["CL","EXPIRE",""],
-    ["ADD","ROLL",""],["MINT","ROLL",""],["REACT","ROLL",""]
+    ["ADD","ROLL",""],["MINT","ROLL",""],["LATE","ROLL",""],["REACT","ROLL",""]
    ]}],
  notes:[
   {h:"Specified by Brian",li:[
@@ -448,7 +449,8 @@ const PLATES={
    "Posts are fetched daily and **tagged by day on intake**. Any time range (a week, the eight weeks of history) is then just a range of days (OPEN-10).",
    "Each day, embeddings are clustered with a **three-day lookahead**: a post has three days to fall into a cluster. Each cluster is compared with the tags' embeddings to place it in the domain space, and an LLM makes the final call per cluster: **add it to an existing tag, mint a new tag, or ignore it as noise**. A post that hasn't fallen into a cluster within three days **is noise and is deleted**.",
    "**Posts are not cut into pieces**: one post or comment is one embedding.",
-   "Comments are semantically tied to their post, so it makes sense to **encode the whole thread as one unit**. Comments arriving later are **a heat signal**, and an old thread that **suddenly becomes active again** is another heat signal (when the thread is encoded, and whether it's re-encoded, is OPEN-29).",
+   "Comments are semantically tied to their post, so it makes sense to **encode the whole thread as one unit**. Comments arriving later are **a heat signal**, and an old thread that **suddenly becomes active again** is another heat signal.",
+   "**A thread is encoded on day one, then encoded again on day three** (OPEN-29). Day one avoids a three-day lag before a topic shows; day three uses the comments that have arrived since. This replaces the three-day lookahead above.",
    "Deleted posts and bot posts are dropped. **Short agreeing replies** (\"+1\", \"this\", \"same here\") are significant and inform the trend, but aren't saved as posts. A basic semantic check finds them, and each one adds to an **`upvotes`** count on the post it replies to, a magnitude increaser for that post (OPEN-19)."],
    p2:"**Everything else on this plate is *proposed*.** In the intake flow, details in brackets are *proposed*."},
   {h:"What each table is for",li:[
@@ -460,16 +462,19 @@ const PLATES={
    "**cluster_decisions** — one row per cluster per day: what the LLM decided, why, which tags it was choosing between and how close each was, and the exact prompt it saw. Every tag is traceable to the decisions that built it, and because tagging always moves forward one day at a time, it also records what was known on each day — which is what keeps the backtest honest (OPEN-11)."]},
   {h:"The daily intake",li:[
    "Runs once a day as a Celery job ([40](40)). The flow is specified by Brian; details in brackets are *proposed*.",
-   "**Why three days:** one day of r/sailing is often too few posts for a conversation to form a cluster. Giving every post three days lets a thread that starts slowly gather enough company, while anything still alone after three days really is noise.",
+   "**Why the whole thread is the unit:** most comments (\"Awesome, thanks!\") carry no subject of their own; their thread does. Grouping single posts left 86% in no group. A thread written out as its post plus its top five comments grouped into the most coherent subjects of everything measured (OPEN-29).",
+   "**Why day one and day three:** encoding on day one means a topic shows the day after its first post, not three days later, so the freshest days of a report aren't missing. Encoding again on day three uses the replies that have come in since. *(Proposed:)* the day-three decision is final; if it moves a thread to a different tag, only that thread's first three days of engagement move with it.",
+   "**Heat after day three:** comments arriving later take their thread's tag and count as engagement on the day they're written. *(Proposed:)* each day also counts, per tag, the **revived threads**: threads more than seven days old that got new comments that day.",
+   "*(Proposed:)* grouping is by closeness of meaning with a fixed cutoff (cosine distance 0.3 measured well), so every thread gets a decision, even one on its own.",
    "**Why the LLM decides rather than a threshold:** closeness in meaning-space alone can't tell \"the same conversation continuing\" from \"a new conversation next door to an old one\". The LLM reads the posts and the candidate tags' descriptions.",
-   "**Tagging always moves forward in time**, one day after another. Nothing tagged is re-decided, so a tag's history never changes under it.",
-   "**Cost:** one LLM call per cluster per day, roughly ten a day for r/sailing. Tagging the eight-week history once is a few hundred calls *(estimate)*.",
+   "**Tagging always moves forward in time**, one day after another. After a thread's day-three decision nothing about it is re-decided, so a tag's history older than three days never changes under it.",
+   "**Cost:** one LLM call per group, twice per thread. Measured groups suggest roughly twenty a day each time, so about forty calls a day and around two thousand for the eight-week history *(estimate, not yet measured)*.",
    "**Tests** replace the LLM and the embedder with stand-ins (`CLAUDE.md` §7)."]},
   {h:"Where similarity search is used",p:["Comparing a cluster with the tags, and the agents' search tool ([60](60)), are both \"find the closest vectors\" questions, which pgvector answers inside Postgres (OPEN-4, resolved)."]}],
  open:[
   "The word limit and closeness threshold for an agreeing reply — tuned against the real data.",
   "What happens to a reply whose parent was deleted as noise *(proposed: the parent keeps a stub row — id, author, time, no text or embedding — so threads stay connected and lookup can say \"removed as noise\")*.",
-  "The smallest group the clustering counts as a cluster, and how many nearest tags the LLM is shown — tuned against the real data.",
+  "The grouping cutoff, and how many nearest tags the LLM is shown — tuned against the real data.",
   "Whether tags that go quiet are ever merged or retired."]},
 
 "30":{t:"Frontend",draft:true,file:"30-frontend.md",
@@ -785,8 +790,7 @@ const PLATES={
  links:[],
  lead:"Where decisions wait for Brian, and where they're recorded once made.",
  questions:[
-  ["OPEN-13","For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes. **Measured 2026-10-18, build step 2 (fetch and embedding, before tagging exists):** about 35–50 seconds a day on a laptop, so roughly 40–45 minutes for the eight weeks, plus a one-time 130 MB model download; tagging in step 3 will add model calls on top; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) If prewarm proves slow or fragile, the fallback is committing the computed database.","04"],
-  ["OPEN-29","What does the clustering group, and when is a thread encoded? Measured 2026-10-18 on three real days of r/sailing (1,851 posts and comments in 109 threads), no model calls. Grouping individual posts fails: most comments (\"Awesome, thanks!\") carry no subject of their own, 86% joined no group and would be deleted, and with one group allowed the whole first day became a grab-bag the agent called noise. Brian then said a comment belongs with its post, so the thread should be encoded as one unit. Measured three ways of doing that: the post's text alone gave 65 groups (43 threads alone); the post's meaning averaged with its comments' made one 51-thread blob, because generic replies pull everything to the middle; the post and its top five comments written out as one text gave the most coherent groups (sail handling and rigging, boats to buy or charter, the thefts, sailing trips), 57 groups with 39 threads alone. Brian also said comments arriving later are a heat signal, and so is an old thread that suddenly gets comments again; he is not fully against re-encoding a thread. The question left is whether a thread is encoded once or again as comments arrive. Recommendation: encode each thread once, three days after it starts, as the post plus its top comments; group that day's three-day-old threads; the agent attaches, mints or calls noise. Comments after day three take the thread's topic and count as engagement on the day they are written, which is the heat Brian describes, and needs no re-encoding. A revived thread is counted separately each day per topic (proposed: a thread more than seven days old that gets new comments), so the prediction can see a topic waking up. Re-encoding is not recommended, because it could move a thread to a different topic after the fact and rewrite that topic's past engagement, and it costs an embedding plus an agent decision each time. The one case it would catch, a revived thread whose conversation has moved to a new subject, is rare and can be found later from the comments' own embeddings without re-encoding the thread. This replaces the specified rule 'a post that joins no cluster in three days is deleted' with 'each thread gets one decision three days after it starts'.","21"]],
+  ["OPEN-13","For now, nothing is pre-seeded: the first `docker compose up` prewarms from live data (fetch eight weeks from Arctic Shift, embed, place, tag day by day) and the reviewer waits it out (Brian, 2026-10-18). Still open, to revisit once prewarm is built and timed: (1) how long it takes. **Measured 2026-10-18, build step 2 (fetch and embedding, before tagging exists):** about 35–50 seconds a day on a laptop, so roughly 40–45 minutes for the eight weeks, plus a one-time 130 MB model download; tagging in step 3 will add model calls on top; (2) the demo then depends on Arctic Shift being up and on the OpenRouter key working at the moment the reviewer starts it, and the tagging calls during prewarm are paid from that key; (3) If prewarm proves slow or fragile, the fallback is committing the computed database.","04"]],
  resolved:[
   ["OPEN-1","The frontend's API client is generated from an OpenAPI description the backend publishes (typed TanStack Query hooks, for example with orval). The backend choice must support publishing one.","2026-10-18"],
   ["OPEN-2","The embedding map is drawn with Apache ECharts.","2026-10-18"],
@@ -814,7 +818,8 @@ const PLATES={
   ["OPEN-25","The report agent returns one answer in two parts: the prose report, and a fixed list of its topics with rank and direction plus its predicted topics. The page shows the prose with the list as a small table beside it; the app scores the list.","2026-10-18"],
   ["OPEN-26","Reports can cover any date range; the Explore slider starts on the last seven days, so the default report is the brief's weekly one. The prediction covers a period the same length as the range.","2026-10-18"],
   ["OPEN-27","Logging is under the hood, for developers only: JSON log files, no viewer, nothing shown to reviewers.","2026-10-18"],
-  ["OPEN-28","Database changes are made with Alembic. Tables are described once as SQLAlchemy models; migrations are generated from them and applied by setup on every start. The earlier schema file and local data were wiped.","2026-10-18"]]}
+  ["OPEN-28","Database changes are made with Alembic. Tables are described once as SQLAlchemy models; migrations are generated from them and applied by setup on every start. The earlier schema file and local data were wiped.","2026-10-18"],
+  ["OPEN-29","The thread is the unit: each thread is written out as its post plus its top comments and encoded as one text. It is encoded on day one, so a topic shows without a three-day lag, and encoded again on day three with the comments that have arrived since; each time, that day's threads are grouped by meaning and the tagging agent attaches, mints or calls noise. Comments arriving later, and old threads that become active again, are heat signals. Measured on three real days: single posts left 86% in no group; post plus top five comments gave the most coherent groups.","2026-10-18"]]}
 };
 
 /* ===================================================================== RENDERER */

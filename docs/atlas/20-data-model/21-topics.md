@@ -21,6 +21,10 @@ topic's engagement has been moving, not guessed from one week of text.
   thread as one unit**. Comments arriving later are **a heat signal**, and an old thread
   that **suddenly becomes active again** is another heat signal (2026-10-18; when the
   thread is encoded, and whether it's re-encoded, is OPEN-29).
+- **A thread is encoded on day one, then encoded again on day three** (OPEN-29,
+  2026-10-18). Day one avoids a three-day lag before a topic shows; day three uses the
+  comments that have arrived since. This replaces the three-day lookahead above: a
+  thread gets its decision on day one and its second decision on day three.
 - Deleted posts and bot posts are dropped. **Short agreeing replies** ("+1", "this",
   "same here") are significant and inform the trend, but aren't saved as posts. A basic
   semantic check finds them, and each one adds to an **`upvotes`** count on the post it
@@ -44,6 +48,8 @@ erDiagram
         text source_id "Reddit's id, unique"
         text title
         timestamptz created_at
+        vector embedding "post + top comments, as one text (proposed)"
+        int topic_id "the thread's tag; its comments share it (proposed)"
     }
     POSTS {
         text source_id "Reddit's id, unique, so a repeat is dropped"
@@ -77,6 +83,7 @@ erDiagram
         int upvotes "agreeing replies"
         int unique_authors
         int new_threads
+        int revived_threads "older than seven days, new comments today (proposed)"
         int unanswered_questions
     }
     CLUSTER_DECISIONS {
@@ -116,7 +123,7 @@ erDiagram
     meaning-space. Clusters are compared against the centroids to find the tags they
     might belong to, and the centroid moves whenever posts are added.
 - **topic_daily_engagement** — one row per tag per day: posts, comments, upvotes,
-  distinct people, new threads and unanswered questions. **This is the graph.** Any
+  distinct people, new threads, revived threads *(proposed)* and unanswered questions. **This is the graph.** Any
   range — a week, eight weeks — is a sum over its days. Rebuilt from the posts after
   each day's intake, never edited by hand. Eight weeks of about thirty tags is under two
   thousand rows.
@@ -141,38 +148,54 @@ flowchart TB
     DROP["Drop deleted and removed posts, and bots<br/>(AutoModerator and other known bot accounts)"]
     SHORT{"Agreeing reply?<br/>(short, and close in meaning to '+1', 'this', 'same here')"}
     REACT["Add one to the parent's upvotes<br/>reply itself not saved"]
-    EMB["Embed each post or comment whole<br/>status: pending"]
-    CL["Cluster the last three days of posts<br/>(HDBSCAN · tagged posts in the window act as anchors)"]
-    CMP["Compare each cluster with the tags' centroids<br/>places it in the domain space"]
-    LLM["Tagging agent decides, per cluster<br/>see 60"]
+    EMB["Embed each post or comment whole<br/>for search and the map"]
+    ENC["Encode each thread one day old and three days old<br/>post + top comments so far, as one text"]
+    CL["Group those threads by meaning<br/>(a thread alone is its own group)"]
+    CMP["Compare each group with the tags' centroids<br/>places it in the domain space"]
+    LLM["Tagging agent decides, per group<br/>see 60"]
     ADD["Attach to an existing tag"]
     MINT["Mint a new tag"]
-    NOISE["Noise: delete"]
-    EXPIRE["Pending for three days and still in no cluster:<br/>noise, delete"]
+    NOISE["Noise<br/>(day one: waits for day three · day three: delete the thread)"]
+    LATE["Comments after day three<br/>take their thread's tag"]
     ROLL["Rebuild topic_daily_engagement<br/>for the days touched"]
 
     PULL --> DROP --> SHORT
     SHORT -->|yes| REACT
-    SHORT -->|no| EMB --> CL --> CMP --> LLM
+    SHORT -->|no| EMB --> ENC --> CL --> CMP --> LLM
+    EMB --> LATE
     LLM --> ADD
     LLM --> MINT
     LLM --> NOISE
-    CL --> EXPIRE
     ADD --> ROLL
     MINT --> ROLL
+    LATE --> ROLL
     REACT --> ROLL
 ```
 
-- **Why three days:** one day of r/sailing is often too few posts for a conversation to
-  form a cluster. Giving every post three days lets a thread that starts slowly gather
-  enough company, while anything still alone after three days really is noise.
+- **Why the whole thread is the unit:** most comments ("Awesome, thanks!") carry no
+  subject of their own; their thread does. Grouping single posts left 86% in no group.
+  A thread written out as its post plus its top five comments grouped into the most
+  coherent subjects of everything measured (OPEN-29).
+- **Why day one and day three:** encoding on day one means a topic shows the day after
+  its first post, not three days later, so the freshest days of a report aren't
+  missing. Encoding again on day three uses the replies that have come in since. *(Proposed:)*
+  the day-three decision is final; if it moves a thread to a different tag, only that
+  thread's first three days of engagement move with it.
+- **Heat after day three:** comments arriving later take their thread's tag and count
+  as engagement on the day they're written. *(Proposed:)* each day also counts, per
+  tag, the **revived threads**: threads more than seven days old that got new comments
+  that day.
+- *(Proposed:)* grouping is by closeness of meaning with a fixed cutoff (cosine
+  distance 0.3 measured well), so every thread gets a decision, even one on its own.
 - **Why the LLM decides rather than a threshold:** closeness in meaning-space alone
   can't tell "the same conversation continuing" from "a new conversation next door to
   an old one". The LLM reads the posts and the candidate tags' descriptions.
-- **Tagging always moves forward in time**, one day after another. Nothing tagged is
-  re-decided, so a tag's history never changes under it.
-- **Cost:** one LLM call per cluster per day, roughly ten a day for r/sailing. Tagging the
-  eight-week history once is a few hundred calls *(estimate)*.
+- **Tagging always moves forward in time**, one day after another. After a thread's
+  day-three decision nothing about it is re-decided, so a tag's history older than
+  three days never changes under it.
+- **Cost:** one LLM call per group, twice per thread. Measured groups suggest roughly
+  twenty a day each time, so about forty calls a day and around two thousand for the
+  eight-week history *(estimate, not yet measured)*.
 - **Tests** replace the LLM and the embedder with stand-ins (`CLAUDE.md` §7).
 
 ## Where similarity search is used
@@ -188,6 +211,6 @@ are both "find the closest vectors" questions, which pgvector answers inside Pos
 - `?` What happens to a reply whose parent was deleted as noise *(proposed: the parent
   keeps a stub row — id, author, time, no text or embedding — so threads stay connected
   and lookup can say "removed as noise")*.
-- `?` The smallest group the clustering counts as a cluster, and how many nearest tags
-  the LLM is shown — tuned against the real data.
+- `?` The grouping cutoff, and how many nearest tags the LLM is shown — tuned against
+  the real data.
 - `?` Whether tags that go quiet are ever merged or retired.
