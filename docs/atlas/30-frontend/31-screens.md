@@ -156,6 +156,46 @@ Opened from the topics panel or a document section.
 - Filters: agent (default: report agent), run, date range.
 - A small bar chart above: retrievals per topic.
 
+## How Explore is built (build step 4) *(proposed)*
+
+Screen 1 above is the target; these are the details it needs underneath, all proposed.
+The Generate report button and the retrieved-posts toggle are drawn but wait for
+build step 5 (plate [06](../06-build-order.md)).
+
+- **Three reads from the API** (generated into a typed client, OPEN-1):
+  - `GET /api/days` — posts per day across the history: the slider's histogram, and the
+    status pill's "Data through … · N posts".
+  - `GET /api/topics?start=…&end=…` — the topics with engagement in the range: label,
+    description, the range's posts and comments, one number a day for the sparkline, and
+    the badge.
+  - `GET /api/map?start=…&end=…` — every post and comment written in the range with its
+    place on the map, its thread's topic, author, date, thread title and a short excerpt
+    for the hover card. Posts of threads with no topic yet are shown grey.
+- **A day's engagement** for the sparkline is its posts plus comments plus upvotes
+  (agreeing replies), from `topic_daily_engagement` ([21](../20-data-model/21-topics.md)).
+- **The badge** compares the range with the period of the same length just before it:
+  **New** if the topic was first seen inside the range; otherwise **Rising** if
+  engagement is up by more than a quarter, **Fading** if down by more than a quarter,
+  **Steady** in between. This is the measured direction only; the forecast's own labels
+  come with prediction (plate [50](../50-prediction.md), step 5).
+- **The map** is t-SNE (a standard way of squashing many dimensions to two that keeps
+  near neighbours near), on cosine distance, started from the principal components and
+  with a fixed seed, so the same range always gives the same picture. Measured on the
+  real data: about 6 seconds for a week (1,100 posts), 26 seconds for all eight weeks
+  (12,700). It is computed in the API, not the worker (see plate [40](../40-backend.md)),
+  and kept in Redis by range and the latest loaded day, so a range is computed once until
+  a new day arrives.
+- **Gliding:** each new map is turned, flipped and scaled to best match the one before it
+  on the posts both share, so staying dots move only as far as the map really changed;
+  then leaving dots fade out, arriving dots fade in, staying dots glide.
+- **Colours:** the twelve biggest topics in the range get their own colour; the rest
+  share a muted one, and still highlight on hover.
+- **Linking:** the range lives in the address (`?start=…&end=…`, TanStack Router), so a
+  reviewer can share exactly what they see; hover highlighting is browser-only state
+  (Zustand).
+- **Clicking a dot** opens the post on Reddit; clicking a topic waits for Topic detail
+  (step 6).
+
 ## Open in this draft
 
 - `?` Everything in the design brief is a proposal until Brian reviews the mockups.

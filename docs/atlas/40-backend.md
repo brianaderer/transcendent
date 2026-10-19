@@ -59,10 +59,12 @@ flowchart LR
 - **projection** (specified, OPEN-20): a post is embedded once, at intake. The squashing
   to two dimensions is **recomputed from the posts in the selected date range** whenever
   the range changes, so the dot plot always shows the clearest map of that range.
-  *(Proposed details: computed in the worker when the slider is released, not while it's
-  dragged; a fixed random seed so the same range always gives the same picture; each
-  result cached by range; progress and result sent over the live events
-  ([41](40-backend/41-live-events.md)).)*
+  *(Proposed details: computed in the API when the slider is released, not while it's
+  dragged, and not in the worker: on first start the worker spends about two hours on the
+  catch-up, and a map waiting behind it would leave the page blank. t-SNE takes about 6
+  seconds for a week and 26 for all eight weeks, measured. A fixed random seed, so the same
+  range always gives the same picture; each result kept in Redis by range and latest
+  loaded day. Details on [31](30-frontend/31-screens.md).)*
 
 ## Background jobs
 
