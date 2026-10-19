@@ -25,7 +25,8 @@ store by meaning (atlas OPEN-39).
   is offered exactly the schemas its tools object carries (`Tools.schemas`) and the answer
   tool, so version A is offered only `read_posts` and version B its four tools; a tools
   object offering no schemas leaves only the answer tool. It may take up to `MAX_TOOL_CALLS` turns (each tool call spends one, and so does a reply that
-  calls nothing, so a model that keeps talking still ends), then is offered only the answer; a reply
+  looks nothing up, plain text or a malformed answer, so a model that keeps talking or
+  answering badly still ends), then is offered only the answer; a reply
   without a valid answer is told why (or reminded) `CORRECTIONS` times before `NoAnswer` is
   raised. Returns a `Written`: the answer, tool calls made, posts seen, tokens in and out,
   seconds. Each tool call is announced as `tool.called` and `tool.returned`.

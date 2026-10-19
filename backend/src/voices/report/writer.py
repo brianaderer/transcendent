@@ -14,7 +14,8 @@ from voices.report.tasks import Task
 from voices.report.tools import ToolResult
 
 # A cap per call on the turns before only the answer is offered: each tool call spends one, and
-# so does a reply that calls nothing, so a model that keeps searching or talking ends.
+# so does a reply that looks nothing up (plain text, or a malformed answer), so a model that
+# keeps searching, talking or answering badly still ends.
 MAX_TOOL_CALLS = 20
 # Once tools run out, a reply without a valid answer is corrected this many times.
 CORRECTIONS = 1
@@ -95,7 +96,7 @@ class _Call:
         self.answer_name = task.answer.__name__
         self.messages: list[BaseMessage] = [HumanMessage(task.instructions)]
         self.written = Written(answer=task.answer.model_construct())
-        self.empty_turns = 0  # replies that called nothing
+        self.empty_turns = 0  # replies that looked nothing up: plain text, or a malformed answer
 
     @property
     def turns_spent(self) -> int:
@@ -119,12 +120,16 @@ class _Call:
     def respond(self, reply: AIMessage, tools: Tools | None) -> None:
         """Answers a reply that gave no valid answer: tool results, why an answer was
         malformed, or a reminder when it called nothing."""
-        if not reply.tool_calls:
+        if not self._looks_anything_up(reply):
             self.empty_turns += 1
+        if not reply.tool_calls:
             self.tell(f"Answer by calling {self.answer_name}.")
         for call in reply.tool_calls:
             text = self._result_of(call, tools)
             self.messages.append(ToolMessage(text, tool_call_id=call["id"]))
+
+    def _looks_anything_up(self, reply: AIMessage) -> bool:
+        return any(call["name"] != self.answer_name for call in reply.tool_calls)
 
     def tell(self, text: str) -> None:
         self.messages.append(HumanMessage(text))

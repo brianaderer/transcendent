@@ -156,3 +156,13 @@ def test_a_model_that_keeps_replying_in_plain_text_with_tools_still_stops():
         ReportWriter(model, FakeTools(), Events()).write(write_task(DAYS))
 
     assert len(model.replies) > 0  # stopped before using every scripted reply
+
+
+def test_a_model_that_keeps_sending_a_malformed_answer_still_stops():
+    malformed = [call("Report", {"document": "x"}, str(n)) for n in range(MAX_TOOL_CALLS + 5)]
+    model = ScriptedModel(malformed)
+
+    with pytest.raises(NoAnswer):
+        ReportWriter(model, FakeTools(), Events()).write(write_task(DAYS))
+
+    assert len(model.replies) > 0  # stopped before using every scripted reply
