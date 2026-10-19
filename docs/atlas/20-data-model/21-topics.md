@@ -217,3 +217,4 @@ are both "find the closest vectors" questions, which pgvector answers inside Pos
 - `?` The grouping cutoff, and how many nearest tags the LLM is shown — tuned against
   the real data.
 - `?` Whether tags that go quiet are ever merged or retired.
+- `?` How to tag a thread whose opening post we don't have: removed, or older than our history (OPEN-30).
