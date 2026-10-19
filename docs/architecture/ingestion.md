@@ -116,7 +116,7 @@ for the full eight weeks; around 550–600 posts and comments kept a day; the wo
 about 2 GB, climbing higher; with length-sized batches it stays under 1 GB.
 
 ## Uses
-[logging](logging.md); [environment](environment.md) (`HISTORY_DAYS` from `voices.config`); the Arctic Shift archive (through `httpx`); the embedding model
+[logging](logging.md); [environment](environment.md) (`HISTORY_DAYS` from `voices.config`); `voices.reddit_links.SUBREDDIT`, the one place the community is named; the Arctic Shift archive (through `httpx`); the embedding model
 (through `fastembed`), on the `model-cache` volume. It never imports the
 [database](database.md) or [events](events.md) modules: the [worker](worker.md) hands it
 the store and the `emit` function, which match the small interfaces above. `sync_now`
