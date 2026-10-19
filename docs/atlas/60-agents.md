@@ -96,6 +96,22 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
   the one judging prompt (matching a named topic to a tag) is fixed and identical for
   both versions.
 
+## Choosing the tagging model: the bake-off
+
+**Specified by Brian (2026-10-18):** tests that compare the models' performance on sample
+data, committed into the repo, documented in the architecture docs and the README, and
+benchmarked; then a bake-off between Claude Haiku 5.5 and Claude Sonnet 5.5.
+
+*Proposed:*
+
+- **Sample data:** a fixed set of about thirty tagging cases cut from real r/sailing threads, committed as a file of test data. Each case is one group of threads, a short list of existing topics written for the bake-off, and the right answer: attach to a named topic, start a new topic, or noise. The right answers are labelled by Claude from reading the threads, and marked as such until Brian reviews them.
+- **The same decision code as production:** each case goes through the real tagging decision, with the same instructions, tools and look-up cap. The tools read the case file instead of the database; search uses the real embedding model, so it finds things by meaning as it does in production.
+- **Measured for each model:** how many cases it got right; how often it picked the right topic when attaching; how often it started a duplicate topic when one existed; how often it called a real conversation noise (the costliest mistake, since noise is deleted); look-ups used; time per decision; words-pieces read and written; and cost at OpenRouter's listed price.
+- **How it runs:** one command, kept apart from the normal tests because it calls the real model and costs money: the normal test suite never runs it. It writes a results page into the repo, with the date and models, so the numbers are committed alongside the code.
+- **What makes it a test:** it fails if the model the app is set to use for tagging gets fewer than eight cases in ten right, so a later model change can't quietly make tagging worse. The scoring and the case reader have their own offline tests with stand-in models.
+- **Cost of one bake-off:** about $1 for Sonnet and a few cents for Haiku *(estimate)*.
+
 ## Open in this draft
 
-- Nothing open on this plate.
+- `?` The floor the tagging model must reach (proposed: eight cases in ten right), and
+  whether Brian reviews the cases' right answers before they're trusted.
