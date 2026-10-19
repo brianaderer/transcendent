@@ -73,8 +73,9 @@ keeps every tied topic.
   prep" versus the tag "Winterizing and haul-out"). **Built in step 5,** it's done by
   meaning in code, with no model call: each name and each tag (its label and
   description) is turned into an embedding, and a name matches its most similar tag when
-  the similarity is at least 0.80, set from the first real run, where right matches
-  scored 0.83 to 0.91 and wrong ones 0.73 to 0.79. Each tag can be claimed by one name only; when two names point at
+  the similarity is at least 0.70 (specified by Brian, 2026-10-19,
+  [OPEN-42](90-open-questions.md); first set at 0.80 from the first real run, where right
+  matches scored 0.83 to 0.91 and wrong ones 0.73 to 0.79, it missed a right match at 0.77). Each tag can be claimed by one name only; when two names point at
   the same tag, the closer one keeps it. The plan's fixed judging prompt for borderline
   matches is not built; if it is added, it is saved with the run and the same for both
   versions.
