@@ -210,7 +210,7 @@ What step 5 built against screens 1 to 3 above, so the brief and the app can be 
   retrieval", each listing its steps ("Writing the report…", "Predicting the range: done
   (41s)") and each tool call with how many posts it returned (A's reads, B's searches and
   lookups; OPEN-39), from the run's live
-  events (plate [41](../40-backend/41-live-events.md)). Then "Measuring…", and when done
+  events (plate [41](../40-backend/41-live-events.md)). Then "Scoring both versions…" with a spinner, and as soon as the result is saved
   **Read the report** and **See the comparison**. There is no progress bar, and no text
   appearing as it's written.
 - **Document** (screen 2), `/runs/<id>/report`, version B unless `?version=A`: the masthead

@@ -115,7 +115,7 @@ structure stay as they were.
   writing, the 28 days before it while predicting). **read_posts** takes an optional day
   inside those days and returns up to 5 whole posts written then, each with its author, date
   and thread title, in a shuffle fixed by the run (ordered by `md5(post id || run name)`, so
-  the same run reads the same posts), never one it has already given. Each step may read 10
+  the same run reads the same posts), never one it has already given. Each step may read 35
   posts in all; after that it answers "No posts left to read; answer now with what you
   have." Its calls stream live like version B's, so version A's lane shows its reads.
 - **What version B's tools see:** while writing, only the range; while predicting, only the
