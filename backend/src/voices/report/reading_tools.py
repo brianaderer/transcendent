@@ -47,12 +47,12 @@ class ReadingTools:
         if not any(self.shares_left.values()):
             return said(NOTHING_LEFT_TO_READ)
         try:
-            day = self._day_asked(arguments.get("day"))
+            day = self._day_to_read(arguments.get("day"))
         except ValueError as reason:
             return said(str(reason))
         return self._read(day)
 
-    def _day_asked(self, day: str | None) -> date:
+    def _day_to_read(self, day: str | None) -> date:
         """The day asked for, or else the one with the most of its share left (earliest first);
         raises ValueError naming what's wrong."""
         if day is None:
@@ -76,13 +76,18 @@ class ReadingTools:
     def _read(self, day: date) -> ToolResult:
         limit = min(READ_BATCH, self.shares_left[day])
         posts = self.reader.sample_posts(DayRange(day, day), limit, self.seed, self.ids_given)
-        # A quiet day with fewer posts than its share has no more to give.
-        self.shares_left[day] = self.shares_left[day] - len(posts) if len(posts) == limit else 0
+        self._spend_share(day, limit, len(posts))
         if not posts:
             return said(f"No more posts on {day}.")
         post_ids = [post["post_id"] for post in posts]
         self.ids_given.extend(post_ids)
         return ToolResult(json.dumps(posts, default=str), post_ids)
+
+    def _spend_share(self, day: date, asked_for: int, found: int) -> None:
+        if found < asked_for:  # a quiet day has nothing more to give
+            self.shares_left[day] = 0
+        else:
+            self.shares_left[day] -= found
 
 
 def _even_shares(window: DayRange) -> dict[date, int]:

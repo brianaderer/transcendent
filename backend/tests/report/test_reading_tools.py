@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import date, timedelta
 
 from voices.explore.day_range import DayRange
 from voices.report.reading_tools import (
@@ -150,3 +150,23 @@ def test_over_a_long_window_every_day_gets_a_share_and_no_day_more_than_one_extr
     assert sum(per_day) == READ_BUDGET
     assert min(per_day) >= READ_BUDGET // PREDICTION_WINDOW.length
     assert max(per_day) - min(per_day) <= 1
+
+
+class QuietFirstDayReader(FakeReader):
+    """Has only 2 posts on the window's first day, fewer than its share."""
+
+    def sample_posts(self, days, limit, seed, exclude_ids):
+        posts = super().sample_posts(days, limit, seed, exclude_ids)
+        return posts[:2] if days.start == WINDOW.start else posts
+
+
+def test_a_quiet_day_that_runs_short_is_closed_and_the_next_read_moves_on():
+    reader = QuietFirstDayReader()
+    tools = reading(reader)
+
+    tools.run("read_posts", {})
+    tools.run("read_posts", {})
+    again = tools.run("read_posts", {"day": WINDOW.start.isoformat()})
+
+    assert days_read(reader) == [WINDOW.start, WINDOW.start + timedelta(days=1)]
+    assert "read your share" in again.text
