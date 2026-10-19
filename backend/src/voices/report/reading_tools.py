@@ -16,7 +16,7 @@ from voices.explore.day_range import DayRange
 from voices.report.tools import ToolResult, said
 
 READ_BATCH = 5  # posts handed back by one read
-READ_BUDGET = 35  # posts one phase may read in all (Brian, 2026-10-19)
+READ_BUDGET = 35  # posts one phase may read in all (atlas OPEN-39)
 READ_POSTS = "read_posts"
 NOTHING_LEFT_TO_READ = "No posts left to read; answer now with what you have."
 

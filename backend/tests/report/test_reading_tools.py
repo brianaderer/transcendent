@@ -10,6 +10,7 @@ from voices.report.reading_tools import (
     ReadingTools,
 )
 
+MORE_READS_THAN_THE_BUDGET_PAYS_FOR = READ_BUDGET // READ_BATCH + 3
 WINDOW = DayRange(date(2026, 10, 12), date(2026, 10, 18))
 
 
@@ -78,13 +79,13 @@ def test_the_last_read_asks_only_for_what_is_left_of_the_budget():
     reader = ShortFirstReader()
     tools = reading(reader)
 
-    for _ in range(READ_BUDGET):  # more reads than the budget can pay for
-        tools.run("read_posts", {})
+    given = [tools.run("read_posts", {}) for _ in range(MORE_READS_THAN_THE_BUDGET_PAYS_FOR)]
 
+    found = [len(result.post_ids) for result in given if result.post_ids]
     limits = [asked[1] for asked in reader.asked]
-    left_for_the_last = (READ_BUDGET - FIRST_READ_FOUND) % READ_BATCH
+    assert sum(found) == READ_BUDGET
     assert limits[:-1] == [READ_BATCH] * (len(limits) - 1)
-    assert limits[-1] == left_for_the_last
+    assert limits[-1] == READ_BUDGET - sum(found[:-1])
 
 
 def test_a_day_inside_the_window_narrows_the_read_to_that_day():
@@ -126,10 +127,11 @@ def test_only_read_posts_is_offered_and_retrieval_tools_are_refused():
 def test_a_phase_reads_thirty_five_posts_and_no_more():
     tools = reading(FakeReader())
 
-    given = [tools.run("read_posts", {}) for _ in range(10)]
+    given = [tools.run("read_posts", {}) for _ in range(MORE_READS_THAN_THE_BUDGET_PAYS_FOR)]
 
-    assert sum(len(result.post_ids) for result in given) == 35
-    assert "No posts left" in given[-1].text
+    assert READ_BUDGET == 35  # Brian's number for version A (atlas OPEN-39)
+    assert sum(len(result.post_ids) for result in given) == READ_BUDGET
+    assert given[-1].text == NOTHING_LEFT_TO_READ
 
 
 def test_the_tool_asks_for_reads_spread_evenly_over_the_days():

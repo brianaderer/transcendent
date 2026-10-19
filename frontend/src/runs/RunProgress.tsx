@@ -25,8 +25,8 @@ export function RunProgress({ runId }: { runId: string }) {
   const onEvent = useCallback(
     (event: LiveEvent) => {
       fold(event);
-      if (event.type === "run.finished" || event.type === "run.failed") {
-        // The result is kept before this is announced, so read it now rather than at the next check.
+      if (endsTheRun(event)) {
+        // The run's ending is kept before it is announced, so read it now, not at the next check.
         queryClient.invalidateQueries({ queryKey: getReportRunQueryKey(runId) });
       }
     },
@@ -124,6 +124,10 @@ function LaneBar({ lane }: { lane: Lane }) {
 }
 
 /** Both versions have answered; their topics are being matched and scored. */
+function endsTheRun(event: LiveEvent): boolean {
+  return event.type === "run.finished" || event.type === "run.failed";
+}
+
 function isScoring(progress: Progress): boolean {
   return progress.measuring || VERSION_ORDER.every((v) => progress.lanes[v].stage === "done");
 }
