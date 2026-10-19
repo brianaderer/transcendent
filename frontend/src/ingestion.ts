@@ -37,16 +37,21 @@ export function describeIngestion(status: IngestionStatus): string {
     return `Loading stopped at ${shortDate(status.failed_day)}: ${why}`;
   }
   if (status.days_done >= status.days_wanted && status.latest_day) {
-    if (status.running_day) {
-      // The daily run fetching a new day: the history is full, so name the day being loaded.
-      return `Loading ${shortDate(status.running_day)} · history up to date through ${shortDate(status.latest_day)}`;
-    }
-    return `History up to date through ${shortDate(status.latest_day)} · ${count(status.posts)} posts`;
+    return describeFullHistory(status, status.latest_day);
   }
+
   if (status.days_done === 0 && !status.running_day) {
     return `Waiting to start loading r/${SUBREDDIT} history`;
   }
   return `Loading r/${SUBREDDIT} history: ${status.days_done} of ${status.days_wanted} days · ${count(status.posts)} posts`;
+}
+
+/** The history counts as full while the daily run loads yesterday, so name that day. */
+function describeFullHistory(status: IngestionStatus, latestDay: string): string {
+  if (status.running_day) {
+    return `Loading ${shortDate(status.running_day)} · history up to date through ${shortDate(latestDay)}`;
+  }
+  return `History up to date through ${shortDate(latestDay)} · ${count(status.posts)} posts`;
 }
 
 function shortDate(isoDay: string): string {

@@ -28,7 +28,8 @@ def decide_all(
     decider: Decider, briefs: list[ClusterBrief], announce: Announce
 ) -> list[DecidedCluster]:
     """Decides every brief in parallel, announcing each decision the moment it is made (so
-    the live events show them one by one), and returns them in the briefs' order."""
+    the live events show them one by one), and returns them in the briefs' order. `announce`
+    is called from the graph's worker threads, so it must be safe to call concurrently."""
     if not briefs:
         return []
     config = {"max_concurrency": MAX_PARALLEL_DECISIONS}

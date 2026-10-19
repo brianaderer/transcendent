@@ -152,3 +152,42 @@ def test_groups_are_made_from_the_encoded_threads():
     run(FakeStore([due("t1")]), groups_of=remember)
 
     assert seen == [EncodedThread("t1", [1.0, 0.0])]
+
+
+def mint_all_as(label):
+    """Every group mints a topic with the same label, so the later ones merge into the first."""
+
+    def decide_all(day, briefs, announce):
+        decision = Decision(action="mint", label=label, description="d", reason="r")
+        decided = [DecidedCluster(b, decision, "p", "m") for b in briefs]
+        for item in decided:
+            announce(item)
+        return decided
+
+    return decide_all
+
+
+def test_a_second_mint_of_the_same_topic_is_announced_as_merged_into_the_first():
+    events = []
+    emit = lambda kind, **body: events.append((kind, body))  # noqa: E731
+    tagging = DayTagging(
+        FakeStore([due("t1"), due("t2")]),
+        FakeEmbedder(),
+        mint_all_as("Impellers"),
+        emit,
+        one_group_each,
+    )
+
+    tagging.tag(DAY)
+
+    assert [body for kind, body in events if kind == "mint.merged"] == [
+        {"group": "group-2", "into": "group-1"}
+    ]
+
+
+def test_a_day_without_merges_announces_none():
+    emitted = []
+
+    run(FakeStore([due("t1"), due("t2")]), emitted=emitted)
+
+    assert "mint.merged" not in emitted

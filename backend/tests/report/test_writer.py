@@ -155,7 +155,7 @@ def test_a_model_that_keeps_replying_in_plain_text_with_tools_still_stops():
     with pytest.raises(NoAnswer):
         ReportWriter(model, FakeTools(), Events()).write(write_task(DAYS))
 
-    assert len(model.replies) > 0  # stopped before using every scripted reply
+    assert_stopped_before_running_out(model)
 
 
 def test_a_model_that_keeps_sending_a_malformed_answer_still_stops():
@@ -165,4 +165,23 @@ def test_a_model_that_keeps_sending_a_malformed_answer_still_stops():
     with pytest.raises(NoAnswer):
         ReportWriter(model, FakeTools(), Events()).write(write_task(DAYS))
 
-    assert len(model.replies) > 0  # stopped before using every scripted reply
+    assert_stopped_before_running_out(model)
+
+
+def assert_stopped_before_running_out(model):
+    assert len(model.replies) > 0
+
+
+def test_a_reply_with_a_lookup_and_a_malformed_answer_spends_only_the_lookups_turn():
+    mixed = AIMessage(
+        content="",
+        tool_calls=[
+            {"name": "search", "args": {"term": "w"}, "id": "s"},
+            {"name": "Report", "args": {"document": "x"}, "id": "r"},
+        ],
+    )
+    model = ScriptedModel([mixed, call("Report", REPORT, "2")])
+
+    written = ReportWriter(model, FakeTools(), Events()).write(write_task(DAYS))
+
+    assert written.tool_calls == 1

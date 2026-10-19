@@ -96,11 +96,11 @@ class _Call:
         self.answer_name = task.answer.__name__
         self.messages: list[BaseMessage] = [HumanMessage(task.instructions)]
         self.written = Written(answer=task.answer.model_construct())
-        self.empty_turns = 0  # replies that looked nothing up: plain text, or a malformed answer
+        self.turns_without_a_lookup = 0
 
     @property
     def turns_spent(self) -> int:
-        return self.written.tool_calls + self.empty_turns
+        return self.written.tool_calls + self.turns_without_a_lookup
 
     def take_turn(self, offered: list) -> AIMessage:
         reply = self.model.bind_tools(offered).invoke(self.messages)
@@ -120,15 +120,15 @@ class _Call:
     def respond(self, reply: AIMessage, tools: Tools | None) -> None:
         """Answers a reply that gave no valid answer: tool results, why an answer was
         malformed, or a reminder when it called nothing."""
-        if not self._looks_anything_up(reply):
-            self.empty_turns += 1
+        if not self._looks_something_up(reply):
+            self.turns_without_a_lookup += 1
         if not reply.tool_calls:
             self.tell(f"Answer by calling {self.answer_name}.")
         for call in reply.tool_calls:
             text = self._result_of(call, tools)
             self.messages.append(ToolMessage(text, tool_call_id=call["id"]))
 
-    def _looks_anything_up(self, reply: AIMessage) -> bool:
+    def _looks_something_up(self, reply: AIMessage) -> bool:
         return any(call["name"] != self.answer_name for call in reply.tool_calls)
 
     def tell(self, text: str) -> None:
