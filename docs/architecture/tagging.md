@@ -16,8 +16,9 @@ both have happened.
   called noise on their third day, deleted with their posts), and, when the agent named a
   topic that doesn't exist, `left_waiting` (first-day threads, which wait for their third)
   and `settled_unchanged` (third-day threads, settled as they were: they keep their first
-  day's topic, and one with none is then expired); and `noise_expired` (threads past their
-  third day with still no topic, deleted with their posts by step 8). `decide_all` is any
+  day's topic, and one left with no topic is deleted afterwards by step 8); and
+  `noise_expired` (threads whose third day has come, that day included, with still no topic,
+  deleted with their posts by step 8). `decide_all` is any
   function from a day and its briefs to their decisions; the worker passes
   `agent.TaggingAgent(...).decide`, which connects the model and decides the day's groups.
 - `threads.thread_text(post, replies)` — a thread as one text: its post, then its five
@@ -156,4 +157,4 @@ models through `connect_model`, takes its list of right actions from `Action`, a
 `TYPICAL_POST_CHARACTERS = 600`, `UNKNOWN_AUTHOR = "unknown"` (`tagging_store.py`); the model call uses temperature 0, a 120-second timeout
 and 3 retries (`model.py`).
 Writes `topics`, `cluster_decisions`, `threads` (embedding, topic, decision, stage; deletes
-noise, and threads past their third day with no topic, with their `posts`), `topic_daily_engagement`, `retrieval_events`.
+noise, and threads whose third day has come with no topic, with their `posts`), `topic_daily_engagement`, `retrieval_events`.

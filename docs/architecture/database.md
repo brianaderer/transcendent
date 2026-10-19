@@ -67,7 +67,7 @@ without its post is due on the day first seen (whether it was started that day o
 settled thread is never due again, minting, attaching, noise on a first day waiting and on a
 third day deleting the thread with its comments and moving the centre of the topic it
 leaves, attaching to a topic that doesn't exist (on a third day the thread keeps its
-first day's topic, and one that had none is expired), threads with no topic expired with their posts once past their third day but not before, and never a thread with a topic,
+first day's topic, and one that had none is expired, its thread gone), threads with no topic expired, the thread and its posts gone, once their third day has come (that day included) but not before, and never a thread with a topic,
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
