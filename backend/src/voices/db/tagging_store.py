@@ -29,6 +29,7 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
 from voices.db.models import ClusterDecision, NoiseThread, Post, RetrievalEvent, Thread, Topic
 from voices.explore.day_range import DayRange
+from voices.reddit_links import post_link
 from voices.tagging.decisions import CandidateTopic, DecidedCluster, TypicalPost
 from voices.tagging.threads import DueThread, Reply
 from voices.tagging.window import window_start
@@ -117,7 +118,7 @@ class TaggingStore:
     ) -> list[dict]:
         closeness = (1 - Post.embedding.cosine_distance(embedding)).label("closeness")
         query = (
-            select(Post.source_id, Post.author, Post.created_at, Thread.title, Post.body, closeness)
+            select(*_POST_COLUMNS, closeness)
             .join(Thread, Thread.source_id == Post.thread_source_id)
             .where(*_created_between(first_day, last_day))
             .order_by(closeness.desc())
@@ -129,14 +130,7 @@ class TaggingStore:
     def lookup_post(self, post_id: str) -> dict:
         """One post in full. Raises PostNotFound for an id that isn't stored."""
         query = (
-            select(
-                Post.source_id,
-                Post.author,
-                Post.created_at,
-                Thread.title,
-                Post.body,
-                Post.parent_source_id,
-            )
+            select(*_POST_COLUMNS, Post.parent_source_id)
             .join(Thread, Thread.source_id == Post.thread_source_id)
             .where(Post.source_id == post_id)
         )
@@ -153,7 +147,7 @@ class TaggingStore:
         leaving out the ones already given: version A's reading (atlas OPEN-39)."""
         shuffle = func.md5(Post.source_id.concat(seed))
         query = (
-            select(Post.source_id, Post.author, Post.created_at, Thread.title, Post.body)
+            select(*_POST_COLUMNS)
             .join(Thread, Thread.source_id == Post.thread_source_id)
             .where(*_created_between(days.start, days.end), Post.source_id.not_in(exclude_ids))
             .order_by(shuffle)
@@ -469,6 +463,17 @@ def _start_of(day: date) -> datetime:
     return datetime.combine(day, time(), UTC)
 
 
+_POST_COLUMNS = (
+    Post.source_id,
+    Post.thread_source_id,
+    Post.kind,
+    Post.author,
+    Post.created_at,
+    Thread.title,
+    Post.body,
+)
+
+
 def _hit(row) -> dict:
     return {
         "post_id": row.source_id,
@@ -477,6 +482,7 @@ def _hit(row) -> dict:
         "thread": row.title,
         "excerpt": row.body[:EXCERPT_CHARACTERS],
         "closeness": round(row.closeness, 3),
+        "link": post_link(row.source_id, row.thread_source_id, row.kind),
     }
 
 
@@ -487,6 +493,7 @@ def _whole_post(row) -> dict:
         "date": row.created_at.date(),
         "thread": row.title,
         "text": row.body,
+        "link": post_link(row.source_id, row.thread_source_id, row.kind),
     }
 
 

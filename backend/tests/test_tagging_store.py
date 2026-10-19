@@ -267,7 +267,7 @@ def test_attaching_joins_an_existing_topic(store):
 def test_noise_on_a_threads_first_day_waits_for_its_third(store):
     counts = store.apply_decisions(DAY, [decided("noise", ["test-1"])], {})
 
-    assert store.lookup_post("test-2")["post_id"] == "test-2"
+    assert store.lookup_post("test-2")["link"].endswith("/comments/test-1/comment/test-2/")
     assert counts["noise_waiting"] == 1
     assert "test-1" in ours(store.threads_due(THIRD_DAY))
 
@@ -394,6 +394,7 @@ def test_search_finds_posts_by_meaning_and_retrievals_are_recorded(store):
     store.record_retrievals([hits[0]["post_id"]], "test-run", "tagging", "search")
 
     assert hits[0]["post_id"].startswith("test-")
+    assert hits[0]["link"].startswith("https://www.reddit.com/r/sailing/comments/test-")
     with store.engine.connect() as connection:
         assert (
             connection.scalar(select(RetrievalEvent.tool).where(RetrievalEvent.run == "test-run"))
@@ -418,6 +419,7 @@ def test_sampling_posts_gives_whole_posts_from_the_days_in_a_repeatable_shuffle(
         "date": DAY,
         "thread": "Impellers",
         "text": "Run it dry and it dies.",
+        "link": "https://www.reddit.com/r/sailing/comments/test-1/comment/test-2/",
     }
 
 

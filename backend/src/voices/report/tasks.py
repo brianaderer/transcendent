@@ -21,7 +21,8 @@ class Report(BaseModel):
         description="The document in Markdown: '## The period in brief' (one paragraph), then "
         "'## What the community talked about' with one '### ' section per topic (what it was, "
         "how it went, notable threads, and short quotes from real posts with the author and "
-        "date where you have them)."
+        "date where you have them, each quote a Markdown link to its post: [quote](link), "
+        "using the post's link exactly as the tools gave it)."
     )
     topics: list[NamedTopic] = Field(
         description="The topics your document covers, rank 1 the biggest, each with whether it "
