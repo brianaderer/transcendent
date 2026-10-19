@@ -8,11 +8,11 @@ AT = datetime(2026, 10, 15, 12, tzinfo=UTC)
 
 
 def post(source_id, body="Which anchor for a 32ft sloop?"):
-    return Item(source_id, source_id, "post", "salty", AT, body, 5, None, text="", title=body)
+    return Item(source_id, source_id, "post", "salty", AT, "", 5, None, title=body)
 
 
 def comment(source_id, body, parent, thread="p1", author="deckhand"):
-    return Item(source_id, thread, "comment", author, AT, body, 1, parent, text=body)
+    return Item(source_id, thread, "comment", author, AT, body, 1, parent)
 
 
 class FakeArchive:

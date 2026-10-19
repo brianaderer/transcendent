@@ -19,6 +19,7 @@ def test_a_post_becomes_a_thread_starter_with_its_title_and_text():
     assert post.thread_source_id == "abc"
     assert post.kind == "post"
     assert post.body == "Which anchor?\n\nPlough or Rocna for a 32ft sloop?"
+    assert post.text == "Plough or Rocna for a 32ft sloop?"
     assert post.created_at == datetime(2026, 10, 15, 0, 1, 14, tzinfo=UTC)
     assert post.parent_source_id is None
 
@@ -50,5 +51,6 @@ def test_a_comment_knows_its_thread_and_what_it_replies_to():
 
     assert comment.kind == "comment"
     assert comment.thread_source_id == "abc"
+    assert comment.text == comment.body == "Rocna, every time."
     assert comment.parent_source_id == "c0"
     assert comment.reddit_score == 3

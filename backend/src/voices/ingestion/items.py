@@ -11,11 +11,15 @@ class Item:
     kind: str  # "post" or "comment"
     author: str
     created_at: datetime
-    body: str
+    text: str  # what the author wrote; a post's title is kept apart from it
     reddit_score: int
     parent_source_id: str | None
-    text: str  # what the author wrote: a post's text without its title, a comment's body
     title: str | None = None  # posts only
+
+    @property
+    def body(self) -> str:
+        """What is embedded and stored: a post's title, then its text when it has any."""
+        return "\n\n".join(part for part in (self.title, self.text) if part)
 
 
 def post_from_archive(raw: dict) -> Item:
@@ -27,10 +31,9 @@ def post_from_archive(raw: dict) -> Item:
         kind="post",
         author=raw["author"],
         created_at=_utc(raw["created_utc"]),
-        body=f"{title}\n\n{text}" if text else title,
+        text=text,
         reddit_score=raw.get("score", 0),
         parent_source_id=None,
-        text=text,
         title=title,
     )
 
@@ -42,10 +45,9 @@ def comment_from_archive(raw: dict) -> Item:
         kind="comment",
         author=raw["author"],
         created_at=_utc(raw["created_utc"]),
-        body=raw.get("body", ""),
+        text=raw.get("body", ""),
         reddit_score=raw.get("score", 0),
         parent_source_id=_without_kind_prefix(raw["parent_id"]),
-        text=raw.get("body", ""),
     )
 
 

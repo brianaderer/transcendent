@@ -41,9 +41,9 @@ Reddit. Plans: [atlas plate 40](../atlas/40-backend.md) (the catch-up) and
   `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).
 - `agreement.AgreementDetector.agreeing(texts)` — which replies only agree with their parent.
 - `filters.is_unwanted(item)`, `items.Item`, `items.post_from_archive`, `items.comment_from_archive`.
-  An `Item` carries two versions of what was written: `body` (for a post, its title followed
-  by its text; for a comment, the comment) is what gets embedded and saved, and `text` (only
-  what the author wrote, without a post's title) is read by the filter and is not saved.
+  An `Item` keeps what its author wrote as `text`, with a post's `title` apart from it (the
+  filter reads `text`). `body` is worked out from them, a post's title then its text, or a
+  comment's text, and is what gets embedded and saved.
 
 ## How it works
 A day: fetch every post and every comment *created* that day (new comments on old threads

@@ -8,10 +8,10 @@ from voices.ingestion.items import Item, post_from_archive
 
 def item(author="salty", body="Rocna, every time."):
     at = datetime(2026, 10, 15, tzinfo=UTC)
-    return Item("c1", "abc", "comment", author, at, body, 1, "abc", text=body)
+    return Item("c1", "abc", "comment", author, at, body, 1, "abc")
 
 
-@pytest.mark.parametrize("body", ["[deleted]", "[removed]", "[ Removed by Reddit ]"])
+@pytest.mark.parametrize("body", sorted(REMOVED_TEXT))
 def test_removed_text_is_dropped(body):
     assert is_unwanted(item(body=body))
 
