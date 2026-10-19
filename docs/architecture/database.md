@@ -63,7 +63,7 @@ the store saves a day (twice without duplicates), records a thread as first seen
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
 from different days, and keeps the day ledger; and twenty-nine check the tagging store: which
 threads are due on their first and third days (with their replies, best first), a thread
-without its post is due on the day first seen (whether it was started that day or years before), written from its title, is due again two days later, and can be a typical thread, and that a
+without its post is due on the day first seen (whether it was started that day or years before), written from its title, is due again two days later, and can be a typical thread (shown by its title, with its author given as unknown), and that a
 settled thread is never due again, minting, attaching, noise on a first day waiting and on a
 third day deleting the thread with its comments and moving the centre of the topic it
 leaves, attaching to a topic that doesn't exist (on a third day the thread keeps its
