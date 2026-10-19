@@ -119,6 +119,16 @@ class TopicDailyEngagement(Base):
     unanswered_questions: Mapped[int] = mapped_column(Integer, server_default="0")
 
 
+class NoiseThread(Base):
+    """A thread deleted as noise, kept as its id only so a comment arriving on it later is
+    dropped at intake instead of bringing the thread back (atlas OPEN-31)."""
+
+    __tablename__ = "noise_threads"
+
+    source_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    deleted_on: Mapped[date] = mapped_column(Date)
+
+
 class RetrievalEvent(Base):
     __tablename__ = "retrieval_events"
     __table_args__ = (

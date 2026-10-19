@@ -52,14 +52,18 @@ class AgreesWithPlusOne:
 
 
 class FakeStore:
-    def __init__(self, posts=(), threads=()):
+    def __init__(self, posts=(), threads=(), noise=()):
         self.posts, self.threads, self.saved = set(posts), set(threads), None
+        self.noise = set(noise)
 
     def known_post_ids(self, ids):
         return self.posts & set(ids)
 
     def known_thread_ids(self, ids):
         return self.threads & set(ids)
+
+    def noise_thread_ids(self, ids):
+        return self.noise & set(ids)
 
     def save_day(self, batch):
         self.saved = batch
@@ -149,3 +153,24 @@ def test_an_agreeing_reply_to_a_post_from_the_same_day_upvotes_it():
 
     assert store.saved.upvotes == {"p1": 1}
     assert [p.item.source_id for p in store.saved.posts] == ["p1"]
+
+
+def test_a_comment_on_a_thread_deleted_as_noise_is_dropped_and_counted():
+    store = FakeStore(noise={"p0"})
+    archive = FakeArchive(
+        [], [comment("c1", "Shrink wrap.", parent="p0", thread="p0")], old_threads=[post("p0")]
+    )
+
+    counts = run(archive, store)
+
+    assert (store.saved.posts, store.saved.threads) == ([], [])
+    assert counts["dropped_as_noise"] == 1 and counts["dropped_without_thread"] == 0
+
+
+def test_a_post_deleted_as_noise_is_not_stored_again_when_its_day_is_run_again():
+    store = FakeStore(noise={"p1"})
+
+    counts = run(FakeArchive([post("p1"), post("p2")]), store)
+
+    assert [p.item.source_id for p in store.saved.posts] == ["p2"]
+    assert counts["dropped_as_noise"] == 1

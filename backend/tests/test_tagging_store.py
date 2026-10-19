@@ -10,6 +10,7 @@ from voices.config import load_settings
 from voices.db.models import (
     EMBEDDING_DIMENSIONS,
     ClusterDecision,
+    NoiseThread,
     Post,
     PostUpvotesDaily,
     RetrievalEvent,
@@ -17,7 +18,7 @@ from voices.db.models import (
     Topic,
     TopicDailyEngagement,
 )
-from voices.db.store import connect_store
+from voices.db.store import Store, connect_store
 from voices.db.tagging_store import UNKNOWN_AUTHOR, PostNotFound, TaggingStore
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
@@ -105,6 +106,7 @@ def store():
         )
         connection.execute(delete(Post).where(Post.source_id.like("test-%")))
         connection.execute(delete(Thread).where(Thread.source_id.like("test-%")))
+        connection.execute(delete(NoiseThread).where(NoiseThread.source_id.like("test-%")))
         connection.execute(delete(ClusterDecision).where(ClusterDecision.reason.like("test-%")))
         connection.execute(delete(Topic).where(Topic.label.like("test-%")))
 
@@ -130,6 +132,10 @@ def thread_exists(store, thread_id):
     with store.engine.connect() as connection:
         found = select(Thread.source_id).where(Thread.source_id == thread_id)
         return connection.scalar(found) is not None
+
+
+def marked_as_noise(store, thread_ids):
+    return Store(store.engine).noise_thread_ids(thread_ids)
 
 
 def ours(threads):
@@ -441,3 +447,21 @@ def test_a_thread_counts_as_revived_only_after_seven_days(store, days_later, rev
     store.rebuild_engagement(later, later)
 
     assert engagement(store, topic_of(store, "test-1"), later).revived_threads == revived
+
+
+def test_a_thread_deleted_as_noise_on_its_third_day_leaves_a_marker(store):
+    store.apply_decisions(THIRD_DAY, [decided("noise", ["test-1"])], {})
+
+    assert marked_as_noise(store, ["test-1", "test-4"]) == {"test-1"}
+
+
+def test_an_expired_thread_leaves_a_marker(store):
+    store.expire_noise(THIRD_DAY)
+
+    assert marked_as_noise(store, ["test-1", "test-4"]) == {"test-1", "test-4"}
+
+
+def test_a_thread_waiting_for_its_third_day_is_not_marked(store):
+    store.apply_decisions(DAY, [decided("noise", ["test-1"])], {})
+
+    assert marked_as_noise(store, ["test-1"]) == set()

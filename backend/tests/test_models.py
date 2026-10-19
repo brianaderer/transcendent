@@ -13,6 +13,7 @@ def test_every_planned_table_is_described():
         "posts",
         "post_upvotes_daily",
         "topic_daily_engagement",
+        "noise_threads",
         "retrieval_events",
         "ingested_days",
     }

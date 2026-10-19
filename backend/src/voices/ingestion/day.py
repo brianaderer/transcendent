@@ -54,6 +54,7 @@ class DayBatch:
 class DayStore(Protocol):
     def known_post_ids(self, ids: Sequence[str]) -> set[str]: ...
     def known_thread_ids(self, ids: Sequence[str]) -> set[str]: ...
+    def noise_thread_ids(self, ids: Sequence[str]) -> set[str]: ...
     def save_day(self, batch: DayBatch) -> None: ...
 
 
@@ -63,6 +64,7 @@ class DaySteps:
 
     fetched: list[Item]
     wanted: list[Item]
+    alive: list[Item]
     threaded: list[Item]
     agreeing: list[Item]
     batch: DayBatch
@@ -81,18 +83,25 @@ class DayIngestion:
         """Fetch, filter, fold and embed one day, save it, and say what happened."""
         fetched = self._fetch(day)
         wanted = [item for item in fetched if not is_unwanted(item)]
-        threads, threaded = self._attach_threads(wanted)
+        alive = self._without_noise_threads(wanted)
+        threads, threaded = self._attach_threads(alive)
         agreeing, kept = self._split_agreeing(threaded)
         upvotes = self._upvotes_for_parents(agreeing, kept)
         batch = DayBatch(day, threads, self._embed(kept), upvotes)
         self.store.save_day(batch)
-        return _day_counts(DaySteps(fetched, wanted, threaded, agreeing, batch))
+        return _day_counts(DaySteps(fetched, wanted, alive, threaded, agreeing, batch))
 
     def _fetch(self, day: date) -> list[Item]:
         start = datetime.combine(day, time(), UTC)
         end = start + timedelta(days=1)
         posts = self.archive.posts_created_between(start, end)
         return posts + self.archive.comments_created_between(start, end)
+
+    def _without_noise_threads(self, items: list[Item]) -> list[Item]:
+        """Drops whatever belongs to a thread already deleted as noise (atlas OPEN-31), so it
+        isn't stored, embedded and decided again."""
+        noise = self.store.noise_thread_ids(sorted({item.thread_source_id for item in items}))
+        return [item for item in items if item.thread_source_id not in noise]
 
     def _attach_threads(self, items: list[Item]) -> tuple[list[NewThread], list[Item]]:
         """Threads started today come from today's posts; a comment on an older thread brings
@@ -138,7 +147,8 @@ def _day_counts(steps: DaySteps) -> dict[str, int]:
     return {
         "fetched": len(steps.fetched),
         "dropped_unwanted": len(steps.fetched) - len(steps.wanted),
-        "dropped_without_thread": len(steps.wanted) - len(steps.threaded),
+        "dropped_as_noise": len(steps.wanted) - len(steps.alive),
+        "dropped_without_thread": len(steps.alive) - len(steps.threaded),
         "upvotes": upvotes,
         "dropped_orphan_upvotes": len(steps.agreeing) - upvotes,
         "stored": len(steps.batch.posts),

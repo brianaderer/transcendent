@@ -17,14 +17,16 @@ from sqlalchemy import (
     delete,
     func,
     insert,
+    literal,
     not_,
     or_,
     select,
     text,
     update,
 )
+from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
-from voices.db.models import ClusterDecision, Post, RetrievalEvent, Thread, Topic
+from voices.db.models import ClusterDecision, NoiseThread, Post, RetrievalEvent, Thread, Topic
 from voices.tagging.decisions import CandidateTopic, DecidedCluster, TypicalPost
 from voices.tagging.threads import DueThread, Reply
 from voices.tagging.window import window_start
@@ -177,7 +179,7 @@ class TaggingStore:
         topic (atlas OPEN-14): what three days never placed is noise. Returns how many threads."""
         expired = and_(_on_or_after_third_day(day), Thread.topic_id.is_(None))
         with self.engine.begin() as connection:
-            return _delete_threads(connection, expired)
+            return _delete_threads(connection, expired, day)
 
     def rebuild_engagement(self, first_day: date, last_day: date) -> None:
         """Recomputes each topic's daily engagement for these days from the posts, each post
@@ -252,7 +254,7 @@ class _DecisionApplier:
     def _delete_on_third_day(self, item: DecidedCluster) -> None:
         on_third_day = self._members_on_third_day(item)
         topics_left = self._current_topics(on_third_day)
-        self.counts["noise_deleted"] += _delete_threads(self.connection, on_third_day)
+        self.counts["noise_deleted"] += _delete_threads(self.connection, on_third_day, self.day)
         self._refresh_centres(topics_left)
 
     def _wait_for_third_day(self, item: DecidedCluster, decision_id: int) -> None:
@@ -341,11 +343,22 @@ def _on_or_after_third_day(day: date) -> ColumnElement[bool]:
     return Thread.first_seen_on <= window_start(day)
 
 
-def _delete_threads(connection: Connection, threads: ColumnElement[bool]) -> int:
-    """Deletes the threads with their posts (and so the posts' upvotes and retrievals)."""
+def _delete_threads(connection: Connection, threads: ColumnElement[bool], day: date) -> int:
+    """Deletes the threads with their posts (and so the posts' upvotes and retrievals),
+    leaving each thread's marker so its later comments are dropped (atlas OPEN-31)."""
     doomed = select(Thread.source_id).where(threads)
+    connection.execute(_mark_as_noise(threads, day))
     connection.execute(delete(Post).where(Post.thread_source_id.in_(doomed)))
     return connection.execute(delete(Thread).where(threads)).rowcount
+
+
+def _mark_as_noise(threads: ColumnElement[bool], day: date) -> Insert:
+    marked = select(Thread.source_id, literal(day)).where(threads)
+    return (
+        postgres_insert(NoiseThread)
+        .from_select(["source_id", "deleted_on"], marked)
+        .on_conflict_do_nothing()
+    )
 
 
 def _members(item: DecidedCluster) -> ColumnElement[bool]:

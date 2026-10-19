@@ -112,7 +112,9 @@ For day D (atlas OPEN-29):
    counted as `noise_expired`): what three days never placed in a topic is noise. This
    catches the threads no third-day decision deleted, such as one called noise on its first
    day and sent to a topic that doesn't exist on its third. It runs in its own transaction,
-   after the decisions are applied.
+   after the decisions are applied. Every thread deleted as noise, here or on its third day,
+   leaves a marker in `noise_threads` (its id and the day), so a comment that arrives on it
+   later is dropped at intake ([ingestion](ingestion.md), atlas OPEN-31).
 9. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D, every post counting
    for its thread's topic, so a comment that arrives days later counts for the topic on the
    day it was written: posts, comments, agreeing-reply upvotes that day (also for older
@@ -157,4 +159,5 @@ models through `connect_model`, takes its list of right actions from `Action`, a
 `TYPICAL_POST_CHARACTERS = 600`, `UNKNOWN_AUTHOR = "unknown"` (`tagging_store.py`); the model call uses temperature 0, a 120-second timeout
 and 3 retries (`model.py`).
 Writes `topics`, `cluster_decisions`, `threads` (embedding, topic, decision, stage; deletes
-noise, and threads whose third day has come with no topic, with their `posts`), `topic_daily_engagement`, `retrieval_events`.
+noise, and threads whose third day has come with no topic, with their `posts`), `noise_threads`
+(a marker for each thread deleted), `topic_daily_engagement`, `retrieval_events`.

@@ -20,7 +20,7 @@ from sqlalchemy.dialects.postgresql import Insert, insert
 from sqlalchemy.orm import InstrumentedAttribute
 
 from voices.db.address import sqlalchemy_url
-from voices.db.models import Base, IngestedDay, Post, PostUpvotesDaily, Thread
+from voices.db.models import Base, IngestedDay, NoiseThread, Post, PostUpvotesDaily, Thread
 from voices.ingestion.day import DayBatch, EmbeddedItem, NewThread
 
 
@@ -33,6 +33,10 @@ class Store:
 
     def known_thread_ids(self, ids: Sequence[str]) -> set[str]:
         return self._existing(Thread.source_id, ids)
+
+    def noise_thread_ids(self, ids: Sequence[str]) -> set[str]:
+        """Those of these threads that were deleted as noise (atlas OPEN-31)."""
+        return self._existing(NoiseThread.source_id, ids)
 
     def save_day(self, batch: DayBatch) -> None:
         """Everything the day adds, in one transaction. Saving the same day again changes

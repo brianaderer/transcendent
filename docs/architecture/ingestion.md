@@ -22,7 +22,8 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
   hours after it ends, so the archive has caught up.
 - `catch_up.Emit` — the shape of that `emit` function; [tagging](tagging.md) uses it too.
 - `day.DayIngestion(archive, embedder, agreement, store).process(day)` — one day, returning counts
-  (`fetched`, `dropped_unwanted`, `dropped_without_thread`, `dropped_orphan_upvotes`,
+  (`fetched`, `dropped_unwanted`, `dropped_as_noise` (items on a thread already deleted as
+  noise, atlas OPEN-31), `dropped_without_thread`, `dropped_orphan_upvotes`,
   `stored`, `threads_added`, `upvotes`), read off what was left after each step. Each
   collaborator is a small interface (`Archive`,
   `DocumentEmbedder`, `Agreement`, `DayStore`), so tests pass stand-ins.
@@ -47,7 +48,9 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
 
 ## How it works
 A day: fetch every post and every comment *created* that day (new comments on old threads
-arrive with the day they were written), drop removed and deleted posts and bots, look up
+arrive with the day they were written), drop removed and deleted posts and bots, drop whatever belongs to a thread already deleted
+as noise (the store's `noise_thread_ids`; the thread isn't brought back to be stored and
+decided again), look up
 the title of any older thread a comment belongs to, turn agreeing replies into upvotes on
 their parent, embed the rest, and save it all in one transaction. A day whose loading fails
 leaves nothing behind. In the worker, `process` loads the day and then tags it; if tagging

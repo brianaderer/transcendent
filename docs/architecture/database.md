@@ -11,7 +11,7 @@ Describes the tables and keeps the database in step with them. The tables follow
 - `voices.db.tagging_store.TaggingStore` — the reads and writes for tagging; described in
   [tagging](tagging.md).
 - `voices.db.store.Store` (built by `connect_store(database_url)`) — the reads and writes
-  for ingestion: `known_post_ids`, `known_thread_ids`, `save_day(batch)` (threads, posts
+  for ingestion: `known_post_ids`, `known_thread_ids`, `noise_thread_ids` (those of the given threads deleted as noise), `save_day(batch)` (threads, posts
   and upvotes in one transaction; a new thread is recorded as first seen on the batch's day; saving a day again adds nothing — the day's upvote rows
   are replaced as a whole, and every post they touched before or touch now is recounted
   from its days, so a redone day never double-counts and can also take upvotes away), the day ledger (`done_days`,
@@ -38,7 +38,7 @@ extension and every table; `0002` adds `ingested_days.error`, why a day failed; 
 tagging (atlas OPEN-29): threads gain `embedding`, `topic_id`, `cluster_decision_id` and
 `stage`, posts lose `status`, `topic_id`, `topic_similarity` and `cluster_decision_id`, and
 `topic_daily_engagement` gains `revived_threads`; `0004` adds `threads.first_seen_on`, the day a thread was
-first stored, filled for stored threads from their earliest post or comment (atlas OPEN-30). Embeddings are `vector(768)`, the size nomic-embed-text
+first stored, filled for stored threads from their earliest post or comment (atlas OPEN-30); `0005` adds `noise_threads` (atlas OPEN-31). Embeddings are `vector(768)`, the size nomic-embed-text
 produces (atlas OPEN-5).
 
 Tables: `threads` (the unit of tagging: the thread's own embedding of its post and top
@@ -47,7 +47,9 @@ first day or `settled` on its third, and `first_seen_on`, the day those days cou
 `created_at` stays the day it was started, which the revived-thread count uses), `posts` (one embedding each; `upvotes` from agreeing
 replies, apart from `reddit_score`; a post's topic is its thread's),
 `post_upvotes_daily`, `topics` (label, description, keywords, centroid),
-`topic_daily_engagement`, `cluster_decisions`, `retrieval_events`, `ingested_days`.
+`topic_daily_engagement`, `cluster_decisions`, `retrieval_events`, `ingested_days`,
+`noise_threads` (the id of each thread deleted as noise and the day it went, no text, so a
+comment arriving on it later is dropped at intake; atlas OPEN-31).
 
 **Changing the database:** edit `models.py`, then, with the stack running, generate the
 migration and read it before committing:
@@ -57,17 +59,17 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the forty tests that need a running
+`docker compose run --rm api pytest -m database` runs the forty-three tests that need a running
 database: one checks that the models and the applied migrations agree; seven check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, and keeps the day ledger; and thirty-two check the tagging store: which
+from different days, and keeps the day ledger; and thirty-five check the tagging store: which
 threads are due on their first and third days (with their replies, best first), a thread
 without its post is due on the day first seen (whether it was started that day or years before), written from its title, is due again two days later, and can be a typical thread (shown by its title, with its author given as unknown), and that a
 settled thread is never due again, minting, attaching, noise on a first day waiting and on a
 third day deleting the thread with its comments and moving the centre of the topic it
 leaves, attaching to a topic that doesn't exist (on a third day the thread keeps its
-first day's topic, and one that had none is expired, its thread gone), threads with no topic expired, the thread and its posts gone, once their third day has come (that day included) but not before, and never a thread with a topic,
+first day's topic, and one that had none is expired, its thread gone), threads with no topic expired, the thread and its posts gone, once their third day has come (that day included) but not before, and never a thread with a topic, a marker left by every thread deleted as noise (on its third day or expired) but not by one waiting for its third day,
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
