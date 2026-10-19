@@ -15,7 +15,7 @@ class FakeEventSource {
   }
 }
 
-function serveStatus(daysDone: () => number) {
+function serveStatus(daysDone: () => number, backfill: () => object | null = () => null) {
   vi.stubGlobal(
     "fetch",
     vi.fn(
@@ -29,6 +29,7 @@ function serveStatus(daysDone: () => number) {
             running_day: "2026-08-25",
             failed_day: null,
             failed_reason: null,
+            backfill: backfill(),
           }),
         ),
     ),
@@ -36,6 +37,34 @@ function serveStatus(daysDone: () => number) {
 }
 
 afterEach(() => vi.unstubAllGlobals());
+
+function renderStatus() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={client}>
+      <IngestionStatus />
+    </QueryClientProvider>,
+  );
+}
+
+test("shows the history's preparation counting up, then the days once it is done", async () => {
+  let backfill: object | null = { what: "posts", done: 256, total: 12682 };
+  serveStatus(
+    () => 3,
+    () => backfill,
+  );
+  vi.stubGlobal("EventSource", FakeEventSource);
+  renderStatus();
+  expect(await screen.findByText("Preparing the history: 256 of 12,682 posts")).toBeInTheDocument();
+
+  backfill = { what: "posts", done: 512, total: 12682 };
+  act(() => FakeEventSource.latest.send({ type: "backfill.progress", what: "posts", done: 512 }));
+  expect(await screen.findByText("Preparing the history: 512 of 12,682 posts")).toBeInTheDocument();
+
+  backfill = null;
+  act(() => FakeEventSource.latest.send({ type: "backfill.finished" }));
+  expect(await screen.findByText(/3 of 56 days/)).toBeInTheDocument();
+});
 
 test("updates the progress when a live event says a day finished", async () => {
   let daysDone = 2;

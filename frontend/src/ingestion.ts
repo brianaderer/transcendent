@@ -1,5 +1,12 @@
 import { SUBREDDIT } from "./community";
 
+/** How far the first boot has got rebuilding the seed's vectors (atlas plate 07). */
+export type BackfillProgress = {
+  what: "posts" | "threads" | "topics";
+  done: number;
+  total: number;
+};
+
 export type IngestionStatus = {
   days_done: number;
   days_wanted: number;
@@ -8,6 +15,7 @@ export type IngestionStatus = {
   running_day: string | null;
   failed_day: string | null;
   failed_reason: string | null;
+  backfill: BackfillProgress | null;
 };
 
 export async function fetchIngestionStatus(): Promise<IngestionStatus> {
@@ -15,8 +23,15 @@ export async function fetchIngestionStatus(): Promise<IngestionStatus> {
   return (await response.json()) as IngestionStatus;
 }
 
-/** One sentence on how far the history has loaded (atlas plate 04: first start shows progress). */
+/**
+ * One sentence on how far the history has loaded (atlas plates 04 and 07): first the seed's
+ * preparation while its vectors are rebuilt, then the catch-up's days.
+ */
 export function describeIngestion(status: IngestionStatus): string {
+  if (status.backfill) {
+    const { what, done, total } = status.backfill;
+    return `Preparing the history: ${count(done)} of ${count(total)} ${what}`;
+  }
   if (status.failed_day) {
     const why = status.failed_reason ?? "the reason wasn't recorded";
     return `Loading stopped at ${shortDate(status.failed_day)}: ${why}`;

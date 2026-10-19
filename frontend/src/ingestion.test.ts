@@ -8,7 +8,26 @@ const base: IngestionStatus = {
   running_day: null,
   failed_day: null,
   failed_reason: null,
+  backfill: null,
 };
+
+test("says how far the history's preparation has got while the seed's posts are embedded", () => {
+  const status: IngestionStatus = {
+    ...base,
+    days_done: 57,
+    backfill: { what: "posts", done: 4120, total: 12682 },
+  };
+
+  expect(describeIngestion(status)).toBe("Preparing the history: 4,120 of 12,682 posts");
+});
+
+test("names the threads, then the topics, as the preparation reaches them", () => {
+  const threads: IngestionStatus = { ...base, backfill: { what: "threads", done: 12, total: 640 } };
+  const topics: IngestionStatus = { ...base, backfill: { what: "topics", done: 0, total: 150 } };
+
+  expect(describeIngestion(threads)).toBe("Preparing the history: 12 of 640 threads");
+  expect(describeIngestion(topics)).toBe("Preparing the history: 0 of 150 topics");
+});
 
 test("says history is loading, with progress, while days remain", () => {
   const status = { ...base, days_done: 23, posts: 9412, running_day: "2026-09-15" };
