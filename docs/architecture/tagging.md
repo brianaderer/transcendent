@@ -1,6 +1,6 @@
 # tagging
 
-**Source:** `backend/src/voices/tagging/` (`clustering.py`, `decisions.py`, `decider.py`, `tools.py`, `graph.py`, `day_tagging.py`, `keywords.py`, `model.py`), `backend/src/voices/db/tagging_store.py`   ·   **Tests:** `backend/tests/tagging/`, `backend/tests/test_tagging_store.py` (needs a database)
+**Source:** `backend/src/voices/tagging/` (`agent.py`, `clustering.py`, `window.py`, `decisions.py`, `decider.py`, `tools.py`, `graph.py`, `day_tagging.py`, `keywords.py`, `model.py`), `backend/src/voices/db/tagging_store.py`   ·   **Tests:** `backend/tests/tagging/`, `backend/tests/test_tagging_store.py` (needs a database)
 
 ## Purpose
 Sorts each day's posts into topics, so the conversation can be followed day by day
@@ -21,9 +21,11 @@ both have happened.
   subject still forms one group (`allow_single_cluster`).
 - `window.window_start(day)` — the first day of the three-day window ending on `day`; the
   one place the window is defined.
-- `decider.ToolLoopDecider(model, model_name, tools).decide(brief)` — the agent's decision for one
-  cluster, as a `DecidedCluster` with the exact prompt it saw and the model's name. Raises
-  `NoDecision` if the agent never gives a valid decision, which stops the day.
+- `decider.ToolLoopDecider(model, model_name, tools, max_look_ups=3).decide(brief)` — the agent's
+  decision for one cluster, as a `DecidedCluster` with the exact prompt it saw and the model's name.
+  `max_look_ups` is how many tool calls it may make, counted across turns, before it is made to
+  decide (default `MAX_LOOK_UPS_BEFORE_DECIDING`). Raises `NoDecision` if the agent never gives a
+  valid decision, which stops the day.
 - `graph.decide_all(decider, briefs)` — every cluster decided in parallel (a LangGraph
   fan-out), returned in the briefs' order.
 - `decisions.Decision` (attach / mint / noise, with topic id, label, description, reason),
