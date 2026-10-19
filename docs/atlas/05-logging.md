@@ -10,7 +10,13 @@ nothing in the app (OPEN-27). Everything else is *proposed*.
 
 - **Every model turn**, in full: which agent, which run or day, the complete prompt, the
   complete answer, every tool call with its arguments and result, tokens in and out,
-  cost, and how long it took.
+  cost, and how long it took. *(As built, the tagging agent's turns are logged in full. The report
+  agent's are not: each comparison run logs every event it announces, with `stream` set to
+  `run-<id>` (the steps, each tool call with its arguments and how many posts it returned,
+  tokens in and out per step, the measurements), and `run.failed` with the reason; every
+  line of the run, in both versions' threads, carries the trace id `run-<id>`. The
+  instructions are kept with the run's result for a day, and the model's answers are its
+  documents and lists.)*
 - **Every job step:** each day's catch-up (fetch, filter, upvotes, embed, cluster, tag,
   noise deleted, roll-up) with counts and timings; each report run's steps; each map
   recompute.

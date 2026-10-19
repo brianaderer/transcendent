@@ -191,9 +191,10 @@ live: each step, and every search version B makes with how many posts it found. 
 minute or two and a few cents of OpenRouter credit. When it finishes, **Read the report**
 opens version B's document (with its list of topics beside it), and **See the comparison**
 puts the two side by side: a scoreboard (main topics found, topics invented, order of
-importance, directions right, prediction score, tokens and time), the range's real topics
-against what each version said, and both documents. Results are kept for a day; nothing
-else is stored.
+importance, directions right, prediction score, tokens and time, posts looked at), the
+range's real topics against what each version said (topics a version made up are in red),
+and both documents. Results are kept for a day; besides them, only the count of which posts
+version B retrieved is kept, and **Retrieval stats** (with **Report agent** chosen) shows it.
 
 Ignore the `Local:` and `Network:` addresses the frontend prints in the log; they're inside
 Docker. Use http://localhost:5173 (or the `PORT` you set).

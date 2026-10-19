@@ -74,7 +74,12 @@ The LLM receives the ranked tags with their trend numbers, the scheduled-event
 signals, and the most typical posts for each tag. It writes the prediction, and
 every claim names its evidence ("up from 3 to 11 threads over three weeks").
 Version A of the comparison (`CLAUDE.md` §7) receives none of this, only the
-community and the dates.
+community and the dates. *(As built, step 5: version B's prediction step gets the `topic_trends`
+tool, which gives these projected trends, and can search and look up posts from the 28 days
+before the range, including posts that read like dated plans; it isn't handed typical
+posts. It answers with its list of expected topics and directions and two or three
+sentences of reasoning, not a claim-by-claim forecast. Topic labels are read as they are
+now, not as they stood before the range.)*
 
 ## Scoring the prediction
 
@@ -94,10 +99,12 @@ community and the dates.
   the first one in a demo.
 - **The code's numerical projections are checked separately.** How close the projected
   engagement for each topic came to the real figure is shown on its own, as a check on
-  the trend method, and is not part of the A/B scores.
+  the trend method, and is not part of the A/B scores. *(Not built in step 5: the
+  comparison shows only the A/B scores.)*
 
 The stored history covers **eight weeks** (specified, OPEN-7), so the earliest ranges
-have little history before them; the score says how much history the prediction had.
+have little history before them; the score says how much history the prediction had. *(Not built in
+step 5: the scores don't say how much history there was.)*
 
 ## Open in this draft
 

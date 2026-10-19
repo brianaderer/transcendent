@@ -1,6 +1,6 @@
 # api
 
-**Source:** `backend/src/voices/api/main.py`, `backend/src/voices/health.py`   ·   **Tests:** `backend/tests/test_health_route.py`, `backend/tests/test_health.py`, `backend/tests/test_ingestion_route.py`, `backend/tests/test_explore_routes.py`, `backend/tests/test_topic_and_retrieval_routes.py` (the route tests share their stand-ins — a fixed `FakeExplore`, `FakeTopics` and `FakeRetrievals`, an empty event stream, and `stand_in_services(**chosen)`, which builds `ApiServices` from them with the chosen ones replaced — from `backend/tests/stand_ins.py`)
+**Source:** `backend/src/voices/api/main.py`, `backend/src/voices/health.py`   ·   **Tests:** `backend/tests/test_health_route.py`, `backend/tests/test_health.py`, `backend/tests/test_ingestion_route.py`, `backend/tests/test_explore_routes.py`, `backend/tests/test_topic_and_retrieval_routes.py`, `backend/tests/test_run_routes.py` (the route tests share their stand-ins — a fixed `FakeExplore`, `FakeTopics` and `FakeRetrievals`, a `FakeRuns` that starts nothing, an empty event stream, and `stand_in_services(**chosen)`, which builds `ApiServices` from them with the chosen ones replaced — from `backend/tests/stand_ins.py`)
 
 ## Purpose
 The web API the frontend calls. Every route lives under `/api`.
@@ -13,7 +13,8 @@ The web API the frontend calls. Every route lives under `/api`.
   `latest_day`, `running_day`, `failed_day`, `failed_reason` (the error recorded for the
   latest failed day, as the error's message; `null` when no day has failed).
 - `GET /api/streams/{stream}/events` — live events as server-sent events ([events](events.md));
-  404 for a stream that doesn't exist.
+  the streams are `ingestion` and one per comparison run, `run-<id>` (twelve hex digits); 404
+  for any other name.
 - `GET /api/days`, `GET /api/topics?start=YYYY-MM-DD&end=YYYY-MM-DD`,
   `GET /api/map?start=…&end=…` — the Explore page's reads ([explore](explore.md)): posts per
   day, the range's topics with their badges, and the range's map. Both ends of a range are
@@ -36,7 +37,8 @@ The web API the frontend calls. Every route lives under `/api`.
   (`name_operation_after_its_function`), so the generated calls read `reportTopics`,
   `useReportMap`, `useReportTopic`, `useReportRetrievals` and so on.
 - `create_app(services)` — builds the app around `ApiServices` (the health checks, the
-  ingestion status, the event stream, the Explore reads, `ExploreReads`, which take a `DayRange`, the topic
+  ingestion status, the event stream, the Explore reads, `ExploreReads`, which take a `DayRange`, the
+  comparison runs, `Runs`, the topic
   read, `TopicReads`, and the retrieval read, `RetrievalReads`, which takes a
   `RetrievalFilter`), so tests pass stand-ins. Responses over 1,000 bytes are gzip-compressed when the browser accepts it
   (a range's map runs to megabytes).
@@ -48,7 +50,9 @@ Uvicorn runs `create_production_app` (a factory), which reads settings, configur
 logging under the container's `SERVICE_NAME` (`api`), and checks Postgres and Redis on each health request.
 It also builds the Explore reads ([explore](explore.md)) on the store's database connection,
 with a map cache on Redis at `REDIS_URL`, and the topic and retrieval reads on the same
-connection. A range that ends before it starts is answered with 422 and the reason; a
+connection. The comparison runs are [report](report.md)'s `RunLauncher` on the same Redis: a
+run's state is kept there, and its job is sent to the worker by name (`queue_on`, a Celery
+client), so the API never imports the worker's code. A range that ends before it starts is answered with 422 and the reason; a
 topic that doesn't exist (`TopicNotFound`) with 404. A
 health check that fails logs why (`health.database_unreachable`, `health.queue_unreachable`).
 Every request is logged as `api.request` with its method, path, status and time taken,
@@ -59,12 +63,16 @@ the full error, then re-raised.
 [logging](logging.md), [environment](environment.md) (settings and `HISTORY_DAYS`), [database](database.md)
 (`voices.db.store` for the ingestion status, `voices.db.explore_store` for the Explore reads,
 `voices.db.topic_store` and `voices.db.retrieval_store` for the topic and retrieval reads),
-[events](events.md), [explore](explore.md), [topics](topics.md), [retrievals](retrievals.md), Postgres, Redis.
+[events](events.md), [explore](explore.md), [topics](topics.md), [retrievals](retrievals.md),
+[report](report.md) (`RunLauncher`, `RunStarted`, `RunStore`, `RunState`, `RunNotFound`), Postgres,
+Redis, Celery (only to send `voices.compare` to the [worker](worker.md)).
 `HISTORY_DAYS` (the days wanted) comes from `voices.config`.
 
 ## Used by
 [frontend](frontend.md) (`GET /api/health`, `GET /api/ingestion`, `GET /api/days`, `GET /api/topics`,
-`GET /api/map`, `GET /api/topics/{topic_id}`, `GET /api/retrievals` and `GET /api/streams/ingestion/events`, through a client generated from `GET /api/openapi.json`); [environment](environment.md) runs it as the `api`
+`GET /api/map`, `GET /api/topics/{topic_id}`, `GET /api/retrievals`, `POST /api/runs`,
+`GET /api/runs/{run_id}`, `GET /api/streams/ingestion/events` and
+`GET /api/streams/run-<id>/events`, through a client generated from `GET /api/openapi.json`); [environment](environment.md) runs it as the `api`
 service.
 
 ## Configuration and data

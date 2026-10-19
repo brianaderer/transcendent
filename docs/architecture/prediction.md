@@ -4,9 +4,10 @@
 
 ## Purpose
 Each topic's trend as it stood the day before a date range began, projected onto the range
-([atlas plate 50](../atlas/50-prediction.md)). The report run (build step 5) hands these
-numbers to version B of the report so it can predict the range, and checks the projection
-against what happened, outside the A/B scores (atlas OPEN-22). Only what was known the day
+([atlas plate 50](../atlas/50-prediction.md)). The comparison run ([report](report.md))
+hands these numbers to version B of the report, through its `topic_trends` tool, when it
+predicts the range. Checking the projection itself against what happened, outside the A/B
+scores (atlas OPEN-22), is planned but not built. Only what was known the day
 before the range is used, never anything from inside it (OPEN-11).
 
 ## Public interface

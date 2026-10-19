@@ -51,14 +51,14 @@ fading badges a reviewer sees there), ranked by engagement; topics with equal en
 share a rank. The **main topics** are those ranked ten or better, so a tie at the cut
 keeps every tied topic.
 
-| Measurement | What it shows | How it's computed *(built in step 5, except cost and time)* |
+| Measurement | What it shows | How it's computed *(built in step 5)* |
 |---|---|---|
 | **Topics found** | Did the report name the range's real main topics? | Each topic the report names is matched to a tag by meaning (below); count how many distinct main topics it found |
 | **Topics invented** | Topics the report names that the community didn't discuss in the range | Named topics that match no tag with any activity in the range. A name matching an active tag below the top ten is neither found nor invented |
 | **Order of importance** | Did it rank the topics the way the data does? | Spearman's rank correlation (from 1, the same order, to -1, reversed) between the report's ranks and the answer key's ranks, over the topics it found; not measured with fewer than two |
 | **Direction** | For each topic it names, did it say rising, steady or fading correctly? | Over the topics it found: how many directions match the answer key's badge |
 | **Prediction** | Did the topics it said would be prominent next actually become prominent, moving the way it said? | Both versions commit to a list of expected topics and directions for the requested range, made using only what was known the day before the range began (OPEN-22, plate [50](50-prediction.md)). Counted: how many it named, how many became main topics, how many never came up, and how many became main topics moving the way it said; the prediction score is that last count divided by the number named |
-| **Cost and time** | What retrieval costs | Tokens, tool calls, seconds *(proposed, not built yet)* |
+| **Cost and time** | What retrieval costs | Tokens, tool calls, seconds *(built: tokens in and out, tool calls, seconds, and how many posts each version looked at; cost in money is not computed)* |
 
 - **The report states its conclusions in a fixed form** alongside its prose: a list of
   topics, each with its rank and direction, plus the predicted ones (OPEN-25). That
@@ -67,8 +67,8 @@ keeps every tied topic.
   prep" versus the tag "Winterizing and haul-out"). **Built in step 5,** it's done by
   meaning in code, with no model call: each name and each tag (its label and
   description) is turned into an embedding, and a name matches its most similar tag when
-  the similarity is at least 0.7, a starting value to be tuned against names real
-  reports produce. Each tag can be claimed by one name only; when two names point at
+  the similarity is at least 0.80, set from the first real run, where right matches
+  scored 0.83 to 0.91 and wrong ones 0.73 to 0.79. Each tag can be claimed by one name only; when two names point at
   the same tag, the closer one keeps it. The plan's fixed judging prompt for borderline
   matches is not built; if it is added, it is saved with the run and the same for both
   versions.
@@ -78,6 +78,12 @@ keeps every tied topic.
 Reports are ephemeral (Brian, OPEN-24): the two reports and their scores are shown when
 the run finishes, and nothing keeps them. They may be made downloadable — that's the
 only way a report outlives the page *(maybe, Brian)*.
+
+*As built (build step 5):* a run's result is kept in Redis for one day, so the progress
+panel's links to the Document and Comparison screens (`/runs/<id>/report`,
+`/runs/<id>/comparison`) work after the run ends and survive a reload; after a day it is
+gone. Its events are not kept, there is no list of past runs and no download. The posts
+version B retrieved are counted in the retrieval statistics, like every retrieval.
 
 ## Open in this draft
 

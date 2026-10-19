@@ -54,7 +54,7 @@ only difference is whether the model gets tools that read our store.
 ## How it works
 The worker's `voices.compare` task (`compare_now`; `in_parallel` runs the two versions in
 threads, each in a copy of the run's logging context so its lines carry the run's trace id) builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
-through OpenRouter), the stores and the embedder, and runs both versions in parallel threads.
+through OpenRouter), the stores and the embedder, and runs the comparison.
 Events go out on the run's stream: `run.started`, per version `step.started` /
 `step.finished` / `usage` / `tool.called` / `tool.returned`, then a `measurement.done` per
 score and `run.finished` (or `run.failed` with the reason). The result is kept in Redis for a
@@ -64,7 +64,8 @@ day so the Document and Comparison pages can read it; nothing else is kept.
 [comparison](comparison.md) (answer key, `mark`, scores, commitments),
 [prediction](prediction.md) (projected trends), [explore](explore.md) (`DayRange`, the range's
 topics, `ExploreStore`), [tagging](tagging.md) (`TaggingStore`'s search, lookup and retrieval
-counting; `connect_model`), [ingestion](ingestion.md) (the embedder and its
+counting; `connect_model`), [database](database.md) (`connect_store`, and `PostNotFound` for a
+lookup of an unknown post), [ingestion](ingestion.md) (the embedder and its
 `ComparisonEmbedder` interface), [events](events.md),
 [logging](logging.md), Redis, Celery, LangChain, OpenRouter.
 

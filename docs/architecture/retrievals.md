@@ -7,7 +7,9 @@ The read behind the Retrieval stats page ([atlas plate 31](../atlas/30-frontend/
 screen 5; CLAUDE.md §7, *Record retrieval statistics*): which stored posts an agent's tools
 retrieved most, and how its retrievals spread over the topics. The counts are the
 `retrieval_events` rows the agents' `search` and `lookup` tools write, one per post handed
-back ([tagging](tagging.md) writes them today; the report agent will too).
+back: the [tagging](tagging.md) agent's, and the [report](report.md) agent's (version B's
+`search` and `lookup`, and `upcoming_events`, which is counted as `search`, under the run
+`report-<id>`).
 
 ## Public interface
 - `shapes.RetrievalFilter(agent, days, run=None)` — which retrievals count: one agent's

@@ -4,7 +4,7 @@ import { type RunResult, useReportRun } from "../api/generated";
 export function useFinishedRun(runId: string): { result: RunResult } | { notice: string } {
   const run = useReportRun(runId);
   if (run.isPending) return { notice: "Loading the run…" };
-  // A run that is gone answers 404, which the generated call returns as data with no state.
+  // A run that is gone answers 404, which fetchOrThrow turns into an error.
   if (run.isError || !run.data?.state)
     return { notice: "This run isn't available: runs are kept for a day." };
   if (run.data.state === "failed") return { notice: `The run stopped: ${run.data.reason}` };

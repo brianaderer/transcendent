@@ -79,14 +79,44 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
 - **Same model, same settings, same prompt wording** for both versions; only the tools
   differ.
 
+*As built (build step 5):*
+
+- **Not a LangGraph graph.** One plain loop of our own, `ReportWriter`, writes both
+  versions. Version A is offered only the answer; version B is offered the four tools and
+  the answer. The model is Claude Sonnet 5.5 through OpenRouter (`REPORT_MODEL_NAME`).
+- **Two steps per version:** first it writes the report for the range, then, as of the day
+  before the range began, it predicts the range (plate [50](50-prediction.md), OPEN-22).
+  Each step answers through its own answer tool, `Report` (the document in Markdown and its
+  list of topics with rank and direction) or `Prediction` (the expected topics with
+  directions, and two or three sentences of reasoning); these are the committed lists of
+  OPEN-25. Both versions are told, in the same words, to write even with no tools or data,
+  from what the model knows of the community and the season.
+- **What version B's tools see:** while writing, only the range; while predicting, only the
+  28 days before it, so the forecast can't peek inside the range. **search** returns at
+  most 20 posts by meaning, always within those days (it never asks wider). **lookup**
+  refuses a post written after them. **topic trends** gives the range's measured topics
+  while writing, and the projected trends of plate [50](50-prediction.md) while predicting.
+  **upcoming events** is a search by meaning for posts in those days that read like dated
+  plans (regattas, races, boat shows, festivals, meetups), at most 15; it doesn't check
+  that the dates fall after the period. Every post returned is counted in the retrieval
+  statistics as the report agent's, under the run `report-<id>`.
+- **A cap of 20 turns per step:** each tool call spends one, and so does a reply that calls
+  no tool, so a model that keeps searching or keeps talking still stops. After that only
+  the answer is offered (one reply asking for several tools can take it a little past 20),
+  and a reply without a valid answer is told why, or reminded, once before the run fails.
+  The cap is fixed in code and not saved with the run.
+
 ## Around the agents *(proposed)*
 
 - **Everything the agents do is streamed live** to the frontend — steps, tool calls and
   results, decisions, the report as it's written, token use — as server-sent events
-  (specified by Brian; see [41](40-backend/41-live-events.md)).
+  (specified by Brian; see [41](40-backend/41-live-events.md)). *(As built, everything
+  except the report as it's written: each document arrives whole.)*
 
 - **A cap on tool calls per run** (for example 30), so an agent that keeps searching
   ends with what it has instead of running up cost. The cap is saved with the run.
+  *(As built, for the report agent: 20 turns per step, fixed in code and not saved with the
+  run; see above.)*
 
 - **LangChain is wrapped behind our own small interfaces** (`CLAUDE.md` §8), so the rest
   of the code doesn't depend on it and tests can swap in LangChain's fake chat models

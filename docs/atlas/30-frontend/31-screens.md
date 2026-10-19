@@ -160,7 +160,8 @@ Opened from the topics panel or a document section.
 
 Screen 1 above is the target; these are the details it needs underneath, all proposed.
 The Generate report button works from build step 5 (plate [06](../06-build-order.md)),
-and the retrieved-posts toggle arrives with it, since it needs a report.
+and the retrieved-posts toggle arrives with it, since it needs a report. *(As built, step 5
+made the button work; the toggle is not built.)*
 
 - **Three reads from the API** (generated into a typed client, OPEN-1):
   - `GET /api/days` — posts per day across the history: the slider's histogram and the
@@ -196,9 +197,42 @@ and the retrieved-posts toggle arrives with it, since it needs a report.
 - **Clicking a dot** opens the post on Reddit; clicking a topic's name opens Topic detail
   (step 6, below).
 
+## How the report screens are built (build step 5) *(as built)*
+
+What step 5 built against screens 1 to 3 above, so the brief and the app can be compared.
+
+- **Generate report** (screen 1) starts a run for the range (`POST /api/runs`) and puts the
+  run's id in Explore's address (`&run=<id>`), so a reload keeps the progress panel (its
+  lanes start empty again, but the run's state is still read); choosing a new range drops
+  it. The panel below the plot has two lanes, "A · without our data" and "B · with
+  retrieval", each listing its steps ("Writing the report…", "Predicting the range: done
+  (41s)") and, for B, each tool call with how many posts it returned, from the run's live
+  events (plate [41](../40-backend/41-live-events.md)). Then "Measuring…", and when done
+  **Read the report** and **See the comparison**. There is no progress bar, and no text
+  appearing as it's written.
+- **Document** (screen 2), `/runs/<id>/report`, version B unless `?version=A`: the masthead
+  ("Community Voices — r/sailing", the range, "Written with retrieval" or "Written without
+  our data", the model, and a link to the comparison), the document as the model wrote it in
+  Markdown (the period in brief, then one section per topic with its quotes), and beside it
+  its topics with rank and direction, what it expected for the range, and its reasoning.
+  Not built: the download button, per-topic sparklines and badges, the prediction cards
+  with charts, quote markers linking to source posts, and the footer note.
+- **Comparison** (screen 3), `/runs/<id>/comparison`: a header with the range, the model and
+  "identical instructions; only version B has tools"; the scoreboard as a table, A against
+  B (main topics found, topics invented, order of importance as close, partly or poor with
+  its number, directions right, prediction score, tokens and time, and posts looked at);
+  the topic grid (the range's main topics with each one's measured direction and what A and
+  B said, rank and direction, with invented topics in red rows below); then both documents
+  in two columns, amber for A and teal for B, each linking to its own Document page. Not
+  built: the bars on the scoreboard, the "What version B looked at" drawer, and "Show on
+  the dot plot".
+- A finished run is read from `GET /api/runs/<id>`, which keeps it for a day (plate
+  [70](../70-comparison.md)); after that both screens say the run isn't available.
+
 ## How Topic detail and Retrieval stats are built (build step 6) *(proposed)*
 
 Screens 4 and 5 above are the target; these are the details underneath, all proposed.
+*(As built, step 6 built every point below as written.)*
 
 - **Two more reads from the API:**
   - `GET /api/topics/{id}` — the topic's label, description, keywords, first and last day
@@ -216,8 +250,9 @@ Screens 4 and 5 above are the target; these are the details underneath, all prop
   third day carries the later decision, so an early decision can show no threads.
 - **The badge** on Topic detail is the one Explore shows for the same range; a topic with
   nothing in the range reads "Quiet in these days".
-- **The chart** spans every loaded day. The dashed projection band waits for prediction
-  (plate [50](../50-prediction.md), step 5).
+- **The chart** spans every loaded day. The dashed projection band is not drawn: the
+  projected trends exist since step 5 (plate [50](../50-prediction.md)), but the chart
+  doesn't show them yet.
 - **The date range on Retrieval stats** picks the posts *written* in those days, not the
   days they were retrieved, so a range means the same thing on every screen.
 - **The table** holds the 100 most retrieved posts, sortable by any column (TanStack

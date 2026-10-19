@@ -147,7 +147,10 @@ LangChain, scikit-learn (agglomerative clustering), numpy, Postgres with pgvecto
 [worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `TaggingAgent` and `DayTagging`, and tags each day of the catch-up right after
 loading it); [bakeoff](bakeoff.md) (writes its sample threads out with `thread_text`, runs `ToolLoopDecider` with `TaggingTools` on sample cases, connects
 models through `connect_model`, takes its list of right actions from `Action`, and builds briefs with `ClusterBrief`, `TypicalPost`,
-`CandidateTopic` and the sizes `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`).
+`CandidateTopic` and the sizes `TYPICAL_POSTS_SHOWN` and `CANDIDATE_TOPICS_SHOWN`);
+[report](report.md) (the report agent's tools search, look up and count retrievals through
+`TaggingStore`'s `search_posts`, `lookup_post` and `record_retrievals`, as agent `report`;
+the worker connects the report model with `connect_model`).
 
 ## Configuration and data
 `OPENROUTER_API_KEY` (required for tagging), `TAGGING_MODEL_NAME` (default

@@ -18,9 +18,14 @@ fields from every service. Plan: [atlas plate 05](../atlas/05-logging.md).
 
 ## How it works
 Each line has `time` (UTC), `service`, `level`, `event`, `trace_id`, any extra fields, and
-`error` with the full traceback when an exception is logged. An extra field that
-shares a name with a standard one is dropped, so it can never overwrite it. The trace id lives in a
-context variable, so it follows the code that runs inside a `tracing` block.
+`error` with the full traceback when an exception is logged. An extra field named like one
+of the line's own fields (`time`, `service`, `level`, `event`, `trace_id`) is dropped, so it
+can never overwrite it. A field named like an attribute of Python's log record (`name`,
+`msg`, ...) is carried inside the record under one side attribute, `clashing_fields`, and put
+back on the line under its own name; the side attribute itself never appears. The trace id
+lives in a context variable, so it follows the code that runs inside a `tracing` block; code
+run in another thread carries it only when the thread runs in a copy of the context (as the
+worker's `in_parallel` does).
 
 ## Uses
 Python's standard `logging`.
@@ -29,7 +34,8 @@ Python's standard `logging`.
 [api](api.md) (and `voices/health.py`), [worker](worker.md), [database](database.md) (setup),
 [ingestion](ingestion.md) (archive retries), [tagging](tagging.md) (every turn of the
 tagging agent, `tagging.turn`, everything sent back to the agent, `tagging.answer`, and
-each decision, `tagging.decided`), [events](events.md)
+each decision, `tagging.decided`), [report](report.md) (each comparison run under the trace
+id `run-<id>`, in both versions' threads too, and `run.failed` with the reason), [events](events.md)
 (every emitted event is also logged).
 
 ## Configuration and data

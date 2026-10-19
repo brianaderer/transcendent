@@ -46,7 +46,8 @@ which the `setup` service needs.
 ## Used by
 - [api](api.md), [worker](worker.md) and [database](database.md) (setup) read their
   settings through `voices.config.load_settings()`; the worker passes
-  `OPENROUTER_API_KEY` and `TAGGING_MODEL_NAME` on to [tagging](tagging.md).
+  `OPENROUTER_API_KEY` and `TAGGING_MODEL_NAME` on to [tagging](tagging.md), and
+  `OPENROUTER_API_KEY` and `REPORT_MODEL_NAME` on to [report](report.md)'s comparison run.
 - [bakeoff](bakeoff.md) reads `OPENROUTER_API_KEY` and `MODEL_DIR` through
   `load_settings()`; its `bakeoff`-marked test also reads `TAGGING_MODEL_NAME`.
 - [ingestion](ingestion.md) (the catch-up) and [api](api.md) (`GET /api/ingestion`) read
@@ -73,7 +74,8 @@ which the `setup` service needs.
   among them `fastembed` runs the embedding model, `httpx` reads the archive,
   `scikit-learn` groups threads by meaning (agglomerative clustering) and flattens a range's
   posts to the Explore map (t-SNE), and `langgraph`, `langchain-core` and
-  `langchain-openai` run the tagging agent against OpenRouter.
+  `langchain-openai` run the tagging agent against OpenRouter (the report agent uses
+  `langchain-core` and `langchain-openai` without LangGraph).
 - The frontend's dependencies are pinned in `frontend/package.json` and
   `frontend/package-lock.json`, installed by `npm ci` when `frontend/Dockerfile` builds the
   image (Node 22.12); the list and what each is for is in [frontend](frontend.md).

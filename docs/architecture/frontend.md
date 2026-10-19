@@ -91,10 +91,27 @@ Screens and parts:
   a day failed), fetched again whenever a live `ingestion` event arrives.
   `describeIngestion(status)` in `src/ingestion.ts` writes the sentence.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
+- `runs/RunProgress` — below Explore's plot once a run is started: two lanes, "A · without
+  our data" and "B · with retrieval", each listing its steps ("Writing the report…",
+  "Predicting the range: done (41s)") and version B's tool calls with how many posts each
+  returned, from the run's live events (`run-<id>`). While the run is going it also rereads
+  the run's state (`GET /api/runs/{run_id}`) every three seconds, in case an event was
+  missed; it shows "Measuring…" or the reason a run stopped, and when the run has finished
+  it links to **Read the report** and **See the comparison**.
+- `runs/ReportPage` — the Document screen, `/runs/<id>/report`: the masthead (the range,
+  which version, the model, a link to the comparison), the document's Markdown, and beside
+  it its topics with rank and direction, what it expected for the range, and its reasoning.
+  Version B unless the address says `?version=A`.
+- `runs/ComparisonPage` — the Comparison screen, `/runs/<id>/comparison`: the scoreboard; a
+  table of the range's main topics with each one's measured direction and what A and B said
+  of it (rank and direction), with the topics a version invented in red rows below; and both
+  documents side by side, each linking to its own Document page.
+- `runs/useFinishedRun(runId)` — a finished run's result, or the line to show instead
+  (loading, still going, stopped with its reason, or gone: runs are kept for a day).
 
 Logic, each in its own small module with its own tests:
-- `explore/range.ts` — `DayRange`, `rangeFrom`, `lastDays`, `addDays`,
-  `describeRange` ("12 Oct – 18 Oct 2026 · 1,097 posts"), `shortRange` ("12–18 Oct",
+- `explore/range.ts` — `DayRange`, `rangeFrom`, `lastDays`, `addDays`, `describeDays`
+  ("12 Oct – 18 Oct 2026"), `describeRange` ("12 Oct – 18 Oct 2026 · 1,097 posts"), `shortRange` ("12–18 Oct",
   "28 Sept – 4 Oct") and `dayAndMonth` ("12 Oct"); `DEFAULT_DAYS = 7`, `PRESETS`.
 - `topic/engagement.ts` — `engagementSeries(history, daily)`: one value a day for every
   loaded day, zero on the days the topic was quiet; days outside the history are left off.
@@ -103,6 +120,12 @@ Logic, each in its own small module with its own tests:
   `SERIES_COLOURS` (posts `#0d9488`, comments `#d97706`, upvotes `#3b82f6`, people
   `#db2777`) passed the dataviz palette check (lightness, colour-blind separation and
   contrast) on both the light and the dark page.
+- `runs/runEvents.ts` — `folded(progress, event)`: folds a run's live events into the
+  progress panel's two lanes; `lineFor(event)` writes one line, such as
+  `search(“winterizing”)` and then `→ 15 posts`.
+- `runs/scoreboard.ts` — `scoreboard(a, b)`: each measurement as A against B in words (main
+  topics found, topics invented, order of importance as close, partly or poor with its
+  number, directions right, prediction score, tokens and time, posts looked at).
 - `retrievals/search.ts` — `Agent`, `DEFAULT_AGENT = "report"`, `AGENT_NAMES`,
   `retrievalSearch`.
 - `api/fetchOrThrow.ts` — `fetchOrThrow(url, options)`: every generated call goes through
@@ -157,9 +180,10 @@ body either way.
 
 ## Uses
 [api](api.md) (`GET /api/health`, `GET /api/ingestion`, `GET /api/days`, `GET /api/topics`,
-`GET /api/map`, `GET /api/topics/{topic_id}`, `GET /api/retrievals`), [events](events.md)
-(`GET /api/streams/ingestion/events`), [explore](explore.md), [topics](topics.md) and
-[retrievals](retrievals.md) (the shapes those routes return).
+`GET /api/map`, `GET /api/topics/{topic_id}`, `GET /api/retrievals`, `POST /api/runs`,
+`GET /api/runs/{run_id}`), [events](events.md) (`GET /api/streams/ingestion/events` and
+`GET /api/streams/run-<id>/events`), [explore](explore.md), [topics](topics.md),
+[retrievals](retrievals.md) and [report](report.md) (the shapes those routes return).
 
 ## Used by
 The reviewer's browser.
@@ -168,11 +192,13 @@ The reviewer's browser.
 `API_URL` (default `http://api:8000`) — where `/api` is passed to. Pinned libraries:
 React 18.3.1, TanStack Query 5.62.8, Router 1.170.38 and Table 8.21.3 (the long-standing
 version 8; version 9 came out in August 2026), Zustand 5.0.15, ECharts 6.1.0,
-Tailwind 4.3.3; orval 8.34.0 and MSW 2.15.0 for development. Tests: `npm test` (Vitest,
+Tailwind 4.3.3, react-markdown 10.1.0 (renders the model's Markdown, never raw HTML); orval 8.34.0 and MSW 2.15.0 for development. Tests: `npm test` (Vitest,
 offline: the Explore, Topic detail and Retrieval stats pages run against MSW, a stand-in
 backend, in `src/test/standInBackend.ts`, with each chart swapped for a recorder and
 `EventSource` for a stand-in (one that can announce a finished day on Explore,
 `SilentEventSource` elsewhere); `src/test/openApp.tsx` opens the whole app at an address and
 `src/test/renderInRouter.tsx` renders a part with links inside a router; the status parts
-and `fetchOrThrow` replace `fetch` and `EventSource`).
+and `fetchOrThrow` replace `fetch` and `EventSource`; the Document and Comparison screens
+read a fixed finished run, `FINISHED_RUN` in `src/runs/fixtures.ts`, from the same stand-in
+backend).
 Lint: `npm run lint` (ESLint + Prettier).

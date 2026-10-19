@@ -105,7 +105,9 @@ the store and the `emit` function, which match the small interfaces above.
 [tagging](tagging.md) (`day_tagging` uses the `Emit` interface and encodes each thread with
 `NomicEmbedder.embed_documents`; its search tools embed terms with
 `NomicEmbedder.embed_query`); [bakeoff](bakeoff.md) (`load_embedder`);
-[comparison](comparison.md) and [report](report.md) (the `ComparisonEmbedder` interface).
+[comparison](comparison.md) and [report](report.md) (the `ComparisonEmbedder` interface;
+`worker/report_task.py` also loads a `NomicEmbedder` with `load_embedder`, once per worker
+process, for version B's searches and for matching topic names).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`

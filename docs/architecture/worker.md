@@ -1,11 +1,12 @@
 # worker
 
-**Source:** `backend/src/voices/worker/app.py`, `backend/src/voices/worker/catch_up_task.py`   ·   **Tests:** `backend/tests/test_worker.py`, `backend/tests/test_catch_up_task.py`
+**Source:** `backend/src/voices/worker/app.py`, `backend/src/voices/worker/catch_up_task.py`, `backend/src/voices/worker/report_task.py`   ·   **Tests:** `backend/tests/test_worker.py`, `backend/tests/test_catch_up_task.py`, `backend/tests/test_report_task.py` (the comparison run itself is tested in `backend/tests/report/`)
 
 ## Purpose
 Runs background jobs through Celery, with Celery Beat scheduling them. Its main job is the
 catch-up that fills the database from the archive and sorts each day into topics
 ([atlas plate 40](../atlas/40-backend.md), [ingestion](ingestion.md), [tagging](tagging.md)).
+It also runs each comparison run the page starts ([report](report.md)).
 
 ## Public interface
 - `celery_app` — the Celery application.
@@ -17,6 +18,7 @@ catch-up that fills the database from the archive and sorts each day into topics
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
 - `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` in
   `catch_up_task.py`.
+- `compare_now(run_id, start, end)` and `in_parallel(work, versions)` in `report_task.py`.
 
 ## How it works
 - **When the catch-up runs:** when a worker starts (so first start and every restart catch
@@ -42,21 +44,32 @@ catch-up that fills the database from the archive and sorts each day into topics
   and is not retried. A missing OpenRouter key is not retried either: retrying can't help
   until the key is added and the worker re-created; the reason shows on the page.
 
+- **A comparison run** (`voices.compare`, queued by `POST /api/runs`) runs under the trace id
+  `run-<id>`. Both versions of the report run at once in two threads (`in_parallel`), each in
+  a copy of the run's logging context, so their log lines carry the same trace id. Progress
+  is announced on the run's own stream, `run-<id>`. When it finishes, the result is kept in
+  Redis for a day; if anything fails, the run is marked failed with the reason (which the
+  page shows), `run.failed` is emitted and logged, and the error is raised for the worker's
+  log. The database connection and the embedding model are loaded once per worker process
+  (both stores the run reads, `ExploreStore` and `TaggingStore`, share the one connection);
+  the report model is connected afresh for each run. Details in [report](report.md).
+
 Redis is both the queue and the result store. Celery's own logging is replaced with the
 JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go to
 `worker.jsonl`, Beat's to `beat.jsonl`. Celery keeps retrying the Redis connection at
 startup (`broker_connection_retry_on_startup`), which also silences its startup warning.
 
 ## Uses
-[ingestion](ingestion.md), [tagging](tagging.md), [database](database.md) (`voices.db.store`, `voices.db.tagging_store`), [events](events.md),
+[ingestion](ingestion.md), [tagging](tagging.md), [report](report.md) (`ComparisonRun`, `RunParts`, `RunStore`), [database](database.md) (`voices.db.store`, `voices.db.tagging_store`, `voices.db.explore_store`), [explore](explore.md) (`DayRange`), [events](events.md),
 [logging](logging.md), [environment](environment.md) (settings), Redis.
 
 ## Used by
 [environment](environment.md) runs it twice, as the `worker` and `beat` services. Beat and
-the worker's own start-up queue `voices.catch_up`.
+the worker's own start-up queue `voices.catch_up`; [api](api.md) queues `voices.compare`
+(`POST /api/runs`).
 
 ## Configuration and data
 `REDIS_URL`, `DATABASE_URL`, `MODEL_DIR`, `LOG_DIR`, `SERVICE_NAME`, `OPENROUTER_API_KEY`,
-`TAGGING_MODEL_NAME`. Fixed in code: `RETRY_FAILED_CATCH_UP_SECONDS = 600`,
+`TAGGING_MODEL_NAME`, `REPORT_MODEL_NAME`. Fixed in code: `RETRY_FAILED_CATCH_UP_SECONDS = 600`,
 `LOCK_SECONDS = 12 hours`. Beat keeps its schedule
 file in `/tmp` inside its container. The worker uses under 1 GB while embedding.
