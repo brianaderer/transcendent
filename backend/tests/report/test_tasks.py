@@ -49,4 +49,4 @@ def test_both_tasks_define_direction_as_momentum_within_the_period():
 def test_the_report_asks_for_each_quote_to_link_to_its_post():
     document = write_task(DAYS).answer.model_fields["document"].description
 
-    assert "link" in document and "Markdown" in document
+    assert "[quote](link)" in document

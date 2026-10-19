@@ -9,8 +9,9 @@ from pydantic import BaseModel, Field
 
 from voices.comparison.commitment import NamedTopic, PredictedTopic
 from voices.explore.day_range import DayRange
+from voices.reddit_links import SUBREDDIT
 
-COMMUNITY = "r/sailing"
+COMMUNITY = f"r/{SUBREDDIT}"
 TOPICS_TO_NAME = "five to eight"
 
 

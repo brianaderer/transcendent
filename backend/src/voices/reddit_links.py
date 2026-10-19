@@ -1,6 +1,7 @@
-"""Links to posts on Reddit, built from the ids every stored post keeps, so a report's quotes
-can point at the real post (atlas OPEN-16). The frontend's map builds the same links
-(`frontend/src/explore/links.ts`)."""
+"""The community the app follows (atlas OPEN-3), kept here once, and links to its posts on
+Reddit, built from the ids every stored post keeps, so a report's quotes can point at the real
+post (atlas OPEN-16). The frontend's map builds the same links (`frontend/src/explore/links.ts`).
+"""
 
 SUBREDDIT = "sailing"
 COMMUNITY_URL = f"https://www.reddit.com/r/{SUBREDDIT}/"

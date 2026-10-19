@@ -104,6 +104,7 @@ failed with its reason. The result is kept in Redis for a
 day so the Document and Comparison pages can read it; nothing else is kept.
 
 ## Uses
+`voices.reddit_links` (`SUBREDDIT` for the task wording; `post_link`, used by the store it reads through),
 [comparison](comparison.md) (answer key, `mark`, scores, commitments),
 [prediction](prediction.md) (projected trends), [explore](explore.md) (`DayRange`, the range's
 topics, `ExploreStore`), [tagging](tagging.md) (`TaggingStore`'s search, lookup, `sample_posts` and

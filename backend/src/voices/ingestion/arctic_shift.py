@@ -13,9 +13,9 @@ import httpx
 
 from voices.ingestion.items import Item, comment_from_archive, post_from_archive
 from voices.log import log_event
+from voices.reddit_links import SUBREDDIT
 
 ARCHIVE_URL = "https://arctic-shift.photon-reddit.com"
-SUBREDDIT = "sailing"
 PAGE_SIZE = 100  # the archive's maximum
 ERROR_TEXT_CHARACTERS = 200
 # The archive asks callers to back off with this message, sometimes with status 422.
