@@ -4,7 +4,7 @@
  */
 import type { RunState } from "../api/generated";
 import type { LiveEvent } from "../useLiveEvents";
-import type { Version } from "./versions";
+import { isVersion, type Version } from "./versions";
 
 export type Stage = "waiting" | "write" | "predict" | "done";
 export type Lane = { lines: string[]; stage: Stage; toolCallsThisStage: number };
@@ -56,9 +56,9 @@ export function whyTheRunStopped(progress: Progress, runState?: RunState): strin
 }
 
 function withEventInItsLane(progress: Progress, event: LiveEvent): Progress {
-  const version = event.version as Version | undefined;
+  const version = event.version;
   const line = lineFor(event);
-  if (!version || !line) return progress;
+  if (!isVersion(version) || !line) return progress;
   const lane = progress.lanes[version];
   const stage = stageAfter(lane.stage, event);
   const moved: Lane = {

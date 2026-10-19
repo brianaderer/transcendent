@@ -46,18 +46,22 @@ test("events with no line, such as usage, change nothing", () => {
   expect(folded(STARTING, { type: "usage", version: "A" })).toEqual(STARTING);
 });
 
-test("each lane knows its stage and how many tools it has called", () => {
+test("a lane moves to the step that started", () => {
   const events = [
     { type: "step.started", version: "B", phase: "write" },
-    { type: "tool.called", version: "B", phase: "write", tool: "search", arguments: {} },
-    { type: "tool.called", version: "B", phase: "write", tool: "lookup", arguments: {} },
     { type: "step.started", version: "B", phase: "predict" },
   ];
 
-  const lane = events.reduce(folded, STARTING).lanes.B;
+  expect(events.reduce(folded, STARTING).lanes.B.stage).toBe("predict");
+});
 
-  expect(lane.stage).toBe("predict");
-  expect(lane.toolCallsThisStage).toBe(0);
+test("a lane that is done stays done", () => {
+  const events = [
+    { type: "step.finished", version: "A", phase: "predict", seconds: 9 },
+    { type: "step.started", version: "A", phase: "write" },
+  ];
+
+  expect(events.reduce(folded, STARTING).lanes.A.stage).toBe("done");
 });
 
 test("a new step's tool calls start from zero", () => {
