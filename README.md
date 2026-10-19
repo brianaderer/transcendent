@@ -73,6 +73,9 @@ docker compose version
 You should see a version number from each, such as `Docker version 27.5.1` and
 `Docker Compose version v2.32.4`.
 
+The app needs Docker to have at least 4 GB of memory. In Docker Desktop that's
+**Settings → Resources → Memory**; the default is usually enough, but check it there.
+
 ### 2. Check that Docker can run a container
 
 ```bash
@@ -145,8 +148,7 @@ Arctic Shift archive (a public archive of Reddit, so your computer needs an inte
 connection), prepares each one for search, and then has the AI model sort each day's posts
 into topics through OpenRouter. Fetching and preparing alone took about 40–45 minutes on a
 laptop; sorting into topics adds about ten model calls per day and hasn't been timed yet,
-so allow longer. The worker uses about 1 GB of memory while it runs; give Docker at least 4 GB in
-Docker Desktop's Settings → Resources. You can leave it
+so allow longer. The worker uses about 1 GB of memory while it runs. You can leave it
 running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are
 missing. If it reads **Loading stopped at** a date, something went wrong on that day, and

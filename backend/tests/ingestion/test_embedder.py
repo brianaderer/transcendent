@@ -66,3 +66,22 @@ def test_short_texts_go_at_most_the_batch_limit_at_a_time():
     NomicEmbedder(model).embed_documents(["+1"] * (MAX_BATCH + 1))
 
     assert [len(b) for b in model.batches] == [MAX_BATCH, 1]
+
+
+def test_texts_filling_the_budget_exactly_share_a_batch_and_one_more_character_splits_them():
+    prefix = len("search_document: ")
+    half = BATCH_TEXT_BUDGET // 2 - prefix
+    exact, over = EchoModel(), EchoModel()
+
+    NomicEmbedder(exact).embed_documents(["a" * half, "b" * half])
+    NomicEmbedder(over).embed_documents(["a" * half, "b" * (half + 1)])
+
+    assert [len(b) for b in exact.batches] == [2]
+    assert [len(b) for b in over.batches] == [1, 1]
+
+
+def test_no_texts_returns_no_vectors_without_calling_the_model():
+    model = EchoModel()
+
+    assert NomicEmbedder(model).embed_documents([]) == []
+    assert model.batches == []

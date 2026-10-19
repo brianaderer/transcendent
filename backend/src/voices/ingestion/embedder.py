@@ -12,9 +12,8 @@ DOCUMENT = "search_document: "
 QUERY = "search_query: "
 COMPARISON = "classification: "
 # The model's working memory grows with batch size times the square of the longest text, and
-# the library keeps its high point. Batches capped by total characters keep the worker under
-# 1 GB over many days (measured: fixed batches of 8 climbed past 3.7 GB, and 8 GB in a boot
-# test); short comments still go 32 at a time, which is faster too.
+# the library keeps its high point; batches capped by total characters keep the worker under
+# 1 GB over many days, while short comments still go 32 at a time, which is faster too.
 BATCH_TEXT_BUDGET = 4000
 MAX_BATCH = 32
 
@@ -49,18 +48,20 @@ class NomicEmbedder:
 def _batches(prompts: list[str]) -> list[list[str]]:
     """Consecutive groups holding at most BATCH_TEXT_BUDGET characters and MAX_BATCH texts; a
     single text longer than the budget goes alone."""
-    batches: list[list[str]] = [[]]
+    batches: list[list[str]] = []
     for prompt in prompts:
-        current = batches[-1]
-        if current and (
-            len(current) == MAX_BATCH or _size(current) + len(prompt) > BATCH_TEXT_BUDGET
-        ):
-            batches.append(current := [])
-        current.append(prompt)
-    return [batch for batch in batches if batch]
+        if not batches or not _has_room(batches[-1], prompt):
+            batches.append([])
+        batches[-1].append(prompt)
+    return batches
 
 
-def _size(batch: list[str]) -> int:
+def _has_room(batch: list[str], prompt: str) -> bool:
+    within_budget = _total_characters(batch) + len(prompt) <= BATCH_TEXT_BUDGET
+    return len(batch) < MAX_BATCH and within_budget
+
+
+def _total_characters(batch: list[str]) -> int:
     return sum(len(text) for text in batch)
 
 
