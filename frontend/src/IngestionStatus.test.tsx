@@ -102,3 +102,39 @@ test("streams the steps of the day being loaded, then drops them when the day fi
   act(() => FakeEventSource.latest.send({ type: "day.finished", day }));
   expect(await screen.findByText(/2 of 56 days · 1,000 posts$/)).toBeInTheDocument();
 });
+
+test("a spinner turns while a day is loading", async () => {
+  serveStatus(() => 3);
+  vi.stubGlobal("EventSource", FakeEventSource);
+
+  renderStatus();
+
+  expect(await screen.findByRole("status", { name: "Working" })).toBeInTheDocument();
+});
+
+test("no spinner when nothing is loading", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            days_done: 56,
+            days_wanted: 56,
+            posts: 12726,
+            latest_day: "2026-10-18",
+            running_day: null,
+            failed_day: null,
+            failed_reason: null,
+            backfill: null,
+          }),
+        ),
+    ),
+  );
+  vi.stubGlobal("EventSource", FakeEventSource);
+
+  renderStatus();
+
+  expect(await screen.findByText(/History up to date through 18 Oct/)).toBeInTheDocument();
+  expect(screen.queryByRole("status", { name: "Working" })).not.toBeInTheDocument();
+});

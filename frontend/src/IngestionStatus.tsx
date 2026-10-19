@@ -30,7 +30,10 @@ export function IngestionStatus({ answerShownMs }: { answerShownMs?: number }) {
   if (status.isError) return <p>History status unavailable</p>;
   return (
     <>
-      <p>{describeIngestion(status.data, stepOfTheRunningDay(status.data, step))}</p>
+      <p className="flex items-center gap-1.5">
+        {aCatchUpIsBusy(status.data) && <Spinner />}
+        {describeIngestion(status.data, stepOfTheRunningDay(status.data, step))}
+      </p>
       <SyncNow busy={aCatchUpIsBusy(status.data)} answerShownMs={answerShownMs} />
     </>
   );
@@ -44,4 +47,15 @@ function stepOfTheRunningDay(status: Status, step: DayStep | null): string | nul
 /** Matches `a_catch_up_is_busy` in backend/src/voices/ingestion/sync_now.py. */
 function aCatchUpIsBusy(status: Status): boolean {
   return status.running_day !== null || status.backfill !== null;
+}
+
+/** Turns while the history is being loaded or prepared, so work in progress is visible. */
+function Spinner() {
+  return (
+    <span
+      role="status"
+      aria-label="Working"
+      className="inline-block h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-teal-600 border-t-transparent"
+    />
+  );
 }

@@ -86,14 +86,16 @@ Screens and parts:
   or "Not answering:" with each service that isn't, or "Backend unreachable" when the API
   itself doesn't answer; rechecked every five seconds. `fetchHealth()` and
   `describeHealth(health)` in `src/health.ts`.
-- `IngestionStatus` — how far the history has loaded, as one line for the whole first boot:
+- `IngestionStatus` — with a small spinner (`role="status"`, "Working") beside its line
+  whenever a day is loading or the seed is being prepared, and the Sync now button saying
+  "Syncing…" while its request is out; how far the history has loaded, as one line for the whole first boot:
   on a first boot from the seed, "Preparing the history: 4,120 of 12,682 posts" (then
   threads, then topics) while the worker rebuilds the seed's vectors ([seed](seed.md),
   the status's `backfill`); then "Loading r/sailing history: 23 of 56
   days · 9,412 posts", then "History up to date through 17 Oct"; "Waiting to start loading
   r/sailing history" before the first day; "Loading stopped at 26 Aug: " and the reason when
   a day failed. While a day loads, the line ends with the step it has reached, from the
-  live `day.step` events: "Loading 18 Oct · fetching posts", "· embedding 204 posts",
+  live `day.step` events: "Loading 18 Oct · fetching posts", "· checking 180 replies for agreement", "· embedding 204 posts",
   "· grouping 12 threads", "· tagging: 3 of 7 groups decided" (counted off by
   `decision.made`), "· saving"; on a first start the step follows "Loading r/sailing
   history: 3 of 56 days · 1,751 posts". `foldedStep(step, event)` and `describeStep(step)` in

@@ -39,8 +39,10 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
 - `catch_up.announce_step(emit, day, step, **numbers)` — sends `day.step` as a step of the
   day's work begins ([events](events.md)); used here and by [tagging](tagging.md).
 - `day.DayIngestion(archive, embedder, agreement, store, emit).process(day)` — one day,
-  announcing `day.step` `fetching` before it asks the archive and `embedding` (with
-  `posts`, the items kept to embed) before it embeds, and returning counts
+  announcing `day.step` `fetching` before it asks the archive, `checking` (with `replies`,
+  the comments) before it checks them for short agreeing replies, which runs the model over
+  every comment and is the day's slowest step, and `embedding` (with `posts`, the items kept
+  to embed) before it embeds, and returning counts
   (`fetched`, `dropped_unwanted`, `dropped_as_noise` (items on a thread already deleted as
   noise, atlas OPEN-31), `dropped_without_thread`, `dropped_orphan_upvotes`,
   `stored`, `threads_added`, `upvotes`), read off what was left after each step. Each

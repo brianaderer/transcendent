@@ -13,6 +13,7 @@ test("each step names what it is working through", () => {
   const said = (event: object) => describeStep(fold({ type: "day.step", day: DAY, ...event })!);
 
   expect(said({ step: "fetching" })).toBe("fetching posts");
+  expect(said({ step: "checking", replies: 180 })).toBe("checking 180 replies for agreement");
   expect(said({ step: "embedding", posts: 204 })).toBe("embedding 204 posts");
   expect(said({ step: "grouping", threads: 12 })).toBe("grouping 12 threads");
   expect(said({ step: "tagging", groups: 7 })).toBe("tagging: 0 of 7 groups decided");

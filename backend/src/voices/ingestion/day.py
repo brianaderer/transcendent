@@ -87,13 +87,16 @@ class DayIngestion:
         self.emit = emit
 
     def process(self, day: date) -> dict[str, int]:
-        """Fetch, filter, fold and embed one day, save it, and say what happened. Fetching
-        and embedding, the slow steps, are announced live as they begin."""
+        """Fetch, filter, fold and embed one day, save it, and say what happened. Fetching,
+        checking replies for agreement and embedding, the slow steps, are announced live as
+        they begin."""
         announce_step(self.emit, day, "fetching")
         fetched = self._fetch(day)
         wanted = [item for item in fetched if not is_unwanted(item)]
         off_noise_threads = self._without_noise_threads(wanted)
         threads, threaded = self._attach_threads(off_noise_threads)
+        replies = sum(1 for item in threaded if item.kind == "comment")
+        announce_step(self.emit, day, "checking", replies=replies)
         agreeing, kept = self._split_agreeing(threaded)
         upvotes = self._upvotes_for_parents(agreeing, kept)
         announce_step(self.emit, day, "embedding", posts=len(kept))

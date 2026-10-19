@@ -20,7 +20,7 @@ are the permanent record.
 Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.step` (as each
 step of the day begins: `day`, `step`, and how much the step has to get through:
-`fetching`; `embedding` with `posts`, the posts and comments to embed; `grouping` with
+`fetching`; `checking` with `replies`, the comments checked for agreement; `embedding` with `posts`, the posts and comments to embed; `grouping` with
 `threads`, the threads due to be encoded and grouped; `tagging` with `groups`, the groups
 the agent is to decide, each answered by a `decision.made`; `applying`, saving the
 decisions and rebuilding engagement; sent by `announce_step` in

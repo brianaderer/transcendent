@@ -52,7 +52,7 @@ the version or day, and the body; there is no running number.)*
 | `measurement.done` | A comparison measurement is computed | name and both scores |
 | `catch_up.started` / `catch_up.finished` | A catch-up begins or ends | how many days it covers |
 | `day.started` / `day.finished` / `day.failed` | Catch-up progress | day, progress ("4 of 56"), the day's counts or the error |
-| `day.step` | Each step within a day begins | day, step: `fetching`, `embedding` (with `posts`), `grouping` (with `threads`), `tagging` (with `groups`; the `decision.made` events count them off), `applying`. The top bar's loading line ends with the step: "Loading 18 Oct · tagging: 3 of 7 groups decided" |
+| `day.step` | Each step within a day begins | day, step: `fetching`, `checking` (with `replies`), `embedding` (with `posts`), `grouping` (with `threads`), `tagging` (with `groups`; the `decision.made` events count them off), `applying`. The top bar's loading line ends with the step: "Loading 18 Oct · tagging: 3 of 7 groups decided" |
 | `backfill.progress` | The first boot rebuilds the seed's vectors ([07](../07-boot-data.md)) | what is being prepared (posts, threads, topics), how many done of how many |
 | `map.ready` | The dot plot's squashing for a newly selected range is done | the range, each post's position |
 | `usage` | After each model call | tokens in and out, running cost *(as built: tokens in and out once per step; no cost)* |

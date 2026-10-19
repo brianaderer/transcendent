@@ -26,7 +26,7 @@ export function SyncNow({ busy, answerShownMs = ANSWER_SHOWN_MS }: SyncNowProps)
         onClick={() => sync.mutate()}
         className="rounded border border-slate-300 px-2 py-0.5 font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
       >
-        Sync now
+        {sync.isPending ? "Syncing…" : "Sync now"}
       </button>
       {sync.data && <p>{describeSync(sync.data)}</p>}
       {sync.isError && <p className="text-red-600">Sync now couldn't reach the worker</p>}

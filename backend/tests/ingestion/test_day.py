@@ -97,11 +97,18 @@ def test_each_step_is_announced_as_it_begins_with_how_many_posts_it_embeds():
     def emit(event_type, **body):
         happened.append((event_type, body))
 
-    DayIngestion(archive, WatchedEmbedder(), AgreesWithPlusOne(), FakeStore(), emit).process(DAY)
+    class WatchedAgreement(AgreesWithPlusOne):
+        def agreeing(self, texts):
+            happened.append("replies checked")
+            return super().agreeing(texts)
+
+    DayIngestion(archive, WatchedEmbedder(), WatchedAgreement(), FakeStore(), emit).process(DAY)
 
     assert happened == [
         ("day.step", {"day": "2026-10-15", "step": "fetching"}),
         "archive asked",
+        ("day.step", {"day": "2026-10-15", "step": "checking", "replies": 2}),
+        "replies checked",
         ("day.step", {"day": "2026-10-15", "step": "embedding", "posts": 2}),
         "embedded",
     ]

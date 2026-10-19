@@ -5,7 +5,7 @@
  */
 import type { LiveEvent } from "./useLiveEvents";
 
-export type StepName = "fetching" | "embedding" | "grouping" | "tagging" | "applying";
+export type StepName = "fetching" | "checking" | "embedding" | "grouping" | "tagging" | "applying";
 
 export type DayStep = {
   day: string;
@@ -16,6 +16,7 @@ export type DayStep = {
 
 /** The field each step's `day.step` event carries its number in. */
 const COUNTED_AS: Partial<Record<StepName, string>> = {
+  checking: "replies",
   embedding: "posts",
   grouping: "threads",
   tagging: "groups",
@@ -47,6 +48,8 @@ export function describeStep({ step, count, decided }: DayStep): string {
   switch (step) {
     case "fetching":
       return "fetching posts";
+    case "checking":
+      return `checking ${count} replies for agreement`;
     case "embedding":
       return `embedding ${count} posts`;
     case "grouping":
