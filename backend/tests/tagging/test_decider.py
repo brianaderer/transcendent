@@ -89,6 +89,17 @@ def test_a_reply_in_plain_text_gets_a_reminder_to_decide():
     assert "Decide now" in str(model.seen[-1][-1].content)
 
 
+def test_by_default_the_agent_gets_three_look_ups_then_must_decide():
+    tools = FakeTools()
+    look_ups = [call("search", {"term": f"t{n}"}, str(n)) for n in range(3)]
+    model = ScriptedModel([*look_ups, call("Decision", DECIDE, "3")])
+
+    ToolLoopDecider(model, "scripted", tools).decide(BRIEF)
+
+    assert len(tools.calls) == 3
+    assert model.tool_choice == "Decision"
+
+
 def test_no_decision_even_when_forced_stops_with_an_error():
     model = ScriptedModel([AIMessage(content="thinking"), AIMessage(content="still thinking")])
 

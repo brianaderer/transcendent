@@ -42,7 +42,7 @@ which the `setup` service needs.
 ## Used by
 - [api](api.md), [worker](worker.md) and [database](database.md) (setup) read their
   settings through `voices.config.load_settings()`; the worker passes
-  `OPENROUTER_API_KEY` and `MODEL_NAME` on to [tagging](tagging.md).
+  `OPENROUTER_API_KEY` and `TAGGING_MODEL_NAME` on to [tagging](tagging.md).
 - [ingestion](ingestion.md) (the catch-up) and [api](api.md) (`GET /api/ingestion`) read
   `voices.config.HISTORY_DAYS`.
 - The README's install and run steps.
@@ -51,9 +51,9 @@ which the `setup` service needs.
 - `.env` (copied from `.env.example`): `PORT` (default 5173), the port the app is opened
   on; `OPENROUTER_API_KEY`, needed from the first start (tagging each loaded day calls the
   model; without it loading stops at the first day with the reason on the page).
-  `MODEL_NAME` (default `anthropic/claude-sonnet-5.5`, set in `voices/config.py`) is not
-  in `.env.example`; adding a `MODEL_NAME=` line to `.env` switches to another OpenRouter
-  model. Both reach the backend containers through `env_file: .env` in `compose.yaml`,
+  `TAGGING_MODEL_NAME` (default `anthropic/claude-haiku-5.5`, set in `voices/config.py`)
+  is not in `.env.example`; adding a `TAGGING_MODEL_NAME=` line to `.env` switches tagging
+  to another OpenRouter model. Both reach the backend containers through `env_file: .env` in `compose.yaml`,
   which is read when a container is created: after editing `.env`, run `docker compose up`
   again (it re-creates the containers whose settings changed); `docker compose restart`
   keeps the old values.

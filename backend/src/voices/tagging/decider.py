@@ -15,7 +15,7 @@ from pydantic import ValidationError
 from voices.log import log_event
 from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 
-MAX_TURNS_BEFORE_DECIDING = 6  # enough to read around a cluster; then it must decide
+MAX_TURNS_BEFORE_DECIDING = 3  # look-ups allowed before it must decide; capped for cost
 DECIDE = "Decision"
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.

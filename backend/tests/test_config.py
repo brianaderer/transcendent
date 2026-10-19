@@ -23,3 +23,9 @@ def test_service_name_comes_from_the_environment(monkeypatch):
     monkeypatch.setenv("SERVICE_NAME", "beat")
 
     assert load_settings().service_name == "beat"
+
+
+def test_tagging_runs_on_claude_haiku_unless_the_environment_names_another(monkeypatch):
+    monkeypatch.delenv("TAGGING_MODEL_NAME", raising=False)
+
+    assert load_settings().tagging_model_name == "anthropic/claude-haiku-5.5"
