@@ -15,6 +15,7 @@ from voices.tagging.decisions import (
     TypicalPost,
     settle_mints,
 )
+from voices.tagging.graph import Announce
 from voices.tagging.grouping import EncodedThread, Group, group_by_meaning
 from voices.tagging.keywords import distinctive_keywords
 from voices.tagging.threads import DueThread, thread_text
@@ -43,7 +44,7 @@ class DocumentEmbedder(Protocol):
     def embed_documents(self, texts: Sequence[str]) -> list[list[float]]: ...
 
 
-DecideAll = Callable[[date, list[ClusterBrief]], list[DecidedCluster]]
+DecideAll = Callable[[date, list[ClusterBrief], Announce], list[DecidedCluster]]
 GroupsOf = Callable[[Sequence[EncodedThread]], list[Group]]
 
 
@@ -66,8 +67,8 @@ class DayTagging:
         texts = {t.source_id: thread_text(t.post, t.replies) for t in self.store.threads_due(day)}
         groups = self.groups_of(self._encoded_and_kept(texts))
         briefs = [self._brief(day, f"group-{n}", g) for n, g in enumerate(groups, start=1)]
-        settled = settle_mints(self.decide_all(day, briefs))
-        self._announce(settled)
+        settled = settle_mints(self.decide_all(day, briefs, self._announce))
+        self._announce_merges(settled)
         counts = self.store.apply_decisions(day, settled, self._keywords(settled, texts))
         expired = self.store.expire_noise(day)
         self.store.rebuild_engagement(window_start(day), day)
@@ -103,15 +104,20 @@ class DayTagging:
             for m in mints
         }
 
-    def _announce(self, settled: list[DecidedCluster]) -> None:
+    def _announce(self, item: DecidedCluster) -> None:
+        """Announced the moment the agent decides, so the page sees decisions one by one."""
+        self.emit(
+            "decision.made",
+            group=item.brief.name,
+            threads=len(item.brief.member_ids),
+            action=item.decision.action,
+            topic_id=item.decision.topic_id,
+            label=item.decision.label,
+            reason=item.decision.reason,
+        )
+
+    def _announce_merges(self, settled: list[DecidedCluster]) -> None:
+        """Two groups minting the same new topic are only found once all have decided."""
         for item in settled:
-            self.emit(
-                "decision.made",
-                group=item.brief.name,
-                threads=len(item.brief.member_ids),
-                action=item.decision.action,
-                topic_id=item.decision.topic_id,
-                label=item.decision.label,
-                merged_into=item.merged_into,
-                reason=item.decision.reason,
-            )
+            if item.merged_into:
+                self.emit("mint.merged", group=item.brief.name, into=item.merged_into)

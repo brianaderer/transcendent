@@ -6,7 +6,7 @@ from datetime import date
 from voices.db.tagging_store import TaggingStore
 from voices.tagging.decider import ToolLoopDecider
 from voices.tagging.decisions import ClusterBrief, DecidedCluster
-from voices.tagging.graph import decide_all
+from voices.tagging.graph import Announce, decide_all
 from voices.tagging.model import connect_model
 from voices.tagging.tools import QueryEmbedder, TaggingTools
 
@@ -18,9 +18,11 @@ class TaggingAgent:
         self.api_key = api_key
         self.model_name = model_name
 
-    def decide(self, day: date, briefs: Sequence[ClusterBrief]) -> list[DecidedCluster]:
+    def decide(
+        self, day: date, briefs: Sequence[ClusterBrief], announce: Announce
+    ) -> list[DecidedCluster]:
         """Decides every cluster of the day. Without a key this raises MissingModelKey, with a
         message saying where the key goes."""
         model = connect_model(self.api_key, self.model_name)
         tools = TaggingTools(self.store, self.embedder, day)
-        return decide_all(ToolLoopDecider(model, self.model_name, tools), list(briefs))
+        return decide_all(ToolLoopDecider(model, self.model_name, tools), list(briefs), announce)

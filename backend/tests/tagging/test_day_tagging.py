@@ -60,9 +60,12 @@ def one_group_each(threads):
 
 
 def decide(action):
-    def decide_all(day, briefs):
+    def decide_all(day, briefs, announce):
         decision = Decision(action=action, label="x", reason="r")
-        return [DecidedCluster(b, decision, "p", "m") for b in briefs]
+        decided = [DecidedCluster(b, decision, "p", "m") for b in briefs]
+        for item in decided:
+            announce(item)
+        return decided
 
     return decide_all
 

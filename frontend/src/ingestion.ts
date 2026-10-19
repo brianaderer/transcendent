@@ -37,6 +37,10 @@ export function describeIngestion(status: IngestionStatus): string {
     return `Loading stopped at ${shortDate(status.failed_day)}: ${why}`;
   }
   if (status.days_done >= status.days_wanted && status.latest_day) {
+    if (status.running_day) {
+      // The daily run fetching a new day: the history is full, so name the day being loaded.
+      return `Loading ${shortDate(status.running_day)} · history up to date through ${shortDate(status.latest_day)}`;
+    }
     return `History up to date through ${shortDate(status.latest_day)} · ${count(status.posts)} posts`;
   }
   if (status.days_done === 0 && !status.running_day) {

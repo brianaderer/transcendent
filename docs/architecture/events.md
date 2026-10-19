@@ -20,8 +20,10 @@ are the permanent record.
 Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.finished`
 (with the day's counts, from loading and tagging together), `day.failed` (with the error,
-as the error's message), and `decision.made` (one per group of threads the tagging agent decides:
-`group`, `threads`, `action`, `topic_id`, `label`, `merged_into`, `reason`), and, on a first
+as the error's message), `decision.made` (one per group of threads, sent the moment the tagging
+agent decides it, from inside the decision's own branch: `group`, `threads`, `action`,
+`topic_id`, `label`, `reason`), `mint.merged` (after all of a day's groups are decided, one per
+second mint of the same new topic: `group`, `into`), and, on a first
 boot from the seed, `backfill.progress` (`what`: `posts`, `threads` or `topics`, `done`,
 `total`; one as each step starts and one after each saved batch) and `backfill.finished`
 ([seed](seed.md)).

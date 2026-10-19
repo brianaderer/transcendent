@@ -63,3 +63,15 @@ test("says when no reason was recorded for a failed day", () => {
 
   expect(describeIngestion(status)).toBe("Loading stopped at 26 Aug: the reason wasn't recorded");
 });
+
+test("says a day is loading when the daily run fetches a new one, though the history is full", () => {
+  const status = {
+    ...base,
+    days_done: 56,
+    days_wanted: 56,
+    latest_day: "2026-10-17",
+    running_day: "2026-10-18",
+  };
+
+  expect(describeIngestion(status)).toBe("Loading 18 Oct · history up to date through 17 Oct");
+});

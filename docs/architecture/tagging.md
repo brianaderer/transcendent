@@ -97,8 +97,10 @@ For day D (atlas OPEN-29):
    argument or an unknown tool is answered with an explanation, not an error. Search and lookup hits are recorded in
    `retrieval_events` as the tagging agent's (run `tagging-YYYY-MM-DD`). Every model turn
    and everything sent back to the model is logged in full (`tagging.turn`, `tagging.answer`,
-   `tagging.decided`). Each decision is announced live as
-   `decision.made`.
+   `tagging.decided`). Each decision is announced live as `decision.made` the moment it is
+   made (`graph.decide_all` takes an `announce` function and calls it inside each decision's
+   branch), so the page sees them one by one; two mints merged into one new topic are
+   announced afterwards as `mint.merged`.
 6. **Settling.** If two groups mint topics whose centres are 0.90 alike or closer, the
    second joins the first's new topic. Applying relies on this order; a merged mint whose
    twin wasn't minted first is an error, not a silent skip.
