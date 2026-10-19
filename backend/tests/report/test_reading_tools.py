@@ -13,18 +13,16 @@ WINDOW = DayRange(date(2026, 10, 12), date(2026, 10, 18))
 
 
 class FakeReader:
-    """Thirty posts written in the window; hands out at most `in_store` of them in all."""
+    """`in_store` posts written in the window (thirty unless told otherwise), handed out in
+    order, never one already given."""
 
     def __init__(self, in_store=30):
         self.posts = [{"post_id": f"p{n}", "text": f"Post {n}"} for n in range(in_store)]
-        self.asked, self.recorded = [], []
+        self.asked = []
 
-    def sample_posts(self, first_day, last_day, limit, seed, exclude_ids):
-        self.asked.append((first_day, last_day, limit, seed, list(exclude_ids)))
+    def sample_posts(self, days, limit, seed, exclude_ids):
+        self.asked.append((days, limit, seed, list(exclude_ids)))
         return [p for p in self.posts if p["post_id"] not in exclude_ids][:limit]
-
-    def record_retrievals(self, post_ids, run, agent, tool):
-        self.recorded.append(list(post_ids))
 
 
 def reading(reader):
@@ -36,7 +34,7 @@ def test_reading_hands_back_a_batch_of_whole_posts_from_the_window_in_the_runs_s
 
     result = reading(reader).run("read_posts", {})
 
-    assert reader.asked == [(WINDOW.start, WINDOW.end, READ_BATCH, "report-run-1", [])]
+    assert reader.asked == [(WINDOW, READ_BATCH, "report-run-1", [])]
     assert result.post_ids == [f"p{n}" for n in range(READ_BATCH)]
     assert json.loads(result.text)[0]["text"] == "Post 0"
 
@@ -48,7 +46,7 @@ def test_a_second_read_skips_the_posts_already_given():
     tools.run("read_posts", {})
     second = tools.run("read_posts", {})
 
-    assert reader.asked[1][4] == [f"p{n}" for n in range(READ_BATCH)]
+    assert reader.asked[1][3] == [f"p{n}" for n in range(READ_BATCH)]
     assert second.post_ids[0] == f"p{READ_BATCH}"
 
 
@@ -64,12 +62,15 @@ def test_once_the_budget_is_spent_the_agent_is_told_to_answer_and_the_store_is_n
     assert len(reader.asked) == READ_BUDGET // READ_BATCH
 
 
-class ShortFirstReader(FakeReader):
-    """Has only three posts for the first read, as a quiet day might."""
+FIRST_READ_FOUND = 3
 
-    def sample_posts(self, first_day, last_day, limit, seed, exclude_ids):
-        posts = super().sample_posts(first_day, last_day, limit, seed, exclude_ids)
-        return posts[:3] if len(self.asked) == 1 else posts
+
+class ShortFirstReader(FakeReader):
+    """Has only FIRST_READ_FOUND posts for the first read, as a quiet day might."""
+
+    def sample_posts(self, days, limit, seed, exclude_ids):
+        posts = super().sample_posts(days, limit, seed, exclude_ids)
+        return posts[:FIRST_READ_FOUND] if len(self.asked) == 1 else posts
 
 
 def test_the_last_read_asks_only_for_what_is_left_of_the_budget():
@@ -79,7 +80,8 @@ def test_the_last_read_asks_only_for_what_is_left_of_the_budget():
     for _ in range(3):
         tools.run("read_posts", {})
 
-    assert [asked[2] for asked in reader.asked] == [READ_BATCH, READ_BATCH, READ_BUDGET - 3 - 5]
+    expected = READ_BUDGET - FIRST_READ_FOUND - READ_BATCH
+    assert [asked[1] for asked in reader.asked] == [READ_BATCH, READ_BATCH, expected]
 
 
 def test_a_day_inside_the_window_narrows_the_read_to_that_day():
@@ -87,7 +89,7 @@ def test_a_day_inside_the_window_narrows_the_read_to_that_day():
 
     reading(reader).run("read_posts", {"day": "2026-10-14"})
 
-    assert reader.asked[0][:2] == (date(2026, 10, 14), date(2026, 10, 14))
+    assert reader.asked[0][0] == DayRange(date(2026, 10, 14), date(2026, 10, 14))
 
 
 def test_a_day_outside_the_window_or_not_a_date_is_explained_not_read():
@@ -106,14 +108,6 @@ def test_no_posts_left_in_the_period_is_said_plainly():
     result = reading(FakeReader(in_store=0)).run("read_posts", {})
 
     assert "No more posts" in result.text and result.post_ids == []
-
-
-def test_reads_are_not_counted_as_retrievals():
-    reader = FakeReader()
-
-    reading(reader).run("read_posts", {})
-
-    assert reader.recorded == []
 
 
 def test_only_read_posts_is_offered_and_retrieval_tools_are_refused():

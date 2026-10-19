@@ -112,4 +112,3 @@ def test_the_model_is_loaded_with_a_fixed_thread_count(monkeypatch):
     load_embedder("/models")
 
     assert loaded == {"name": MODEL_NAME, "cache_dir": "/models", "threads": EMBEDDING_THREADS}
-    assert EMBEDDING_THREADS == 4

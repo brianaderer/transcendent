@@ -17,7 +17,8 @@ It also runs each comparison run the page starts ([report](report.md)).
   ten minutes later.
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
 - `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` and
-  `backfill_then_catch_up(backfill, catch_up, now)` in `catch_up_task.py`.
+  `backfill_then_catch_up(backfill, catch_up, now)` in `catch_up_task.py`; `backfill` is
+  anything with `run()` (`Backfills`) and `catch_up` anything with `run(now)` (`CatchesUp`).
 - `compare_now(run_id, start, end)` and `run_and_keep_result(comparison, record, job)` in
   `report_task.py`. `RunJob` is the run's id and range;
   `RunRecord` is where its outcome goes (the `RunStore` and the run's stream); `Comparison`
@@ -43,7 +44,9 @@ It also runs each comparison run the page starts ([report](report.md)).
   ([ingestion](ingestion.md)) and then tagged ([tagging](tagging.md)); it is marked done only
   when both have happened; the day's counts are the two sets of counts together. The
   embedding model, database and archive connections, and the settings (including the
-  OpenRouter key), are read once per worker process. The chat model is connected per day,
+  OpenRouter key), are read once per worker process: `_catch_up_runner` connects what the
+  steps share (settings, store, embedding model, Redis, the `ingestion` event stream), then
+  builds the day's loading, its tagging and the backfill from it. The chat model is connected per day,
   so a missing key fails the day (with a message saying where the key goes) rather than the
   worker's start. A key added to `.env` reaches the worker only when its container is
   created again, which `docker compose up` does when `.env` has changed;

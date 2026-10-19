@@ -107,9 +107,10 @@ structure stay as they were.
   Each step answers through its own answer tool, `Report` (the document in Markdown and its
   list of topics with rank and direction) or `Prediction` (the expected topics with
   directions, and two or three sentences of reasoning); these are the committed lists of
-  OPEN-25. Both versions are told, in the same words, to write even with no tools or data,
-  from what the model knows of the community and the season, and the report asks, for each
-  topic, where it looks to be heading next and why.
+  OPEN-25. Both versions are told, in the same words, to write from what they can see in the
+  community's posts with their tools and from what the model knows of the community and the
+  season, and to say plainly where the evidence is thin; the report asks, for each topic,
+  where it looks to be heading next and why.
 - **What version A's tool sees:** the same days as version B's tools (the range while
   writing, the 28 days before it while predicting). **read_posts** takes an optional day
   inside those days and returns up to 5 whole posts written then, each with its author, date

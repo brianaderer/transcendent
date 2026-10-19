@@ -17,7 +17,8 @@ page as it goes.
   its way into the seed. It keeps names as they are: whether usernames go into a public
   repo is atlas OPEN-37, still open, and a decision is a change to this one function.
 - `voices.db.seed_export.SEED_TABLES` — what is seeded: each table with its columns written
-  out, the SQL that gives each value, which rows and in what order. `PROMPT_LEFT_OUT` is the
+  out, the SQL that gives each value, which rows and in what order (topics, and their daily
+  engagement, only for topics some thread belongs to: `TOPICS_WITH_THREADS`). `PROMPT_LEFT_OUT` is the
   text a decision's `prompt` carries in the seed.
 - `voices.db.seed_load.load_seed(connection, data_file)` — loads a data file into an empty
   database, for the seed migration to call. Raises `UnsafeName` for a table or column name
@@ -30,10 +31,12 @@ page as it goes.
 - `voices.backfill.backfill.Backfill(store, embedder, progress, emit, forget_maps, batch_size=ROWS_PER_BATCH).run()`
   — fills every missing vector, then forgets the kept maps; does nothing at all when no
   vector is missing and no earlier backfill was left unfinished. It depends on small
-  interfaces (`BackfillStore`, `DocumentEmbedder`, `Progress`, the ingestion `Emit`, and a
+  interfaces (`VectorBackfillStore`, `DocumentEmbedder`, `Progress`, the ingestion `Emit`, and a
   plain function to forget the maps), so tests pass stand-ins. Its shapes: `Tally(done,
   total)` with `missing`, `PostText(source_id, body)`, `UnencodedThread(source_id,
-  first_seen_on, stage)`.
+  first_seen_on, stage)`. Raises `ThreadsNotFound` when `threads_as_of` doesn't give back
+  exactly the threads asked for, since those threads would otherwise stay unencoded and be
+  asked for forever.
 - `voices.db.backfill_store.BackfillStore(engine)` — `posts_tally`, `threads_tally`,
   `topics_tally` (rows with their vector, of all), `posts_without_embeddings(limit)` and
   `threads_without_embeddings(limit)` (in id order), `save_post_embeddings`,

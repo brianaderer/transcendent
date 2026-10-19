@@ -23,12 +23,7 @@ NOTHING_LEFT_TO_READ = "No posts left to read; answer now with what you have."
 
 class PostReader(Protocol):
     def sample_posts(
-        self,
-        first_day: date,
-        last_day: date,
-        limit: int,
-        seed: str,
-        exclude_ids: Sequence[str],
+        self, days: DayRange, limit: int, seed: str, exclude_ids: Sequence[str]
     ) -> list[dict]: ...
 
 
@@ -37,7 +32,7 @@ class ReadingTools:
         self.reader = reader
         self.window = window
         self.seed = seed  # the run's, so the same run reads the same posts
-        self.given: list[str] = []
+        self.ids_given: list[str] = []
 
     @property
     def schemas(self) -> list[dict]:
@@ -46,7 +41,7 @@ class ReadingTools:
     def run(self, name: str, arguments: dict) -> ToolResult:
         if name != READ_POSTS:
             return said(f"There is no tool named {name}; use {READ_POSTS}.")
-        if len(self.given) >= READ_BUDGET:
+        if len(self.ids_given) >= READ_BUDGET:
             return said(NOTHING_LEFT_TO_READ)
         try:
             days = self._days_asked(arguments.get("day"))
@@ -69,12 +64,12 @@ class ReadingTools:
         return DayRange(asked, asked)
 
     def _read(self, days: DayRange) -> ToolResult:
-        limit = min(READ_BATCH, READ_BUDGET - len(self.given))
-        posts = self.reader.sample_posts(days.start, days.end, limit, self.seed, self.given)
+        limit = min(READ_BATCH, READ_BUDGET - len(self.ids_given))
+        posts = self.reader.sample_posts(days, limit, self.seed, self.ids_given)
         if not posts:
             return said("No more posts in that period.")
         post_ids = [post["post_id"] for post in posts]
-        self.given.extend(post_ids)
+        self.ids_given.extend(post_ids)
         return ToolResult(json.dumps(posts, default=str), post_ids)
 
 
