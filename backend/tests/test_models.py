@@ -56,3 +56,8 @@ def test_daily_engagement_has_one_row_per_topic_per_day():
     keys = [column.name for column in table("topic_daily_engagement").primary_key]
 
     assert keys == ["topic_id", "day"]
+
+
+def test_a_topic_centre_may_be_missing_until_the_backfill_rebuilds_it():
+    """The seed brings topics without their centres (atlas plate 07)."""
+    assert table("topics").c.centroid.nullable
