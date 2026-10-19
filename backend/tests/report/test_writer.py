@@ -28,9 +28,14 @@ class ScriptedModel:
         return self.replies.pop(0)
 
 
+def schema(name):
+    return {"type": "function", "function": {"name": name, "parameters": {"type": "object"}}}
+
+
 class FakeTools:
-    def __init__(self):
+    def __init__(self, offered=("search",)):
         self.calls = []
+        self.schemas = [schema(name) for name in offered]
 
     def run(self, name, arguments):
         self.calls.append(name)
@@ -84,6 +89,14 @@ def test_with_tools_the_model_may_search_first_and_each_call_is_streamed():
     assert kinds[:2] == ["tool.called", "tool.returned"]
     assert events.seen[1][1]["posts"] == 2
     assert written.tool_calls == 1
+
+
+def test_the_model_is_offered_only_the_tools_its_tools_object_carries():
+    model = ScriptedModel([call("Report", REPORT)])
+
+    ReportWriter(model, FakeTools(offered=("read_posts",)), Events()).write(write_task(DAYS))
+
+    assert model.offered == [["read_posts", "Report"]]
 
 
 def test_tokens_and_time_are_counted_across_turns():

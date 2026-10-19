@@ -26,3 +26,7 @@ def test_both_tasks_say_to_answer_even_without_tools_or_data():
     for task in (write_task(DAYS), predict_task(DAYS)):
         assert "even with no tools" in task.instructions
         assert "what you know" in task.instructions
+
+
+def test_the_report_asks_where_each_topic_is_heading_next_and_why():
+    assert "where it looks to be heading next, and why" in write_task(DAYS).instructions

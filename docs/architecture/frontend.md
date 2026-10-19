@@ -100,9 +100,9 @@ Screens and parts:
   with a progress bar fed by the live events (`laneProgress`: waiting, writing the report,
   predicting the range, done; each phase's share fills with its tool calls, up to the writer's
   cap) and a label such as "Writing the report · 3 tool calls"; under it,
-  "A · without our data" and "B · with retrieval", each listing its steps ("Writing the report…",
-  "Predicting the range: done (41s)") and version B's tool calls with how many posts each
-  returned, from the run's live events (`runStream(runId)`, `run-<id>`). While the run is going it also rereads
+  "A · without retrieval" and "B · with retrieval", each listing its steps ("Writing the report…",
+  "Predicting the range: done (41s)") and each tool call with how many posts it returned
+  (version A's `read_posts`, version B's searches and lookups), from the run's live events (`runStream(runId)`, `run-<id>`). While the run is going it also rereads
   the run's state (`GET /api/runs/{run_id}`) every three seconds, in case an event was
   missed; it shows "Measuring…" or the reason a run stopped, and when the run has finished
   it links to **Read the report** and **See the comparison**.
@@ -113,7 +113,8 @@ Screens and parts:
 - `runs/ComparisonPage` — the Comparison screen, `/runs/<id>/comparison`: the scoreboard; a
   table of the range's main topics with each one's measured direction and what A and B said
   of it (rank and direction), with the topics a version invented in red rows below; and both
-  documents side by side, each linking to its own Document page.
+  documents side by side under a header saying the instructions are identical and that
+  version A reads a few posts while only version B searches, each linking to its own Document page.
 - `runs/useFinishedRun(runId)` — a finished run's result, or the line to show instead
   (loading, still going, stopped with its reason, or gone: runs are kept for a day).
 
@@ -135,7 +136,7 @@ Logic, each in its own small module with its own tests:
   live event's reason if one came, else the reason kept with the run's state, else null;
   `runStream(runId)` — the run's stream name, which must match the backend's `stream_of`.
 - `runs/versions.ts` — `Version` (`"A" | "B"`), `VERSIONS` (each version's short name, as in
-  "Written without our data", and its long column title), `VERSION_ORDER` and `isVersion`;
+  "Written without retrieval", and its long column title), `VERSION_ORDER` and `isVersion`;
   every page that names a version takes its words from here.
 - `runs/scoreboard.ts` — `scoreboard(a, b)`: each measurement as A against B in words (main
   topics found, topics invented, order of importance as close, partly or poor with its

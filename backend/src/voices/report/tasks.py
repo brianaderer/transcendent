@@ -1,5 +1,6 @@
 """What the report agent is asked (atlas plates 50, 60 and 70). Both versions get exactly
-these words; the only difference between them is whether tools come with them."""
+these words; the only difference between them is the tools that come with them: version A's
+reading a few posts, version B's retrieval (OPEN-39)."""
 
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -51,10 +52,11 @@ about sailing, for {_spoken(days.start)} to {_spoken(days.end)}.
 
 Say what the community talked about in those days: name the {TOPICS_TO_NAME} main topics in
 order of how much they were discussed, and for each, whether it was rising, steady, fading or
-new compared with the same number of days just before. Be specific to this community and these
-days. Write the document even with no tools or data: draw on what you know about this
-community and this time of year. If you have tools, use them to ground what you write in the
-community's own posts.
+new compared with the same number of days just before. For each topic, also say
+where it looks to be heading next, and why. Be specific to this community and these days.
+Write the document even with no tools or data: draw on what you know about this community and
+this time of year. If you have tools, use them to ground what you write in the community's own
+posts.
 
 Answer by calling Report once, with the document and its list of topics."""
     return Task("write", instructions, Report)

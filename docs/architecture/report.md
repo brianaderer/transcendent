@@ -1,22 +1,27 @@
 # report
 
-**Source:** `backend/src/voices/report/` (`tasks.py`, `writer.py`, `tools.py`, `versions.py`, `graph.py`, `comparison_run.py`, `runs.py`, `launcher.py`), `backend/src/voices/worker/report_task.py`, `frontend/src/runs/`   ·   **Tests:** `backend/tests/report/`, `backend/tests/test_run_routes.py`, `frontend/src/runs/*.test.ts*`
+**Source:** `backend/src/voices/report/` (`tasks.py`, `writer.py`, `tools.py`, `reading_tools.py`, `versions.py`, `graph.py`, `comparison_run.py`, `runs.py`, `launcher.py`), `backend/src/voices/worker/report_task.py`, `frontend/src/runs/`   ·   **Tests:** `backend/tests/report/`, `backend/tests/test_run_routes.py`, `frontend/src/runs/*.test.ts*`
 
 ## Purpose
 Writes the Community Voices Document for a date range, with and without retrieval, and
 compares the two (atlas plates [50](../atlas/50-prediction.md), [60](../atlas/60-agents.md),
 [70](../atlas/70-comparison.md); `CLAUDE.md` §7). One code path writes both versions; the
-only difference is whether the model gets tools that read our store.
+only difference is the tools the model gets: version A may only read posts, a few at a time in
+a fixed shuffle with no retrieval by meaning, at most 10 per step; version B searches our
+store by meaning (atlas OPEN-39).
 
 ## Public interface
 - `tasks.write_task(days)` and `tasks.predict_task(days)` — what the model is asked, as a
-  `Task` (phase, instructions, answer tool). The words are the same for both versions.
+  `Task` (phase, instructions, answer tool). The words are the same for both versions. The report
+  asks for each topic's direction and, for each topic, where it looks to be heading next and
+  why.
   `Report` (the document in Markdown, and its `topics`: name, rank, direction) and
   `Prediction` (`predicted` topics with directions, and a short `reasoning`) are the answer
   tools; their lists are the comparison's committed lists (atlas OPEN-25).
-- `writer.ReportWriter(model, tools, emit).write(task)` — one call of the agent. With
-  `tools=None` (version A) the model is offered only the answer tool. With tools (version B)
-  it may take up to `MAX_TOOL_CALLS` turns (each tool call spends one, and so does a reply that
+- `writer.ReportWriter(model, tools, emit).write(task)` — one call of the agent. The model
+  is offered exactly the schemas its tools object carries (`Tools.schemas`) and the answer
+  tool, so version A is offered only `read_posts` and version B its four tools; with
+  `tools=None` it is offered only the answer tool. With tools it may take up to `MAX_TOOL_CALLS` turns (each tool call spends one, and so does a reply that
   calls nothing, so a model that keeps talking still ends), then is offered only the answer; a reply
   without a valid answer is told why (or reminded) `CORRECTIONS` times before `NoAnswer` is
   raised. Returns a `Written`: the answer, tool calls made, posts seen, tokens in and out,
@@ -26,7 +31,18 @@ only difference is whether the model gets tools that read our store.
   (one post in full; a post written after the window is refused), `topic_trends()` (what the
   run hands in), `upcoming_events()` (posts in the window that read like dated plans). Every
   post returned is counted in `retrieval_events` as the report agent's, under the run's name.
-  `run(name, arguments)` returns a `ToolResult` (the text the model reads, and the post ids).
+  `run(name, arguments)` returns a `ToolResult` (the text the model reads, and the post ids);
+  `schemas` is `TOOL_SCHEMAS`, what the model is offered. `said(text)` is a result with no
+  posts, shared with the reading tools.
+- `reading_tools.ReadingTools(reader, window, seed)` — version A's one tool,
+  `read_posts(day?)`: up to `READ_BATCH` (5) whole posts written in the window, or on the one
+  day given (a day outside the window, or not a date, is explained instead), each with its
+  author, date and thread title, in the fixed shuffle the seed (the run's name) gives, never
+  ranked by meaning, and never a post already given. One `ReadingTools` serves one phase, and
+  it hands out `READ_BUDGET` (10) posts in all; after that every call answers
+  `NOTHING_LEFT_TO_READ` ("No posts left to read; answer now with what you have.") without
+  asking the store. Reads are not retrieval, so they are not counted in `retrieval_events`.
+  `schemas` is `READING_SCHEMAS`. `reader` is anything with `sample_posts` (`PostReader`).
 - `versions` — `Version` (`"A"` or `"B"`) and `VERSIONS`, the order they are shown in.
 - `graph.every_version_at_once(work)` — runs `work(version)` for every version at once, as a
   LangGraph fan-out (atlas plate 60): `START` sends one branch per version to a `version`
@@ -41,10 +57,12 @@ only difference is whether the model gets tools that read our store.
   `topic_trends` gives the range's measured topics) and the prediction for the range made as
   of the day before (B's tools see only the 28 days before, and `topic_trends` gives the
   projected trends, plate 50). Each phase's tools are built by their own method
-  (`_tools_for_the_report`, `_tools_for_the_prediction`); version A gets `NO_TOOLS` for
-  both. Both are scored against the same answer key
+  (`_tools_for_the_report`, `_tools_for_the_prediction`); version A gets a fresh
+  `ReadingTools` for each phase (`_reading`), over the same windows as B's (the range, then
+  the 28 days before it), with the run's name as the shuffle's seed so the same run reads the
+  same posts. Both are scored against the same answer key
   ([comparison](comparison.md)'s `mark` then `score`). `RunParts.data` is anything with
-  explore's `TopicData` reads and the `ReportStore` reads; `RunParts.embedder` anything with
+  explore's `TopicData` reads, the `ReportStore` reads and `sample_posts` (`PostReader`); `RunParts.embedder` anything with
   `embed_query` and `embed_for_comparison` (`QueryEmbedder` and ingestion's
   `ComparisonEmbedder`). Returns a `RunResult`: the range, the model, the range's main
   topics, the instructions, and per version a `VersionResult` (document, topics, predicted,
@@ -79,8 +97,8 @@ day so the Document and Comparison pages can read it; nothing else is kept.
 ## Uses
 [comparison](comparison.md) (answer key, `mark`, scores, commitments),
 [prediction](prediction.md) (projected trends), [explore](explore.md) (`DayRange`, the range's
-topics, `ExploreStore`), [tagging](tagging.md) (`TaggingStore`'s search, lookup and retrieval
-counting; `connect_model`), [database](database.md) (`connect_store`, and `PostNotFound` for a
+topics, `ExploreStore`), [tagging](tagging.md) (`TaggingStore`'s search, lookup, `sample_posts` and
+retrieval counting; `connect_model`), [database](database.md) (`connect_store`, and `PostNotFound` for a
 lookup of an unknown post), [ingestion](ingestion.md) (the embedder and its
 `ComparisonEmbedder` interface), [events](events.md),
 [logging](logging.md), Redis, Celery, LangGraph, LangChain, OpenRouter.
@@ -92,5 +110,6 @@ lookup of an unknown post), [ingestion](ingestion.md) (the embedder and its
 ## Configuration and data
 `OPENROUTER_API_KEY`, `REPORT_MODEL_NAME` (default `anthropic/claude-sonnet-5.5`). Fixed in
 code: `MAX_TOOL_CALLS = 20`, `CORRECTIONS = 1`, `SEARCH_RESULTS = 20`, `EVENT_RESULTS = 15`,
+`READ_BATCH = 5`, `READ_BUDGET = 10`,
 `DAYS_SEEN_BEFORE_A_PREDICTION = 28`, `KEPT_SECONDS` (a day). Writes `retrieval_events`
-(agent `report`) and the run's state in Redis.
+(agent `report`, version B's tools only) and the run's state in Redis.

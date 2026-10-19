@@ -3,14 +3,17 @@ import { SUBREDDIT } from "../community";
 
 export type Version = "A" | "B";
 export type VersionNames = {
-  /** Finishes a phrase: "Written without our data", "A · without our data". */
+  /** Finishes a phrase: "Written without retrieval", "A · without retrieval". */
   short: string;
   /** Heads the version's column on the comparison. */
   long: string;
 };
 
 export const VERSIONS: Record<Version, VersionNames> = {
-  A: { short: "without our data", long: "Without our data — the model on its own" },
+  A: {
+    short: "without retrieval",
+    long: `Without retrieval — the model reading a few of r/${SUBREDDIT}'s posts`,
+  },
   B: {
     short: "with retrieval",
     long: `With retrieval — the model searching r/${SUBREDDIT}'s posts`,
