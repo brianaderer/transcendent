@@ -74,7 +74,7 @@ such as its `NomicEmbedder` is passed in), numpy, Pydantic.
 [report](report.md) (`comparison_run` calls `mark` and `score` for both versions).
 
 ## Configuration and data
-Fixed in code: `MAIN_TOPICS = 10`, `MATCH_SIMILARITY = 0.80`, set from the first real
+Fixed in code: `MAIN_TOPICS = 10`, `MATCH_SIMILARITY = 0.70` (Brian, atlas OPEN-42, lowered from 0.80 after a right match scored 0.77; wrong matches can now pass), first set from the first real
 comparison run (nomic `embed_for_comparison`, report names against `"label: description"` of
 the range's active topics): right matches scored 0.83–0.91 (for example "Docking mishaps and
 stories" 0.908, "Learning to sail: courses…" to "Sailing courses and training schools"
