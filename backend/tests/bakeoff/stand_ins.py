@@ -5,7 +5,7 @@ from langchain_core.messages import AIMessage
 USAGE = {"input_tokens": 1000, "output_tokens": 100, "total_tokens": 1100}
 
 
-def decision_call(arguments):
+def _decision_call(arguments):
     call = {"name": "Decision", "args": arguments, "id": "1"}
     return AIMessage(content="", tool_calls=[call], usage_metadata=USAGE)
 
@@ -18,17 +18,11 @@ class Answers:
         return self
 
     def invoke(self, messages):
-        return decision_call(self.arguments)
+        return _decision_call(self.arguments)
 
 
-class AlwaysAttachesToTheft:
-    def bind_tools(self, tools):
-        return self
-
-    def invoke(self, messages):
-        arguments = {"action": "attach", "topic_id": 1, "reason": "Theft."}
-        call = {"name": "Decision", "args": arguments, "id": "1"}
-        return AIMessage(content="", tool_calls=[call], usage_metadata=USAGE)
+def always_attaches_to_theft():
+    return Answers(action="attach", topic_id=1, reason="Theft.")
 
 
 class NeverDecides:

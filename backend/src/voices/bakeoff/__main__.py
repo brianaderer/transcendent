@@ -16,8 +16,9 @@ DEFAULT_MODELS = ["anthropic/claude-haiku-5.5", "anthropic/claude-sonnet-5.5"]
 
 
 def main(model_names: list[str]) -> None:
-    results = run_live_bakeoff(model_names)
-    print(render_report(results, load_sample_data(), date.today()))
+    sample = load_sample_data()
+    results = run_live_bakeoff(model_names, sample)
+    print(render_report(results, sample, date.today()))
 
 
 if __name__ == "__main__":

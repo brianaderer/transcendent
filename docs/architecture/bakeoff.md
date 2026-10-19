@@ -27,8 +27,8 @@ The latest results are committed in [`docs/benchmarks/tagging-models.md`](../ben
 - `scoring.judge(case, decision) -> Verdict` — right, or which mistake: wrong topic, a
   duplicate of an existing topic, a real conversation called noise, a new subject attached
   to an old topic, noise kept, or no decision.
-- `live.run_live_bakeoff(model_names) -> list[ModelResult]` — the bake-off against the real
-  models: the committed sample, the real embedding model, and the key from the settings.
+- `live.run_live_bakeoff(model_names, sample) -> list[ModelResult]` — the bake-off against the
+  real models: the given sample (callers load it once and pass the same one to the report), the real embedding model, and the key from the settings.
   Used by `python -m voices.bakeoff` and the `bakeoff`-marked test.
 - `runner.run_bakeoff(model_names, store, connect) -> list[ModelResult]` — checks
   every model has a price before calling any, then runs each case through the production

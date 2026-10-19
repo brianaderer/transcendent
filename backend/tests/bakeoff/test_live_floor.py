@@ -16,6 +16,8 @@ FLOOR = 0.8  # proposed in atlas plate 60: eight cases in ten
 
 
 def test_the_configured_tagging_model_gets_at_least_eight_cases_in_ten_right():
-    [result] = run_live_bakeoff([load_settings().tagging_model_name])
+    sample = load_sample_data()
 
-    assert result.share_right >= FLOOR, render_report([result], load_sample_data(), date.today())
+    [result] = run_live_bakeoff([load_settings().tagging_model_name], sample)
+
+    assert result.share_right >= FLOOR, render_report([result], sample, date.today())

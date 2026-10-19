@@ -28,7 +28,7 @@ class SampleStore:
         """Embeds every post, comment, thread and topic once, here: with the real model that
         takes some seconds."""
         self.sample = sample
-        self.embedder = embedder
+        self._embedder = embedder
         self._posts = _posts_by_id(sample)
         self._post_vectors = self._embedded({i: post["text"] for i, post in self._posts.items()})
         self._thread_vectors = self._embedded(
@@ -43,7 +43,7 @@ class SampleStore:
 
     def tools_for(self, case: Case) -> TaggingTools:
         """The production tagging tools, reading this store, as on the case's day."""
-        return TaggingTools(self, self.embedder, self.case_day(case))
+        return TaggingTools(self, self._embedder, self.case_day(case))
 
     def brief(self, case: Case) -> ClusterBrief:
         """The case as the tagging agent is shown it: shaped like a production brief."""
@@ -77,9 +77,10 @@ class SampleStore:
 
     def _embedded(self, texts: dict) -> dict:
         keys = list(texts)
-        vectors = self.embedder.embed_documents([texts[key] for key in keys])
+        vectors = self._embedder.embed_documents([texts[key] for key in keys])
         return {
-            key: _unit(np.asarray(v, dtype=float)) for key, v in zip(keys, vectors, strict=True)
+            key: _unit(np.asarray(vector, dtype=float))
+            for key, vector in zip(keys, vectors, strict=True)
         }
 
     def _hit(self, post_id: str, closeness: float) -> dict:
@@ -120,7 +121,9 @@ def _posts_by_id(sample: SampleData) -> dict[str, dict]:
     posts = {}
     for thread in sample.threads.values():
         posts[thread.source_id] = _thread_post(thread)
-        posts.update({c.source_id: _comment_post(thread, c) for c in thread.comments})
+        posts.update(
+            {comment.source_id: _comment_post(thread, comment) for comment in thread.comments}
+        )
     return posts
 
 
