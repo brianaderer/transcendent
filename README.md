@@ -427,6 +427,12 @@ rather than a pause in the conversation. The full steps are in `CLAUDE.md` §3.3
     its containers under their own name and port, so it starts from nothing and
     leaves any copy of the app you already have running untouched. Details
     are in [`docs/architecture/tooling.md`](docs/architecture/tooling.md).
+  - `/refetch-day` tests the automatic daily download on your running copy. It checks the
+    background worker and scheduler are alive, deletes one loaded day and winds the
+    "days done" record back past it, triggers the daily job the way the scheduler does,
+    and watches the day come back: the loading line on the page, the live updates, the
+    posts being prepared for search and the AI model's tagging calls, until everything
+    settles. It times each stage. It changes only your local data.
 - [`docs/architecture/`](docs/architecture/README.md) describes how the code is
   actually built, one document per module.
 - [`design/`](design/) holds mockups of the app's screens, made in Claude Design from

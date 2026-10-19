@@ -3,7 +3,7 @@
 **Source:** `.claude/`, `.githooks/`   ·   **Tests:** `tests/hooks/test_commit_checks.sh`
 
 ## Purpose
-The repo's own workflow machinery. Right now that means three things:
+The repo's own workflow machinery. Right now that means four things:
 
 - **The commit chain.** After every commit that changes anything outside `docs/` and
   `README.md`, `/commit-chain` runs on it. In a separate worktree checked out at that
@@ -16,6 +16,9 @@ The repo's own workflow machinery. Right now that means three things:
   clones the repo into an empty folder, follows the README's install and run steps
   exactly as written, tries the demo, and reports what worked and what did not. The
   rule this serves is in [`CLAUDE.md`](../../CLAUDE.md) §7 (*The README is the demo*).
+- **The retrieval test.** `/refetch-day` tests the automated daily retrieval on the
+  running local app: Celery health, then one day deleted and the ledger wound back, the
+  daily catch-up fired as Beat fires it, and every stage watched until the day settles.
 - **The code review.** Inside the commit chain, `/uncle-bob` reviews the code commit and
   its documentation commit against *Clean Code* and lists what to fix and how. It can
   also be run by hand on any commit or range. The reviewers asked for exactly this,
@@ -67,6 +70,22 @@ This module contains no application code.
   uncommitted changes in the working folder. It refuses to run unless `.boot-test/` is
   listed in `.gitignore`, then hands off to the agent and relays its report. It never
   applies the fixes it suggests; those go in a normal commit.
+- **`/refetch-day [YYYY-MM-DD]`**, the skill at `.claude/skills/refetch-day/SKILL.md`.
+  Runs in the main session against the running app (no agent, no clone). Health-checks
+  Celery (`celery inspect ping`, the `voices.ping` task round trip, Beat's container and
+  log), then, for the given day or the latest loaded one, records its counts, deletes in
+  one transaction its posts and comments (their upvotes and retrievals cascade), the
+  threads first seen that day that are left with no posts, that day's decisions no thread
+  still points to, the topics first seen that day that no thread carries, that day's
+  engagement rows and its `ingested_days` row (the high-water mark). It starts watchers
+  on the live `ingestion` stream (asking for gzip, as a browser does), the `/api/ingestion`
+  status and the worker log, fires `voices.catch_up` by name as Beat's schedule does, and
+  waits until the day is done again. It confirms the page's loading states, the live
+  events arriving as they happen, an embedding on every re-fetched post and due thread,
+  the `tagging.turn` / `tagging.decided` model calls, and the settled ledger, engagement,
+  topics and map; it times fire → day started, fetching and embedding, tagging, and the
+  whole day, and compares with the counts before. It changes only the local database
+  (test data) and costs about two cents of model calls.
 - **The `test-boot` agent**, `.claude/agents/test-boot.md`. Launched only by the skill.
   It makes a fresh clone under `.boot-test/<date-time>/app`, reads the README once,
   checks the listed prerequisites on this machine, runs every step exactly as written,
