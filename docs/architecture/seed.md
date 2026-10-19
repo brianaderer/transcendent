@@ -57,7 +57,9 @@ the same bytes. Left out: every embedding and topic centre (the backfill rebuild
 tagging decision's prompt (the bulk of the data and only there for tracing; the column can't
 be empty, so it reads `(left out of the seed)`), and any topic with no threads left, because
 its centre can't be rebuilt from them; its engagement rows go with it, and a decision that
-named it keeps its record with no topic. Tables come in the order they load in, each after
+named it keeps its record with no topic. Usernames are replaced as rows are read: one
+`StandInNames` serves the whole export, so a user's posts and every `u/name` mention of them,
+in a post's text or a thread's title, carry the same stand-in. Tables come in the order they load in, each after
 the tables it points to: topics, cluster decisions, threads, posts, daily upvotes, daily
 engagement, retrieval records, noise markers, and the day ledger last.
 
@@ -139,4 +141,4 @@ run by hand. [worker](worker.md) builds the `Backfill` and runs it before every 
 ## Configuration and data
 `DATABASE_URL`, `REDIS_URL` (the progress record `backfill:progress`). Fixed in code:
 `ROWS_PER_INSERT = 1000`, `ROWS_PER_BATCH = 256`, `PROMPT_LEFT_OUT`,
-`SNAPSHOT_FORMAT = "voices-seed/1"`.
+`SNAPSHOT_FORMAT = "voices-seed/1"`, `STAND_IN_FORMAT = "sailor-{:04d}"`.
