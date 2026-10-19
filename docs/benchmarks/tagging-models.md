@@ -7,15 +7,15 @@ Run on 2026-10-19: 25 cases from `backend/src/voices/bakeoff/tagging_cases.json`
 | Right | 21 of 25 (84%) | 22 of 25 (88%) |
 | Attached to the wrong topic | 1 | 1 |
 | Started a topic that already exists | 0 | 0 |
-| Called a real conversation noise | 1 | 0 |
-| Attached a new subject to an old topic | 2 | 2 |
+| Called a real conversation noise | 2 | 0 |
+| Attached a new subject to an old topic | 1 | 2 |
 | Kept noise as a topic | 0 | 0 |
 | Made no decision | 0 | 0 |
-| Look-ups per decision | 0.2 | 0.2 |
-| Model calls per decision | 1.1 | 1.2 |
-| Seconds per decision | 2.4 | 2.3 |
-| Tokens read, written | 65,227, 9,339 | 62,796, 4,635 |
-| Cost of the run | $0.0112 | $0.1719 |
+| Look-ups per decision | 0.3 | 0.3 |
+| Model calls per decision | 1.2 | 1.2 |
+| Seconds per decision | 2.6 | 2.5 |
+| Tokens read, written | 76,144, 10,181 | 63,551, 4,689 |
+| Cost of the run | $0.0127 | $0.1740 |
 
 ## Case by case
 
@@ -40,10 +40,10 @@ Run on 2026-10-19: 25 cases from `backend/src/voices/bakeoff/tagging_cases.json`
 | galley-and-gas | attach: Life aboard | ✓ attach: Life aboard | ✓ attach: Life aboard |
 | seasickness-and-injury | attach: Seasickness and health on board | ✓ attach: Seasickness and health on board | ✓ attach: Seasickness and health on board |
 | docking-mishaps | mint | ✓ mint: Docking and close-quarters maneuvering | ✓ mint: Docking and seamanship mishaps |
-| scenic-sails | mint | ✗ noise | ✓ mint: Scenic photos and sightings from sailing |
+| scenic-sails | mint | ✗ noise | ✓ mint: Photos and scenes from the water |
 | ai-regatta-posters | mint | ✗ attach: Racing and regattas | ✗ attach: Racing and regattas |
 | finding-sailing-company | mint | ✓ mint: Finding crew and sailing companions | ✓ mint: Finding sailing partners and crew |
-| sailing-history | mint | ✗ attach: Racing and regattas | ✗ attach: Racing and regattas |
+| sailing-history | mint | ✗ noise | ✗ attach: Racing and regattas |
 | grab-bag-no-text | noise | ✓ noise | ✓ noise |
 | grab-bag-unrelated | noise | ✓ noise | ✓ noise |
 
