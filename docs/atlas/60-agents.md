@@ -119,8 +119,7 @@ structure stay as they were.
   writing, the 28 days before it while predicting). **read_posts** takes an optional day
   inside those days and returns up to 5 whole posts written then, each with its author, date
   and thread title, in a shuffle fixed by the run (ordered by `md5(post id || run name)`, so
-  the same run reads the same posts), never one it has already given. Each step may read 35
-  posts in all; after that it answers "No posts left to read; answer now with what you
+  the same run reads the same posts), never one it has already given. Each step may read 35 posts in all. The 35 are shared evenly over the days it can see (5 a day over a week; 1 or 2 a day over the 28 days before the range), and the tool enforces it: a read with no day takes the day with the most of its share left, and a day whose share is read is refused with the days still unread named (Brian: the model, asked only to spread them, read the first two days three times each). After that it answers "No posts left to read; answer now with what you
   have." Its calls stream live like version B's, so version A's lane shows its reads.
 - **What version B's tools see:** while writing, only the range; while predicting, only the
   28 days before it, so the forecast can't peek inside the range. **search** returns at
