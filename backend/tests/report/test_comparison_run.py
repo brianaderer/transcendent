@@ -138,8 +138,9 @@ def test_version_a_reads_only_before_the_range_when_predicting_as_b_searches():
 
     run(data=data)
 
-    assert data.read_windows == data.searched_windows
-    assert data.read_windows[1][1] == date(2026, 10, 11)
+    (report_read_start, _), (_, prediction_read_end) = data.read_windows
+    assert report_read_start in DAYS
+    assert prediction_read_end < DAYS.start
 
 
 def test_version_a_reads_are_not_counted_as_retrievals():

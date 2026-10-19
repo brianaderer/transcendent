@@ -6,12 +6,13 @@ from voices.report.reading_tools import (
     NOTHING_LEFT_TO_READ,
     READ_BATCH,
     READ_BUDGET,
-    READING_SCHEMAS,
     ReadingTools,
 )
 
 MORE_READS_THAN_THE_BUDGET_PAYS_FOR = READ_BUDGET // READ_BATCH + 3
 WINDOW = DayRange(date(2026, 10, 12), date(2026, 10, 18))
+FIRST_DAY = DayRange(WINDOW.start, WINDOW.start)
+PREDICTION_WINDOW = DayRange(date(2026, 9, 14), date(2026, 10, 11))  # the 28 days before
 
 
 class FakeReader:
@@ -36,7 +37,7 @@ def test_reading_hands_back_a_batch_of_whole_posts_from_the_window_in_the_runs_s
 
     result = reading(reader).run("read_posts", {})
 
-    assert reader.asked == [(WINDOW, READ_BATCH, "report-run-1", [])]
+    assert reader.asked == [(FIRST_DAY, READ_BATCH, "report-run-1", [])]
     assert result.post_ids == [f"p{n}" for n in range(READ_BATCH)]
     assert json.loads(result.text)[0]["text"] == "Post 0"
 
@@ -62,30 +63,6 @@ def test_once_the_budget_is_spent_the_agent_is_told_to_answer_and_the_store_is_n
 
     assert spent.text == NOTHING_LEFT_TO_READ and spent.post_ids == []
     assert len(reader.asked) == READ_BUDGET // READ_BATCH
-
-
-FIRST_READ_FOUND = 3
-
-
-class ShortFirstReader(FakeReader):
-    """Has only FIRST_READ_FOUND posts for the first read, as a quiet day might."""
-
-    def sample_posts(self, days, limit, seed, exclude_ids):
-        posts = super().sample_posts(days, limit, seed, exclude_ids)
-        return posts[:FIRST_READ_FOUND] if len(self.asked) == 1 else posts
-
-
-def test_the_last_read_asks_only_for_what_is_left_of_the_budget():
-    reader = ShortFirstReader()
-    tools = reading(reader)
-
-    given = [tools.run("read_posts", {}) for _ in range(MORE_READS_THAN_THE_BUDGET_PAYS_FOR)]
-
-    found = [len(result.post_ids) for result in given if result.post_ids]
-    limits = [asked[1] for asked in reader.asked]
-    assert sum(found) == READ_BUDGET
-    assert limits[:-1] == [READ_BATCH] * (len(limits) - 1)
-    assert limits[-1] == READ_BUDGET - sum(found[:-1])
 
 
 def test_a_day_inside_the_window_narrows_the_read_to_that_day():
@@ -134,8 +111,42 @@ def test_a_phase_reads_thirty_five_posts_and_no_more():
     assert given[-1].text == NOTHING_LEFT_TO_READ
 
 
-def test_the_tool_asks_for_reads_spread_evenly_over_the_days():
-    [schema] = READING_SCHEMAS
-    description = schema["function"]["description"]
+def days_read(reader):
+    return [asked[0].start for asked in reader.asked]
 
-    assert "spread your reads evenly" in description.lower() and "each day" in description
+
+def test_reads_with_no_day_go_through_the_days_in_turn():
+    reader = FakeReader()
+    tools = reading(reader)
+
+    for _ in range(WINDOW.length):
+        tools.run("read_posts", {})
+
+    assert days_read(reader) == list(WINDOW.days())
+
+
+def test_a_day_whose_share_is_read_is_refused_and_the_unread_days_are_named():
+    reader = FakeReader()
+    tools = reading(reader)
+    tools.run("read_posts", {"day": "2026-10-14"})
+
+    again = tools.run("read_posts", {"day": "2026-10-14"})
+
+    assert again.post_ids == [] and len(reader.asked) == 1
+    assert "2026-10-14" in again.text and "2026-10-12" in again.text
+
+
+def test_over_a_long_window_every_day_gets_a_share_and_no_day_more_than_one_extra():
+    reader = FakeReader()
+    tools = ReadingTools(reader, PREDICTION_WINDOW, "report-run-1")
+
+    for _ in range(PREDICTION_WINDOW.length + 10):
+        tools.run("read_posts", {})
+
+    per_day = [
+        sum(limit for days, limit, *_ in reader.asked if days.start == day)
+        for day in PREDICTION_WINDOW.days()
+    ]
+    assert sum(per_day) == READ_BUDGET
+    assert min(per_day) >= READ_BUDGET // PREDICTION_WINDOW.length
+    assert max(per_day) - min(per_day) <= 1

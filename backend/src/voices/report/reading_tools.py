@@ -2,9 +2,11 @@
 
 `read_posts` hands back whole posts written in the window, a few at a time, in a fixed shuffle
 of the run's own (never ranked by relevance), up to a budget per phase so the agent can't keep
-reading in a loop. Reads aren't retrieval, so they aren't counted as retrievals (OPEN-12), and
-like version B's tools they see only their window: for the prediction, the days before the
-range.
+reading in a loop. The budget is shared out evenly over the window's days, and a day's share
+can't be overspent, so the reads cover the whole period (Brian: the model, left to itself,
+spent them on the first two days). Reads aren't retrieval, so they aren't counted as
+retrievals (OPEN-12), and like version B's tools they see only their window: for the
+prediction, the days before the range.
 """
 
 import json
@@ -33,6 +35,7 @@ class ReadingTools:
         self.window = window
         self.seed = seed  # the run's, so the same run reads the same posts
         self.ids_given: list[str] = []
+        self.shares_left = _even_shares(window)
 
     @property
     def schemas(self) -> list[dict]:
@@ -41,18 +44,19 @@ class ReadingTools:
     def run(self, name: str, arguments: dict) -> ToolResult:
         if name != READ_POSTS:
             return said(f"There is no tool named {name}; use {READ_POSTS}.")
-        if len(self.ids_given) >= READ_BUDGET:
+        if not any(self.shares_left.values()):
             return said(NOTHING_LEFT_TO_READ)
         try:
-            days = self._days_asked(arguments.get("day"))
+            day = self._day_asked(arguments.get("day"))
         except ValueError as reason:
             return said(str(reason))
-        return self._read(days)
+        return self._read(day)
 
-    def _days_asked(self, day: str | None) -> DayRange:
-        """The whole window, or the one day asked for; raises ValueError naming what's wrong."""
+    def _day_asked(self, day: str | None) -> date:
+        """The day asked for, or else the one with the most of its share left (earliest first);
+        raises ValueError naming what's wrong."""
         if day is None:
-            return self.window
+            return max(self.shares_left, key=self.shares_left.__getitem__)
         try:
             asked = date.fromisoformat(day)
         except ValueError:
@@ -61,16 +65,31 @@ class ReadingTools:
             raise ValueError(
                 f"{asked} is outside what you can see: {self.window.start} to {self.window.end}."
             )
-        return DayRange(asked, asked)
+        if not self.shares_left[asked]:
+            raise ValueError(f"You have read your share of {asked}; read {self._unread_days()}.")
+        return asked
 
-    def _read(self, days: DayRange) -> ToolResult:
-        limit = min(READ_BATCH, READ_BUDGET - len(self.ids_given))
-        posts = self.reader.sample_posts(days, limit, self.seed, self.ids_given)
+    def _unread_days(self) -> str:
+        days = [day.isoformat() for day, left in self.shares_left.items() if left]
+        return "one of " + ", ".join(days)
+
+    def _read(self, day: date) -> ToolResult:
+        limit = min(READ_BATCH, self.shares_left[day])
+        posts = self.reader.sample_posts(DayRange(day, day), limit, self.seed, self.ids_given)
+        # A quiet day with fewer posts than its share has no more to give.
+        self.shares_left[day] = self.shares_left[day] - len(posts) if len(posts) == limit else 0
         if not posts:
-            return said("No more posts in that period.")
+            return said(f"No more posts on {day}.")
         post_ids = [post["post_id"] for post in posts]
         self.ids_given.extend(post_ids)
         return ToolResult(json.dumps(posts, default=str), post_ids)
+
+
+def _even_shares(window: DayRange) -> dict[date, int]:
+    """READ_BUDGET split over the window's days, the first few taking one more if it doesn't
+    divide evenly."""
+    each, extra = divmod(READ_BUDGET, window.length)
+    return {day: each + (n < extra) for n, day in enumerate(window.days())}
 
 
 READING_SCHEMAS = [
@@ -80,10 +99,10 @@ READING_SCHEMAS = [
             "name": READ_POSTS,
             "description": f"Read up to {READ_BATCH} r/sailing posts and comments written in "
             "the period you can see, in full, with their authors, dates and thread titles. "
-            "They come in no particular order, and each read gives ones you haven't seen; "
-            f"you may read {READ_BUDGET} in all. Give a day (YYYY-MM-DD) to read only that "
-            "day's. Spread your reads evenly over the period: read about the same number "
-            "from each day, one day at a time, rather than spending them all on a few days.",
+            "Each read gives posts from one day, in no particular order, ones you haven't "
+            f"seen; you may read {READ_BUDGET} in all, shared evenly over the days, so each "
+            "day has its own share. Leave out the day to read the next day in turn, or give "
+            "a day (YYYY-MM-DD) to read that day's share.",
             "parameters": {
                 "type": "object",
                 "properties": {"day": {"type": "string", "description": "YYYY-MM-DD"}},
