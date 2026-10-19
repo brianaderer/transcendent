@@ -12,6 +12,7 @@ import redis
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.routing import APIRoute
 
 from voices.config import HISTORY_DAYS, load_settings
 from voices.db.explore_store import ExploreStore
@@ -51,7 +52,11 @@ TRACE_ID_HEX_DIGITS = 12  # long enough to be unique across a day of requests
 
 
 def create_app(services: ApiServices) -> FastAPI:
-    app = FastAPI(title="Community Voices", openapi_url="/api/openapi.json")
+    app = FastAPI(
+        title="Community Voices",
+        openapi_url="/api/openapi.json",
+        generate_unique_id_function=name_operation_after_its_function,
+    )
     app.middleware("http")(log_each_request)
     app.add_middleware(GZipMiddleware, minimum_size=SMALLEST_RESPONSE_TO_COMPRESS)
     app.exception_handler(InvalidRange)(refuse_the_range)
@@ -94,6 +99,11 @@ def create_app(services: ApiServices) -> FastAPI:
         return services.explore.map(DayRange(start, end))
 
     return app
+
+
+def name_operation_after_its_function(route: APIRoute) -> str:
+    """The frontend's generated client names its calls after these (atlas OPEN-1)."""
+    return route.name
 
 
 async def refuse_the_range(_request: Request, error: Exception) -> JSONResponse:

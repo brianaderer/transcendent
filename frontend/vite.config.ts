@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
@@ -7,7 +8,7 @@ const apiTarget = process.env.API_URL ?? "http://api:8000";
 const passApiThrough = { "/api": { target: apiTarget, changeOrigin: true } };
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: { proxy: passApiThrough },
   preview: { proxy: passApiThrough },
   test: { environment: "jsdom", globals: true, setupFiles: ["./src/testSetup.ts"] },

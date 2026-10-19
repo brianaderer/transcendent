@@ -57,3 +57,10 @@ def test_a_large_map_is_sent_compressed():
     )
 
     assert response.headers["content-encoding"] == "gzip"
+
+
+def test_each_operation_is_named_after_its_route_function_for_the_generated_client():
+    paths = client().get("/api/openapi.json").json()["paths"]
+
+    assert paths["/api/topics"]["get"]["operationId"] == "report_topics"
+    assert paths["/api/map"]["get"]["operationId"] == "report_map"

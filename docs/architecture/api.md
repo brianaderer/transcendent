@@ -18,8 +18,10 @@ The web API the frontend calls. Every route lives under `/api`.
   `GET /api/map?start=…&end=…` — the Explore page's reads ([explore](explore.md)): posts per
   day, the range's topics with their badges, and the range's map. Both ends of a range are
   required (422 otherwise); a range that ends before it starts is a 422 saying so.
-- `GET /api/openapi.json` — the API description the frontend's typed client will be
-  generated from (atlas OPEN-1).
+- `GET /api/openapi.json` — the API description the frontend's typed client is generated
+  from (atlas OPEN-1). Each operation is named after its route function
+  (`name_operation_after_its_function`), so the generated calls read `reportTopics`,
+  `useReportMap` and so on.
 - `create_app(services)` — builds the app around `ApiServices` (the health checks, the
   ingestion status, the event stream and the Explore reads, `ExploreReads`, which take a `DayRange`), so tests pass
   stand-ins. Responses over 1,000 bytes are gzip-compressed when the browser accepts it
@@ -45,8 +47,8 @@ the full error, then re-raised.
 `HISTORY_DAYS` (the days wanted) comes from `voices.config`.
 
 ## Used by
-[frontend](frontend.md) (`GET /api/health`, `GET /api/ingestion` and
-`GET /api/streams/ingestion/events`); [environment](environment.md) runs it as the `api`
+[frontend](frontend.md) (`GET /api/health`, `GET /api/ingestion`, `GET /api/days`, `GET /api/topics`,
+`GET /api/map` and `GET /api/streams/ingestion/events`, through a client generated from `GET /api/openapi.json`); [environment](environment.md) runs it as the `api`
 service.
 
 ## Configuration and data

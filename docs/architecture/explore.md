@@ -65,7 +65,8 @@ dot plot, recomputed for each range (atlas OPEN-20).
 `ingested_days`), Redis, scikit-learn (t-SNE), numpy, Pydantic.
 
 ## Used by
-[api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`).
+[api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`), which the
+[frontend](frontend.md)'s Explore page calls.
 
 ## Configuration and data
 `REDIS_URL` (read by the API, which builds the cache). Fixed in code: `CHANGE_THAT_COUNTS =

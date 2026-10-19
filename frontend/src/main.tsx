@@ -1,18 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import { BackendStatus } from "./BackendStatus";
-import { IngestionStatus } from "./IngestionStatus";
+import "./index.css";
+import { buildRouter } from "./router";
 
 const queryClient = new QueryClient();
+const router = buildRouter();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <h1>Community Voices</h1>
-      <BackendStatus />
-      <IngestionStatus />
+      <RouterProvider router={router} />
     </QueryClientProvider>
   </StrictMode>,
 );

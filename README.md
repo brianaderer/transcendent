@@ -140,17 +140,16 @@ hasn't started yet. Either way, wait a few seconds and it updates by itself. To 
 the back end directly, open http://localhost:5173/api/health; it should show
 `"status":"ok"`.
 
-Below that, the page shows the r/sailing history loading. It may say **Waiting to start
+Beside it, the top bar shows the r/sailing history loading. It may say **Waiting to start
 loading r/sailing history** for a few seconds; the first time, the worker also downloads
 the 130 MB model that prepares posts for search. Then it reads, for example,
 **Loading r/sailing history: 3 of 56 days · 1,751 posts**, counting up as each day
 is loaded and sorted into topics. The first start fetches eight weeks of posts from the
 Arctic Shift archive (a public archive of Reddit, so your computer needs an internet
 connection), prepares each one for search, and then has the AI model sort each day's threads
-into topics through OpenRouter. Fetching and preparing alone took about 40–45 minutes on a
-laptop; sorting into topics adds about forty decisions by the model per day (each thread is
-decided on its first day and again on its third) and hasn't been timed yet,
-so allow longer. The worker uses about 1 GB of memory while it runs. You can leave it
+into topics through OpenRouter. The whole first start (fetching, preparing and
+sorting into topics) took about 1 hour 40 minutes on a laptop, measured on two runs, and
+used about $1.30 to $1.70 of OpenRouter credit. The worker uses about 1 GB of memory while it runs. You can leave it
 running in the background. When it's done the line reads
 **History up to date through** the latest day. Later starts only fetch the days that are
 missing. If it reads **Loading stopped at** a date, something went wrong on that day, and
@@ -160,6 +159,20 @@ later, and keeps trying every ten minutes. A missing key is not tried again: add
 step 3 says, then run `docker compose up --build` again. Stopping and starting the app again
 (below) also picks up from that day. A day
 that is tried again is fetched from the start, and nothing in it is counted twice.
+
+**Exploring.** Once days have loaded, the page shows them: it opens on the last seven
+days, with the range written out (for example **12 Oct – 18 Oct 2026 · 1,097 posts**). Drag
+either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
+when you let go, and the address changes with it, so you can share exactly what you see.
+The large plot shows every post in the range as a dot, coloured by topic, with posts that
+mean similar things close together. The map is worked out afresh for each range, which
+takes a few seconds the first time (**Recomputing map…** shows meanwhile; a week takes about
+5 seconds, all eight weeks about half a minute) and is instant after that. Hover a dot to
+read the post, click it to open it on Reddit. The **Topics** list beside it has the range's
+topics, busiest first, each with a line of its daily activity, its post count and a badge:
+**New**, **Rising**, **Steady** or **Fading** against the same number of days before. Hover a
+topic to pick out its dots. **Generate report** is shown but switched off: reports arrive in
+the next build step.
 
 Ignore the `Local:` and `Network:` addresses the frontend prints in the log; they're inside
 Docker. Use http://localhost:5173 (or the `PORT` you set).

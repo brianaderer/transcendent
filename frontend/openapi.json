@@ -1,0 +1,448 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Community Voices",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Report Health",
+        "description": "Say whether every dependency answers, and name any that doesn't.",
+        "operationId": "report_health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ingestion": {
+      "get": {
+        "summary": "Report Ingestion",
+        "description": "How far the catch-up has got through the history.",
+        "operationId": "report_ingestion",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Report Ingestion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/streams/{stream}/events": {
+      "get": {
+        "summary": "Stream Events",
+        "description": "Live events as server-sent events (atlas plate 41).",
+        "operationId": "stream_events",
+        "parameters": [
+          {
+            "name": "stream",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Stream"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/days": {
+      "get": {
+        "summary": "Report Days",
+        "description": "Posts and comments per day across the history, and the latest day loaded.",
+        "operationId": "report_days",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/topics": {
+      "get": {
+        "summary": "Report Topics",
+        "description": "The topics with engagement in the range, busiest first, each with its badge.",
+        "operationId": "report_topics",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TopicInRange"
+                  },
+                  "title": "Response Report Topics"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/map": {
+      "get": {
+        "summary": "Report Map",
+        "description": "Every post and comment written in the range, placed on the range's own map.",
+        "operationId": "report_map",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Map"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DayCount": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "posts": {
+            "type": "integer",
+            "title": "Posts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "posts"
+        ],
+        "title": "DayCount"
+      },
+      "Days": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DayCount"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "latest_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "latest_day"
+        ],
+        "title": "Days"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Map": {
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/MapPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "points"
+        ],
+        "title": "Map"
+      },
+      "MapPoint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "author": {
+            "type": "string",
+            "title": "Author"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "thread_title": {
+            "type": "string",
+            "title": "Thread Title"
+          },
+          "excerpt": {
+            "type": "string",
+            "title": "Excerpt"
+          },
+          "thread_topic_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Topic Id"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "thread_id",
+          "kind",
+          "author",
+          "day",
+          "thread_title",
+          "excerpt",
+          "thread_topic_id",
+          "x",
+          "y"
+        ],
+        "title": "MapPoint"
+      },
+      "TopicInRange": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date",
+            "title": "First Seen"
+          },
+          "engagement": {
+            "type": "integer",
+            "title": "Engagement"
+          },
+          "posts": {
+            "type": "integer",
+            "title": "Posts"
+          },
+          "daily": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Daily"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "new",
+              "rising",
+              "steady",
+              "fading"
+            ],
+            "title": "Direction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "description",
+          "first_seen",
+          "engagement",
+          "posts",
+          "daily",
+          "direction"
+        ],
+        "title": "TopicInRange"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

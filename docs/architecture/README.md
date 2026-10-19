@@ -16,7 +16,7 @@ configuration and data.
 | [api](api.md) | `backend/src/voices/api/`, `voices/health.py` | The web API under `/api`; health check |
 | [worker](worker.md) | `backend/src/voices/worker/` | Celery worker and Beat |
 | [database](database.md) | `backend/src/voices/db/`, `backend/migrations/` | The tables as SQLAlchemy models, Alembic migrations, and the setup step that applies them on every start |
-| [frontend](frontend.md) | `frontend/` | The web app; backend status and history loading for now |
+| [frontend](frontend.md) | `frontend/` | The web app: the Explore page (date-range slider, dot plot of the range's posts, topics with badges) under a top bar with backend status and history loading |
 | [ingestion](ingestion.md) | `backend/src/voices/ingestion/` | The daily catch-up: fetch a day of r/sailing from Arctic Shift, filter, drop anything on a thread already deleted as noise, fold agreeing replies into upvotes, embed, store |
 | [events](events.md) | `backend/src/voices/events.py`, `frontend/src/useLiveEvents.ts` | Live events from jobs to the browser over SSE |
 | [tagging](tagging.md) | `backend/src/voices/tagging/`, `voices/db/tagging_store.py` | Sorts threads into topics: each thread encoded as its post and top replies on its first and third days, grouped by meaning, the tagging agent decides attach, mint or noise, threads still without a topic after their third day deleted as noise, daily engagement rebuilt |
