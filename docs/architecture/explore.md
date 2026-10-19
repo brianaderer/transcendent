@@ -73,8 +73,9 @@ dot plot, recomputed for each range (atlas OPEN-20).
 ## Used by
 [api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`), which the
 [frontend](frontend.md)'s Explore page calls; [comparison](comparison.md) (the answer key
-calls `topics_in_range`); [prediction](prediction.md) (`DayRange`, `direction.trend`,
-`TopicData`, `rows_by_topic`).
+calls `topics_in_range`), [report](report.md) (`TopicData` in its run data);
+[prediction](prediction.md) (`DayRange`, `direction.is_new`, `direction.trend`, `TopicData`,
+`rows_by_topic`).
 
 ## Configuration and data
 `REDIS_URL` (read by the API, which builds the cache). Fixed in code: `CHANGE_THAT_COUNTS =

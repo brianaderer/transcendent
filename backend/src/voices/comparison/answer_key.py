@@ -20,11 +20,6 @@ class KeyTopic(BaseModel):
     engagement: int  # posts, comments and upvotes in the range
     direction: Direction  # the Explore badge: new, rising, steady or fading
 
-    @property
-    def id(self) -> int:
-        """The topic's id under the name the matching reads (`TopicInfo` uses `id`)."""
-        return self.topic_id
-
 
 def answer_key(data: TopicData, days: DayRange) -> list[KeyTopic]:
     """The range's main topics: every active topic ranked MAIN_TOPICS or better, biggest

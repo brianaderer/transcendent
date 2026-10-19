@@ -10,7 +10,9 @@ against what happened, outside the A/B scores (atlas OPEN-22). Only what was kno
 before the range is used, never anything from inside it (OPEN-11).
 
 ## Public interface
-- `trends.topic_trends(data, days) -> list[TopicTrend]` — every topic known before
+- `trends.topic_trends(data, days) -> list[TopicTrend]` — `data` is anything with explore's
+  `range_topics.TopicData` reads (`topic_days(first_day, last_day)` and `topics(ids)`;
+  `ExploreStore` satisfies it). Returns every topic known before
   `days.start` (its `first_seen` is earlier) with engagement in the `PERIODS_SHOWN` periods
   before the range, highest projection first (ties by topic id). Topics quiet in every
   period are left out.
@@ -18,8 +20,6 @@ before the range is used, never anything from inside it (OPEN-11).
   (engagement in each period before the range, oldest first), `expected` (projected
   engagement for the range), `low` and `high` (the projection's range, never below zero),
   `direction` (`new`, `rising`, `steady` or `fading`).
-- `trends.TrendData` — the reads it needs: `topic_days(first_day, last_day)` and
-  `topics(ids)`, the same as explore's `TopicData`; `ExploreStore` satisfies it.
 - `trends.periods_before(days)` — the `PERIODS_SHOWN` periods of the range's length just
   before it, oldest first, the last ending the day before the range.
 - `trends.damped_projection(series) -> (next, spread)` — the projection itself, on any
@@ -39,12 +39,13 @@ before the range is used, never anything from inside it (OPEN-11).
   The result goes back through `expm1`.
 - **The range** is the projection plus and minus the typical one-step fitting error (root
   mean square, on the log scale), never narrower than `SMALLEST_SPREAD`.
-- **Direction.** `new` when the topic was first seen in the last period before the range;
-  otherwise `voices.explore.direction.trend` comparing the rounded projection with the last
+- **Direction.** `new` when the topic was first seen in the last period before the range
+  (`voices.explore.direction.is_new` against that period); otherwise
+  `voices.explore.direction.trend` comparing the rounded projection with the last
   period: more than a quarter up is `rising`, more than a quarter down `fading`.
 
 ## Uses
-[explore](explore.md) (`DayRange`, `direction.trend`, `range_topics.TopicData` and
+[explore](explore.md) (`DayRange`, `direction.is_new` and `direction.trend`, `range_topics.TopicData` and
 `rows_by_topic`, the `TopicDay` and `TopicInfo` rows), Pydantic.
 
 ## Used by

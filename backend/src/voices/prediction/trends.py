@@ -4,13 +4,11 @@ history one period ahead, onto the range itself."""
 
 import math
 from collections.abc import Sequence
-from datetime import date
-from typing import Protocol
 
 from pydantic import BaseModel
 
 from voices.explore.day_range import DayRange
-from voices.explore.direction import Direction, trend
+from voices.explore.direction import Direction, is_new, trend
 from voices.explore.range_topics import TopicData, rows_by_topic
 from voices.explore.shapes import TopicDay, TopicInfo
 
@@ -32,11 +30,7 @@ class TopicTrend(BaseModel):
     direction: Direction  # new, or how `expected` compares with the last period
 
 
-class TrendData(TopicData, Protocol):
-    """Topics' daily engagement and their labels; `ExploreStore` satisfies it."""
-
-
-def topic_trends(data: TrendData, days: DayRange) -> list[TopicTrend]:
+def topic_trends(data: TopicData, days: DayRange) -> list[TopicTrend]:
     """Every topic known the day before `days` began with engagement in the PERIODS_SHOWN
     periods before it, projected onto `days`, highest projection first (ties by id). Nothing
     from inside `days` is read."""
@@ -72,14 +66,10 @@ def _trend(info: TopicInfo, engagement: list[int], periods: list[DayRange]) -> T
         expected=expected,
         low=max(0.0, math.expm1(log_expected - spread)),
         high=math.expm1(log_expected + spread),
-        direction=_direction(info.first_seen, expected, engagement[-1], periods[-1]),
+        direction="new"
+        if is_new(info.first_seen, periods[-1])
+        else trend(round(expected), engagement[-1]),
     )
-
-
-def _direction(first_seen: date, expected: float, last: int, last_period: DayRange) -> Direction:
-    if first_seen >= last_period.start:
-        return "new"
-    return trend(round(expected), last)
 
 
 def damped_projection(series: Sequence[float]) -> tuple[float, float]:
@@ -92,9 +82,11 @@ def damped_projection(series: Sequence[float]) -> tuple[float, float]:
         return 0.0, SMALLEST_SPREAD
     level, slope, errors = history[0], 0.0, []
     for value in history[1:]:
-        errors.append(value - (level + DAMPING * slope))
-        previous, level = level, _blend(LEVEL_SMOOTHING, value, level + DAMPING * slope)
-        slope = _blend(TREND_SMOOTHING, level - previous, DAMPING * slope)
+        forecast = level + DAMPING * slope
+        errors.append(value - forecast)
+        new_level = _blend(LEVEL_SMOOTHING, value, forecast)
+        slope = _blend(TREND_SMOOTHING, new_level - level, DAMPING * slope)
+        level = new_level
     projected = max(0.0, level + DAMPING * slope)
     return projected, max(SMALLEST_SPREAD, _typical(errors))
 

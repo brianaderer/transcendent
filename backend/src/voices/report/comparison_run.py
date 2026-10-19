@@ -12,11 +12,11 @@ from pydantic import BaseModel
 
 from voices.comparison.answer_key import KeyTopic, active_topics, main_topics
 from voices.comparison.commitment import Commitment, NamedTopic, PredictedTopic
-from voices.comparison.matching import ComparisonEmbedder, match_names
-from voices.comparison.scoring import Marking, Scores, score
+from voices.comparison.scoring import Marking, Scores, mark, score
 from voices.explore.day_range import DayRange
-from voices.explore.range_topics import topics_in_range
-from voices.prediction.trends import TrendData, topic_trends
+from voices.explore.range_topics import TopicData, topics_in_range
+from voices.ingestion.embedder import ComparisonEmbedder
+from voices.prediction.trends import topic_trends
 from voices.report.tasks import Prediction, Report, Task, predict_task, write_task
 from voices.report.tools import QueryEmbedder, ReportStore, ReportTools
 from voices.report.writer import ChatModel, Emit, ReportWriter, Written
@@ -55,7 +55,7 @@ class RunResult(BaseModel):
 class Embedder(QueryEmbedder, ComparisonEmbedder, Protocol): ...
 
 
-class RunData(TrendData, ReportStore, Protocol): ...
+class RunData(TopicData, ReportStore, Protocol): ...
 
 
 @dataclass(frozen=True)
@@ -117,11 +117,9 @@ class _OneRun:
         predicted = self._phase(predict_task(self.days), tools("predict"), emit)
         report: Report = written.answer  # type: ignore[assignment]
         prediction: Prediction = predicted.answer  # type: ignore[assignment]
-        marking = self._marking(report, prediction)
-        scores = score(
+        marking, scores = self._marked(
             Commitment(topics=report.topics, predicted=[]),
             Commitment(topics=[], predicted=prediction.predicted),
-            marking,
         )
         return _version_result(
             version, (report, prediction), (scores, marking), (written, predicted)
@@ -153,15 +151,9 @@ class _OneRun:
         projected = lambda: [t.model_dump() for t in topic_trends(data, self.days)]  # noqa: E731
         return ReportTools(data, embedder, _days_before(self.days), self.run_name, projected)
 
-    def _marking(self, report: Report, prediction: Prediction) -> Marking:
-        names_of_report = [t.name for t in report.topics]
-        names_predicted = [p.name for p in prediction.predicted]
-        embedder = self.parts.embedder
-        return Marking(
-            active=self.active,
-            report_matches=match_names(names_of_report, self.active, embedder),
-            prediction_matches=match_names(names_predicted, self.active, embedder),
-        )
+    def _marked(self, report: Commitment, prediction: Commitment) -> tuple[Marking, Scores]:
+        marking = mark(self.active, report, prediction, self.parts.embedder)
+        return marking, score(report, prediction, marking)
 
 
 def _no_tools(_phase: str) -> None:

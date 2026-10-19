@@ -31,7 +31,10 @@ only difference is whether the model gets tools that read our store.
   `topic_trends` gives the range's measured topics) and the prediction for the range made as
   of the day before (B's tools see only the 28 days before, and `topic_trends` gives the
   projected trends, plate 50). Both are scored against the same answer key
-  ([comparison](comparison.md)). Returns a `RunResult`: the range, the model, the range's main
+  ([comparison](comparison.md)'s `mark` then `score`). `RunParts.data` is anything with
+  explore's `TopicData` reads and the `ReportStore` reads; `RunParts.embedder` anything with
+  `embed_query` and `embed_for_comparison` (`QueryEmbedder` and ingestion's
+  `ComparisonEmbedder`). Returns a `RunResult`: the range, the model, the range's main
   topics, the instructions, and per version a `VersionResult` (document, topics, predicted,
   reasoning, scores, the matches behind them, tool calls, posts seen, tokens, seconds).
 - `runs.RunStore(redis)` — a run's `RunState` (`running`, `finished` with its result, or
@@ -56,10 +59,11 @@ score and `run.finished` (or `run.failed` with the reason). The result is kept i
 day so the Document and Comparison pages can read it; nothing else is kept.
 
 ## Uses
-[comparison](comparison.md) (answer key, matching, scores, commitments),
+[comparison](comparison.md) (answer key, `mark`, scores, commitments),
 [prediction](prediction.md) (projected trends), [explore](explore.md) (`DayRange`, the range's
 topics, `ExploreStore`), [tagging](tagging.md) (`TaggingStore`'s search, lookup and retrieval
-counting; `connect_model`), [ingestion](ingestion.md) (the embedder), [events](events.md),
+counting; `connect_model`), [ingestion](ingestion.md) (the embedder and its
+`ComparisonEmbedder` interface), [events](events.md),
 [logging](logging.md), Redis, Celery, LangChain, OpenRouter.
 
 ## Used by

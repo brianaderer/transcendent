@@ -5,7 +5,8 @@ They aren't stored; each one counts as an upvote for the post it replies to (atl
 
 import math
 from collections.abc import Sequence
-from typing import Protocol
+
+from voices.ingestion.embedder import ComparisonEmbedder
 
 MAX_AGREEMENT_WORDS = 8
 AGREEMENT_SIMILARITY = 0.80  # to be tuned against real r/sailing replies
@@ -25,10 +26,6 @@ AGREEMENT_EXAMPLES = [
     "well said",
     "nice summary",
 ]
-
-
-class ComparisonEmbedder(Protocol):
-    def embed_for_comparison(self, texts: Sequence[str]) -> list[list[float]]: ...
 
 
 class AgreementDetector:

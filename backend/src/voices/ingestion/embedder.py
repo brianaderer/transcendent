@@ -22,6 +22,13 @@ class TextModel(Protocol):
     def embed(self, texts: list[str], batch_size: int) -> Iterable[Sequence[float]]: ...
 
 
+class ComparisonEmbedder(Protocol):
+    """Embeds texts for comparing their meanings with each other; `NomicEmbedder` satisfies
+    it. Used by agreement detection and by the comparison's name matching."""
+
+    def embed_for_comparison(self, texts: Sequence[str]) -> list[list[float]]: ...
+
+
 class NomicEmbedder:
     def __init__(self, model: TextModel):
         self.model = model
