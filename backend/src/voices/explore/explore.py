@@ -7,7 +7,7 @@ from datetime import date
 from typing import Protocol
 
 from voices.explore.day_range import DayRange
-from voices.explore.direction import Direction, is_new, trend
+from voices.explore.direction import is_new, trend
 from voices.explore.projection import Point
 from voices.explore.shapes import (
     DayCount,
@@ -91,12 +91,8 @@ def _topic(info: TopicInfo, rows: list[TopicDay], days: DayRange) -> TopicInRang
         engagement=engagement,
         posts=sum(r.posts for r in in_range),
         daily=_daily(in_range, days),
-        direction=_badge(info, days, engagement, before),
+        direction="new" if is_new(info.first_seen, days) else trend(engagement, before),
     )
-
-
-def _badge(info: TopicInfo, days: DayRange, engagement: int, before: int) -> Direction:
-    return "new" if is_new(info.first_seen, days) else trend(engagement, before)
 
 
 def _daily(rows: list[TopicDay], days: DayRange) -> list[int]:

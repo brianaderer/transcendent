@@ -6,7 +6,7 @@ from typing import Literal
 from voices.explore.day_range import DayRange
 
 Trend = Literal["rising", "steady", "fading"]
-Direction = Literal["new", "rising", "steady", "fading"]  # the badge: new, or the trend
+Direction = Literal["new", Trend]
 
 CHANGE_THAT_COUNTS = 0.25  # up or down by more than a quarter against the period before
 

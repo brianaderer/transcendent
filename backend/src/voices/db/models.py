@@ -154,7 +154,7 @@ class IngestedDay(Base):
     __tablename__ = "ingested_days"
     __table_args__ = (
         CheckConstraint(
-            f"status IN ({', '.join(repr(status) for status in DAY_STATUSES)})",
+            f"status IN ({', '.join(f"'{status}'" for status in DAY_STATUSES)})",
             name="ingested_day_status",
         ),
     )
