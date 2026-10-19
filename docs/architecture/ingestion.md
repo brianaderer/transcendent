@@ -87,7 +87,7 @@ the store and the `emit` function, which match the small interfaces above.
 `NomicEmbedder` to tagging); [database](database.md)
 (`voices.db.store` saves a `DayBatch`, with its `EmbeddedItem`s and `NewThread`s);
 [tagging](tagging.md) (`day_tagging` uses the `Emit` interface; its search tools embed terms
-with `NomicEmbedder.embed_query`).
+with `NomicEmbedder.embed_query`); [bakeoff](bakeoff.md) (`load_embedder`).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`

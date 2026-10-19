@@ -106,7 +106,7 @@ LangChain, scikit-learn (HDBSCAN), numpy, Postgres with pgvector.
 
 ## Used by
 [worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `TaggingAgent` and `DayTagging`, and tags each day of the catch-up right after
-loading it).
+loading it); [bakeoff](bakeoff.md) (runs `ToolLoopDecider` with `TaggingTools` on sample cases).
 
 ## Configuration and data
 `OPENROUTER_API_KEY` (required for tagging), `TAGGING_MODEL_NAME` (default

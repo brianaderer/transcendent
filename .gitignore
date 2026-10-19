@@ -13,5 +13,8 @@
 # macOS folder metadata
 .DS_Store
 
+# Bake-off results printed by README step 6
+bakeoff-results.md
+
 # Python bytecode
 __pycache__/

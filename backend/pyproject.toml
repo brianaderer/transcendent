@@ -36,8 +36,11 @@ packages = ["src/voices"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = '-q -p no:cacheprovider -m "not database"'  # no cache: non-root containers can't write one
-markers = ["database: needs a running Postgres; run with -m database"]
+addopts = '-q -p no:cacheprovider -m "not database and not bakeoff"'  # no cache: non-root containers can't write one
+markers = [
+    "database: needs a running Postgres; run with -m database",
+    "bakeoff: calls the real tagging model and spends money; run with -m bakeoff",
+]
 
 [tool.ruff]
 line-length = 100

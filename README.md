@@ -181,9 +181,29 @@ docker compose run --rm --no-deps frontend npm test
 ```
 
 Each should end with every test passed (a `warning` line from a library is fine). The backend
-line also says `20 deselected`: those are the twenty tests that need a running database, which the
-default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
+line also says `21 deselected`: twenty tests that need a running database and one that calls the
+real model (step 6), which the default run leaves out (see [database](docs/architecture/database.md) for how to run it). The
 tests never call a real AI model or a real website, so they run offline in seconds.
+
+### 6. Compare tagging models (optional; spends a little money)
+
+The bake-off runs 25 sample tagging cases with known right answers through the real tagging
+step, once with Claude Haiku 5.5 and once with Claude Sonnet 5.5, and prints a results page
+with each model's score, time and cost. It uses the key from step 3 and costs about 20 cents.
+
+```bash
+docker compose run --rm -T --no-deps api python -m voices.bakeoff > bakeoff-results.md
+```
+
+It takes about two minutes. The committed results are in
+[`docs/benchmarks/tagging-models.md`](docs/benchmarks/tagging-models.md). To check only that the
+model the app uses still gets at least eight cases in ten right:
+
+```bash
+docker compose run --rm --no-deps api pytest -m bakeoff
+```
+
+See [bakeoff](docs/architecture/bakeoff.md) for how the cases are built and scored.
 
 **Atlas presentation page:** [https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ](https://claude.ai/artifact/VUfVs6dZ9gjBJFKwE1enLJ) (private; the clickable view of the plan).
 

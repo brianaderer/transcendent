@@ -78,7 +78,7 @@ SQLAlchemy, Alembic.
 [worker](worker.md) builds the store and hands it to the [ingestion](ingestion.md)
 catch-up, which saves each day and keeps the day ledger through it; the worker also builds
 `TaggingStore` on the same connection and hands it to [tagging](tagging.md); [api](api.md) uses it for `GET /api/ingestion` (its health check connects to Postgres
-directly).
+directly); [bakeoff](bakeoff.md) uses `PostNotFound` and `tagging_store`'s excerpt lengths.
 
 ## Configuration and data
 `DATABASE_URL`. Data lives on the `postgres-data` volume.

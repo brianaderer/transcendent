@@ -20,3 +20,4 @@ configuration and data.
 | [ingestion](ingestion.md) | `backend/src/voices/ingestion/` | The daily catch-up: fetch a day of r/sailing from Arctic Shift, filter, fold agreeing replies into upvotes, embed, store |
 | [events](events.md) | `backend/src/voices/events.py`, `frontend/src/useLiveEvents.ts` | Live events from jobs to the browser over SSE |
 | [tagging](tagging.md) | `backend/src/voices/tagging/`, `voices/db/tagging_store.py` | Sorts each day's posts into topics: clusters with a three-day lookahead, the tagging agent decides attach, mint or noise, daily engagement rebuilt |
+| [bakeoff](bakeoff.md) | `backend/src/voices/bakeoff/` | Compares tagging models on fixed sample cases with known right answers: quality, time and cost; results in `docs/benchmarks/` |

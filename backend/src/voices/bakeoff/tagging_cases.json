@@ -1,0 +1,3848 @@
+{
+ "topics": [
+  {
+   "id": 1,
+   "label": "Stolen boats",
+   "description": "Boats stolen from moorings or marinas, sightings, and owners asking the community to watch for them.",
+   "posts_last_week": 6
+  },
+  {
+   "id": 2,
+   "label": "Learning to sail",
+   "description": "Getting started: sailing classes and schools, certification courses, clubs to join, and advice for beginners.",
+   "posts_last_week": 14
+  },
+  {
+   "id": 3,
+   "label": "Buying a boat",
+   "description": "Choosing, inspecting and buying a boat, especially a first boat: which models suit, what to check, what to pay.",
+   "posts_last_week": 18
+  },
+  {
+   "id": 4,
+   "label": "Sail handling and running rigging",
+   "description": "Sheets, reefing, outhaul and other sail controls, rigging jibs and genoas, and trimming sails.",
+   "posts_last_week": 9
+  },
+  {
+   "id": 5,
+   "label": "Repairs and hardware",
+   "description": "Fixing and replacing boat hardware and systems: fittings, chainplates, cleats, rudders, pumps, and identifying parts.",
+   "posts_last_week": 15
+  },
+  {
+   "id": 6,
+   "label": "Cruising destinations and trip planning",
+   "description": "Where to sail and how to plan a cruise: harbours, islands, routes, customs and clearing in.",
+   "posts_last_week": 11
+  },
+  {
+   "id": 7,
+   "label": "Racing and regattas",
+   "description": "Club racing, regattas and championships, race crews and results.",
+   "posts_last_week": 7
+  },
+  {
+   "id": 8,
+   "label": "Life aboard",
+   "description": "Living or spending nights aboard: the galley, cooking, fuel and gas safety, comfort and storage.",
+   "posts_last_week": 5
+  },
+  {
+   "id": 9,
+   "label": "Seasickness and health on board",
+   "description": "Seasickness, injuries and physical limits, and how sailors cope with them.",
+   "posts_last_week": 3
+  }
+ ],
+ "cases": [
+  {
+   "name": "stolen-hinckley",
+   "threads": [
+    "1vwq3jk",
+    "1vx4h0a",
+    "1vyw3xp",
+    "1vyw4dg",
+    "1vyzr21"
+   ],
+   "expected": "attach",
+   "topic_id": 1
+  },
+  {
+   "name": "learning-lessons-by-region",
+   "threads": [
+    "1vz84j9",
+    "1vz96oi"
+   ],
+   "expected": "attach",
+   "topic_id": 2
+  },
+  {
+   "name": "sailing-school-experiences",
+   "threads": [
+    "1vx21mw",
+    "1vxq80t"
+   ],
+   "expected": "attach",
+   "topic_id": 2
+  },
+  {
+   "name": "lake-to-coastal",
+   "threads": [
+    "1vyaop3"
+   ],
+   "expected": "attach",
+   "topic_id": 2
+  },
+  {
+   "name": "yacht-clubs-melbourne",
+   "threads": [
+    "1vvwu4g"
+   ],
+   "expected": "attach",
+   "topic_id": 2
+  },
+  {
+   "name": "first-boat-choices",
+   "threads": [
+    "1vwz6sl",
+    "1vxkc4q",
+    "1vyyzf5"
+   ],
+   "expected": "attach",
+   "topic_id": 3
+  },
+  {
+   "name": "smallest-dinghy",
+   "threads": [
+    "1vy8j7r"
+   ],
+   "expected": "attach",
+   "topic_id": 3
+  },
+  {
+   "name": "finally-bought-a-boat",
+   "threads": [
+    "1vxvfia"
+   ],
+   "expected": "attach",
+   "topic_id": 3
+  },
+  {
+   "name": "sheets-and-reefing",
+   "threads": [
+    "1vxdlm7",
+    "1vxep2h",
+    "1vxl6ct",
+    "1vxtzkb",
+    "1vxyvdq"
+   ],
+   "expected": "attach",
+   "topic_id": 4
+  },
+  {
+   "name": "hardware-identification",
+   "threads": [
+    "1vvumo9",
+    "1vybmw9"
+   ],
+   "expected": "attach",
+   "topic_id": 5
+  },
+  {
+   "name": "cleat-and-kicker-parts",
+   "threads": [
+    "1vz0pht",
+    "1vy3op1"
+   ],
+   "expected": "attach",
+   "topic_id": 5
+  },
+  {
+   "name": "replacement-rudder",
+   "threads": [
+    "1vxevpy"
+   ],
+   "expected": "attach",
+   "topic_id": 5
+  },
+  {
+   "name": "water-pump",
+   "threads": [
+    "1vyissb"
+   ],
+   "expected": "attach",
+   "topic_id": 5
+  },
+  {
+   "name": "bahamas-customs",
+   "threads": [
+    "1vyddql"
+   ],
+   "expected": "attach",
+   "topic_id": 6
+  },
+  {
+   "name": "key-largo",
+   "threads": [
+    "1vwfmpg"
+   ],
+   "expected": "attach",
+   "topic_id": 6
+  },
+  {
+   "name": "j24-euros",
+   "threads": [
+    "1vw5sbl"
+   ],
+   "expected": "attach",
+   "topic_id": 7
+  },
+  {
+   "name": "galley-and-gas",
+   "threads": [
+    "1vvvpod",
+    "1vwo6s1"
+   ],
+   "expected": "attach",
+   "topic_id": 8
+  },
+  {
+   "name": "seasickness-and-injury",
+   "threads": [
+    "1vwnu0e",
+    "1vyagrj"
+   ],
+   "expected": "attach",
+   "topic_id": 9
+  },
+  {
+   "name": "docking-mishaps",
+   "threads": [
+    "1vxehst",
+    "1vzat4e"
+   ],
+   "expected": "mint"
+  },
+  {
+   "name": "scenic-sails",
+   "threads": [
+    "1vwwpjh",
+    "1vyyfq2",
+    "1vy58lc",
+    "1vyfeya",
+    "1vyk5ff"
+   ],
+   "expected": "mint"
+  },
+  {
+   "name": "ai-regatta-posters",
+   "threads": [
+    "1vwrle5"
+   ],
+   "expected": "mint"
+  },
+  {
+   "name": "finding-sailing-company",
+   "threads": [
+    "1vyavce",
+    "1vyjgne"
+   ],
+   "expected": "mint"
+  },
+  {
+   "name": "sailing-history",
+   "threads": [
+    "1vx8obc"
+   ],
+   "expected": "mint"
+  },
+  {
+   "name": "grab-bag-no-text",
+   "threads": [
+    "1vwosme",
+    "1vz5ldt",
+    "1vwuva5",
+    "1vxfy7k"
+   ],
+   "expected": "noise"
+  },
+  {
+   "name": "grab-bag-unrelated",
+   "threads": [
+    "1vy7hdh",
+    "1vwpwel",
+    "1vy0els"
+   ],
+   "expected": "noise"
+  }
+ ],
+ "threads": {
+  "1vvumo9": {
+   "title": "Help identifying boat hardware",
+   "author": "aqua_bears",
+   "day": "2026-08-23",
+   "body": "Help identifying boat hardware\n\nI can't find the name of this hook to save my life, and I need to buy a backup. There is a gate on one end, then an open hook on the other, which hooks through the center of the anchor chain. SOS, please help! Thank you!",
+   "comments": [
+    {
+     "id": "p5c3mji",
+     "author": "NorbertIsAngry",
+     "body": "There are plenty of actual chain hooks on the market. Please don’t use this as one. ",
+     "replies_to": "p5c1bwg",
+     "score": 5
+    },
+    {
+     "id": "p5c1f4p",
+     "author": "bakerwest",
+     "body": "[this one looks similar ](https://defender.com/en_us/wichard-stainless-steel-one-hand-sail-snap?utm_id=150171837047&utm_campaign=19735474073&utm_source=google&utm_medium=paid&utm_content=649561344444&gad_source=1&gad_campaignid=19735474073&gclid=CjwKCAjwkaXUBhASEiwAZI3dszo35IDLbZBEAzOw_TAzeJ3NLCnMhNgD3MrNiAL63RWd7XKsI5SMFhoCvC0QAvD_BwE#493=46879)",
+     "replies_to": "1vvumo9",
+     "score": 3
+    },
+    {
+     "id": "p5dm687",
+     "author": "Imaginary-Season141",
+     "body": "We don’t call it a Devilsclaw for nothing..",
+     "replies_to": "p5c3mji",
+     "score": 2
+    },
+    {
+     "id": "p5c2q3r",
+     "author": "dxlsm",
+     "body": "On first sight, I thought it was a wire gate headsail hank that doesn’t have its eye hammered closed. My Google skills are otherwise failing me. ",
+     "replies_to": "1vvumo9",
+     "score": 1
+    },
+    {
+     "id": "p5cshcc",
+     "author": "otterfish",
+     "body": "Man it's been a while since I've been Rick Rolled.",
+     "replies_to": "p5c1f4p",
+     "score": 1
+    },
+    {
+     "id": "p5jmrvb",
+     "author": "otterfish",
+     "body": "You didn't click on it anyway? You're missing out!\n\nIt's actually a link to the right thing, I'm just saying it's been a while since I've been Rick Rolled.",
+     "replies_to": "p5dlxrl",
+     "score": 1
+    }
+   ]
+  },
+  "1vvvpod": {
+   "title": "Seeking tips for a new live aboard - galley edition",
+   "author": "Keggdirdle",
+   "day": "2026-08-23",
+   "body": "Seeking tips for a new live aboard - galley edition",
+   "comments": [
+    {
+     "id": "p5e9o4q",
+     "author": "Ok-Category2729",
+     "body": "top-loading fridge over front-opening if you have any say in it, cold air doesn't fall out every time you open it and you'll feel that in your power budget within the first week. pressure cooker is the other non-negotiable: 20 minutes, half a pound of propane, and you have a real meal. biggest mistake new liveaboards make in the galley isn't what they buy, it's that everything needs a secured home before you leave the dock, free-floating stuff is just a problem waiting for the first bit of chop.",
+     "replies_to": "1vvvpod",
+     "score": 1
+    }
+   ]
+  },
+  "1vvwu4g": {
+   "title": "Yacht Clubs in Melbourne",
+   "author": "Glass-Lead-5946",
+   "day": "2026-08-23",
+   "body": "Yacht Clubs in Melbourne\n\nHi all, I'm 25 and recently moved to Melbourne from the UK and wanting to get into the sailing scene here.\n\nBeen sailing my whole life on a keelboat, and have a couple seasons experience dinghy racing so wanting to join a club that has dinghy courses available and some keelboat racing too. \n\nA family member has an Etchell that I've been on a couple times so I would love to find a Club that has an Etchell fleet if possible.\n\nI'm hoping to get fully stuck in to the club culture and meet new people, so my question is to any of you local to Melbourne or Victoria if they have any recommendations? I'm quite overwhelmed by the options!\n\nSo far I've looked at RYCV, RBYC and RMYS but I know there's a lot more that might be well suited. \n\nAny help would be really appreciated!",
+   "comments": [
+    {
+     "id": "p5cscfw",
+     "author": "Eightstream",
+     "body": "RBYC has the only serious Etchells fleet in Melbourne",
+     "replies_to": "1vvwu4g",
+     "score": 6
+    },
+    {
+     "id": "p5ijzld",
+     "author": "Glass-Lead-5946",
+     "body": "Okay thankyou - I'll definitely inquire there then.",
+     "replies_to": "p5cscfw",
+     "score": 1
+    }
+   ]
+  },
+  "1vw5sbl": {
+   "title": "J24 Euros. End of a great event.",
+   "author": "BrendanIrish",
+   "day": "2026-08-23",
+   "body": "J24 Euros. End of a great event.",
+   "comments": [
+    {
+     "id": "p5iwebj",
+     "author": "arr4ws",
+     "body": "And fun",
+     "replies_to": "p5eg50b",
+     "score": 2
+    },
+    {
+     "id": "p5eg50b",
+     "author": "vicarem",
+     "body": "It looks cold",
+     "replies_to": "1vw5sbl",
+     "score": 2
+    },
+    {
+     "id": "p5lwl4v",
+     "author": "BrendanIrish",
+     "body": "Not too bad. ",
+     "replies_to": "p5eg50b",
+     "score": 1
+    },
+    {
+     "id": "p5lwmye",
+     "author": "BrendanIrish",
+     "body": "It was. ",
+     "replies_to": "p5iwebj",
+     "score": 1
+    }
+   ]
+  },
+  "1vwfmpg": {
+   "title": "Sailing Bayside of Key Largo",
+   "author": "sspera",
+   "day": "2026-08-23",
+   "body": "Sailing Bayside of Key Largo\n\nAny thoughts on sailing Long Sound, Little Blackwater Sound and Blackwater Sound?  \nI’m looking at vacation rentals that have slips and I started daydreaming!",
+   "comments": []
+  },
+  "1vwnu0e": {
+   "title": "Will seasickness diminish with more experience?",
+   "author": "HeatherDrawsAnimals",
+   "day": "2026-08-24",
+   "body": "Will seasickness diminish with more experience?\n\nI've been learning to sail for about a year now, have done ASA 101, 103, dinghy sailing, sailing on calm days with friends, everything so far had been in calmer waters, bays, rivers.  I hadn't gotten seasick yet, although I do get motion sickness in cars and planes. \n\nThis weekend I went out on my first \"offshore\" sail - we didn't go far offshore, just from Boston Harbor up to Gloucester and then back. We knew there would be some weather and  so I got a prescription for a scopolamine patch and put it on the day before the trip.  \n\nAbout 3 hours in things got a bit bumpier (about 3ft waves, 20kts gusts) and despite the patch, I got seasick along with a few other folks on the crew, vomiting and all.  It subsided once we got into the harbor, got off the boat and walked around.  We sailed back down after sunset, I was up front on watch duty and didn't experience any seasickness this time.\n\nIs it possible that as I get more experience in heavier weather, the seasickness might diminish?  I really love sailing and want to be able to go for longer sails, but I don't want to dread getting sick any time it's a little bit bumpy.  It's probably also useful to mention that we were sailing a 100-yr-old restored wooden boat, which may have contributed to how bumpy it felt.  Any advice or insight welcome!\n\nTL;DR: I got seasick on my first offshore sail despite wearing a scopolamine patch.  Will it always be like this or could it improve as I get more experience?",
+   "comments": [
+    {
+     "id": "p5ig0wt",
+     "author": "hemi1995",
+     "body": "You figure what helps minimize it.  For example you might need to not read or watch videos underway.  Mine was not staying below for very long and eating a bit before starting ",
+     "replies_to": "1vwnu0e",
+     "score": 38
+    },
+    {
+     "id": "p5ihecx",
+     "author": "HeatherDrawsAnimals",
+     "body": "Sitting up on the bow for lobster pot watch seemed to do the trick on the way back!",
+     "replies_to": "p5ig0wt",
+     "score": 19
+    },
+    {
+     "id": "p5ii9hd",
+     "author": "HeatherDrawsAnimals",
+     "body": "I didn't know that! Just googled, he wrote in his diary \"I am ill every time it blows hard and nothing but my enthusiastic love for the profession keeps me one hour at sea.\"",
+     "replies_to": "p5igoxg",
+     "score": 16
+    },
+    {
+     "id": "p5ifgj8",
+     "author": "Halyard44",
+     "body": "It improved with experience for me",
+     "replies_to": "1vwnu0e",
+     "score": 13
+    },
+    {
+     "id": "p5igoxg",
+     "author": "Max2310",
+     "body": "Nelson suffered from seasickness all his life.",
+     "replies_to": "1vwnu0e",
+     "score": 13
+    },
+    {
+     "id": "p5ige3r",
+     "author": "futurebigconcept",
+     "body": "Maybe, maybe not. \n\nI remember feeling very nauseated on a rough passage with steep swell between islands on my first Caribbean charter; then again several times in long passages/races around my home sailing grounds.  Now, many years later, I sail typically weekly in all kinds of conditions and I'm not very susceptible to motion sickness. \n\nDo the right things: Eyes on the horizon, don't stay down below, no reading (including phones).  If you still have issues, there are wrist bands and drugs. ",
+     "replies_to": "1vwnu0e",
+     "score": 11
+    },
+    {
+     "id": "p5iid7v",
+     "author": "hellowiththepudding",
+     "body": "Honestly you are looking out at the horizon but that section of the boat is among the least stable.",
+     "replies_to": "p5ihecx",
+     "score": 10
+    },
+    {
+     "id": "p5iiuvo",
+     "author": "HeatherDrawsAnimals",
+     "body": "Yes, it was very bumpy but somehow it worked out better than when I was back in the cockpit - - maybe because I was focused?  It's similar with driving, I never get carsick if I'm the one driving, but if I'm a passenger it can come on pretty quickly",
+     "replies_to": "p5iid7v",
+     "score": 10
+    },
+    {
+     "id": "p5ih3t4",
+     "author": "OldCarwash",
+     "body": "I think it is a combination of repeated exposure, experience and preparation. Sure, more time on the water means you will have less motion sickness but more time means you also learn to recognize and handle early onset of motion sickness better. Also you gain better tools to manage any symptoms over time …\n\nMaybe scopolamine is not your solution, maybe Stugeron is your jam or even just chewing ginger at the right time will work.\n\nLots of people make the mistake of closing up when feeling sick when they need to stop looking in the boat or at the phone/book and look outside at the horizon or the beautiful scenery.\n\nDon’t be discouraged by your reaction, it sounds like it was a bump ride.",
+     "replies_to": "1vwnu0e",
+     "score": 9
+    },
+    {
+     "id": "p5j84l9",
+     "author": "ProbablyFullOfShit",
+     "body": "Yeah, it's the focus that helps the most. When you look outside the boat, you can see a stable horizon compared to the waves you're about to hit. Your brain can prepare for what that's supposed to feel like.\n\nWhen you're just looking inside the boat, you're seeing a stable environment so your brain can't make sense of all the motion, so it triggers the poison defense mechanism, making you sick. If you're down below, try to stay busy on things that don't require you to focus in one area, like cleaning & cooking.\n\nYou can sometimes head it off when you first detect the symptoms. The first time you ask yourself if you might be getting seasick, forget get busy with something so you forget about seasickness. Ideally helm the boat, but trimming, tidying lines, cleaning, conversation, or anything really to take your mind off it. I've overcome it many times exactly like that.\n",
+     "replies_to": "p5iiuvo",
+     "score": 8
+    },
+    {
+     "id": "p5iihyw",
+     "author": "ceciltech",
+     "body": "Stay above decks and look at the horizon as much as possible.  For mild queasiness I like to have candied ginger to eat.  Try different drugs, I found Bonine worked best for me but it knocks my wife out so she can't take it.  Never take a new drug just before you go out test it before hand to see how it effect you.  I generally only get seasick within the first 48 hrs on the boat and get sea legs after that and much less likely to get sick.",
+     "replies_to": "1vwnu0e",
+     "score": 6
+    },
+    {
+     "id": "p5iyslk",
+     "author": "inventingme",
+     "body": "I found a solution. I got super seasick for years. I finally found a two-pronged solution. \n\n1. The Coast Guard Cocktail. It's a nausea med, which is sedative, combined with ephedrine, which is stimulant. My doc already worked with compounding pharmacies. I took him an article about how and why it worked. He reviewed it and called the compounding pharmacy. They agreed to make it, and it worked outstandingly well. When my husband says, \"Let's go sailing this weekend!\" I no longer hear, \"Let's have stomach flu on the water this weekend!\" Offshore passages are no longer so scary. \n\n2. You do not TREAT seasickness, you PREVENT it. This mind shift came from a wonderful article by a merchant mariner who was tasked with sorting out new shipmates and keeping them functional. He starts treating the new guys the night before. In addition to medication, no heavy, rich meals, no major alcohol consumption, get to bed at a reasonable hour, sleep well, and set yourself up for success. Take medication again in the morning a couple of hours before departure, or one hour absolute minimum. If you think you will wait to see if you feel bad, you're sunk. \n\n3. The normal recommendations. Stay topside as much as possible. Do food prep the night before so one can go below, grab lunch and drink from fridge, get back topside right away. Remember to drink, preferably something that replaces electrolytes. Have an ice chest topside so everyone can grab drinks without going below. Have a trash recepticle, too. Also think of towels, jackets, sunscreen, sunglasses, camera, binoculars, etc., that you might need and arrange them topside. Don't do close work on deck, or read. Hooking up dive gear, which I could do almost blindfolded, made me feel horrible in a swell. Hook all that you can up early and secure it. \n\n4. Audio books. Not that they officially influenced my nausea, per se. But they gave my mind a track that wasn't obsessing with Am I sick? Maybe I'm sick. Am I starting to feel bad? Did I drink enough? Very helpful. And not something I had to mess with. Set and forget it. Also very helpful in staying awake on late watches. \n\nAnd what did not work: \n\n1. Scopalomine, not to the extent I needed. It also made my close vision blurry until it wore off, a problem when reading charts and such. I ended up still feeling bad and layering dramamine and whatnot on top of it. Not ideal. \n\n2. Dramamine is an ok very short term solution. If most of your trip is sheltered, but you have a rough crossing of an hour or two's length that concerns you, it might be OK. But remember, prevent, don't treat. And see how sleepy it makes you. If you're essential crew, test in advance. (My mom once slept through an entire hurricane that passed over our house because of dramamine.) In my case, it's just my spouse and me, so being stupid via sedation, being out of commission, and being miserably sick are all out of the question. I needed to be functional. \n\n3. Ginger. I tried it so often that I got a reverse association. If I smelled it, I felt sick. Not fresh ginger, candied ginger, ginger candy, ginger essential oil, ginger ale. Zero. Nothing that can be done with ginger helped me. I tried it all. \n\n4. Relief bands, acupressure wrist devices, the electronic version, zero. None of that helped me. ",
+     "replies_to": "1vwnu0e",
+     "score": 6
+    },
+    {
+     "id": "p5klro6",
+     "author": "FistsUp",
+     "body": "I was told by a very experienced sailor that the US navy spent millions and years and years of research about seasickness only to arrive at the conclusion that it affects people differently, there are situations where just about everyone gets it and there are things you can do to minimise it (e.g try to stay up top in rough weather) but there’s no simple answer to fix it. ",
+     "replies_to": "1vwnu0e",
+     "score": 5
+    },
+    {
+     "id": "p5ignep",
+     "author": "monkey-seat",
+     "body": "Try stugeron if you can still order it online from Europe. ",
+     "replies_to": "1vwnu0e",
+     "score": 4
+    },
+    {
+     "id": "p5k9aaj",
+     "author": "ApplicationWilling89",
+     "body": "As a seasick sailor, it gets better particularly if your on the same or very similar boat. But it doesn't go away completely. You just learn how to deal with it. Here's some of what I've learnt:\n- Keep eating. Even if you've lost your appetite, give your stomach something productive to do instead of churning away.\n- Take your seasick pills/patches BEFORE you need them.\n- Lay down. If you feel it coming, get horizontal. Save yourself for when you need to get up and about.\n- Lastly, I perform an ancient seafareing ritual to bless the heads as a seasick freezone. Have faith in Poseidon and he will let you do your business in peace.\n",
+     "replies_to": "1vwnu0e",
+     "score": 4
+    }
+   ]
+  },
+  "1vwo6s1": {
+   "title": "Gas can in the cabin while using a propane stove",
+   "author": "Heavyicon",
+   "day": "2026-08-24",
+   "body": "Gas can in the cabin while using a propane stove\n\nSo I picked up a barebones racing sailboat (Evelyn 32-2) this spring. It uses an outboard and the gas tank for it is located in the cabin, near the transom. I’m considering putting a propane camp stove inside, near the companionway for making breakfast. On a scale of not stupid to stupid, how stupid is this? ",
+   "comments": [
+    {
+     "id": "p5ihx8u",
+     "author": "millijuna",
+     "body": "Do you like removing the cabintop of your boat with a “Bang”? Because that’s how you remove the cabintop with a bang. \n\nThe gas can should be in the cockpit, or otherwise in a locker that drains overboard, as should your propane. ",
+     "replies_to": "1vwo6s1",
+     "score": 18
+    },
+    {
+     "id": "p5iq9zj",
+     "author": "IanSan5653",
+     "body": "Both of these things are separately bad ideas. Combined they are especially bad. \n\nI would not store any volatile fuels (gas or propane) in the cabin or any enclosed unvented space. The fuel tank for the outboard should live outside.\n\nWhen I had a small boat with a camp stove I stored the fuel in the same exterior compartment that I stored the gas tank; that's OK because there should never be sparks in that compartment (and more importantly, it was sealed off from the cabin). \n\nWhen I actually ran the stove I did it outside if possible.",
+     "replies_to": "1vwo6s1",
+     "score": 14
+    },
+    {
+     "id": "p5jifvo",
+     "author": "Fit-Alarm2961",
+     "body": "A bit more detail here.  Propane is heavier than air.  Most of the time when it leaks while camping or something it just dissipates in the air.  Your hull however is hopefully pretty water tight, at least below the water line.  This means if propane leaks out of the tank it will pool in the bottom of your boat and have nowhere to go until it finds a source of ignition.  Oh, it's also colorless.  The ABYC has a lot to say about this for good reason.\n\nhttp://www.pcmarinesurveys.com/Safe%20Boat%20propane%20Installation.htm",
+     "replies_to": "p5ihx8u",
+     "score": 5
+    },
+    {
+     "id": "p5im2ol",
+     "author": "Heavyicon",
+     "body": "Yeah you right. Keeping this up for other sailors asking if it’s worth the risk.",
+     "replies_to": "p5ihx8u",
+     "score": 3
+    },
+    {
+     "id": "p5l0wey",
+     "author": "xiga",
+     "body": "On our J105 we use a jetboil on a gimbal to make food. We have *industrial* strength Velcro in two places that the gimbal can go: one by the sink (on the 105 it’s well forward in the companionway) and on the outside of the companionway slidey door panel thing. If it’s flat, we’ve even been able to cook straight on the deck lol. It’s\n been fine, no one has died or exploded in the three years we’ve been running this system. (I recommend picking up a welding glove just in case but the jetboil cools off extremely fast.)",
+     "replies_to": "1vwo6s1",
+     "score": 2
+    },
+    {
+     "id": "p5mlndm",
+     "author": "overthehillhat",
+     "body": "I raced on Evelyns when they were new\n\n*(LongTimeAgo)*\n\nWe would have turned you in for this",
+     "replies_to": "p5im2ol",
+     "score": 2
+    },
+    {
+     "id": "p5onoxm",
+     "author": "wheezl",
+     "body": "If you are prepared to be a case-study in ABYC training and don’t value your life, I say go for it. \n\nJust kidding. Neither Propane or gasoline should be anywhere in the cabin. ",
+     "replies_to": "1vwo6s1",
+     "score": 2
+    },
+    {
+     "id": "p640cwo",
+     "author": "DarkKnightOfDisorder",
+     "body": "Does the stove use small gas canisters or is it plumbed into a larger bottle? I wouldn’t have a problem with something like a jetboil in the cabin but would want larger bottles (like the 3kg reusable ones) stored in a separate locker outside with an external shutoff valve. ",
+     "replies_to": "1vwo6s1",
+     "score": 2
+    },
+    {
+     "id": "p5koti8",
+     "author": "ccgarnaal",
+     "body": "If you really can't find space for your outboard gas can you could install a small fixed thank. That has a outside fill line and vent. ",
+     "replies_to": "1vwo6s1",
+     "score": 1
+    },
+    {
+     "id": "p5z22em",
+     "author": "vanalden",
+     "body": "Methinks you meant to say 'should not be anywhere in the cabin.'\n\nIt's those pesky, little words that make all the difference. :-)",
+     "replies_to": "p5onoxm",
+     "score": 1
+    },
+    {
+     "id": "p5z2drw",
+     "author": "vanalden",
+     "body": "'Propane or gasoline tanks should not be anywhere in the cabin.'\n\nftfy. :-)",
+     "replies_to": "p5onoxm",
+     "score": 1
+    },
+    {
+     "id": "p5z3yzi",
+     "author": "vanalden",
+     "body": "Good man. \n\nMany boats use propane cookers, but the gas storage is outside the cabin in a locker that has an off-board drain. Still, a propane alarm under the cooker is a good thing to have. Another in the bilge and one more in the gas locker is even better.\n\nFor this same reason, boaters need to be careful about which formulation of brake cleaner they are using to clean up diesel spills, oil drips, etc, around the engine. Some brake cleaners are primarily acetone, which is also heavier than air and will settle in the bilge, just like propane. Oh oh.",
+     "replies_to": "p5im2ol",
+     "score": 1
+    },
+    {
+     "id": "p60aq6r",
+     "author": "wheezl",
+     "body": "No. I said what I meant to say.  Propane does belong in the cabin. However the tank, regulator, etc. should be outside the cabin in a compartment where any leaking propane would go overboard or simply stored outside.  Propane would be run to the appliance that needs it (usually an oven/stove or heater) and thus would be in the cabin.  There is really no reason for gasoline to be in the cabin at all.  Though I suppose a fuel line might run through a cabin if the fuel tanks were inconveniently located but that seems like a bad idea to me.  \n\nI was deliberately differentiating the two.  ",
+     "replies_to": "p5z2drw",
+     "score": 1
+    }
+   ]
+  },
+  "1vwosme": {
+   "title": "⛴️ Golden sunshine and a crisp sea breeze—slow summer moments aboard the yacht ✨",
+   "author": "AdaNataliaa1990",
+   "day": "2026-08-24",
+   "body": "⛴️ Golden sunshine and a crisp sea breeze—slow summer moments aboard the yacht ✨",
+   "comments": []
+  },
+  "1vwpwel": {
+   "title": "Where best can I wall-mount a PC tower + 27\" screen on a Beneteau 32s5?",
+   "author": "Low_Imagination_9670",
+   "day": "2026-08-24",
+   "body": "Where best can I wall-mount a PC tower + 27\" screen on a Beneteau 32s5?\n\nhttps://preview.redd.it/5fxtz4bic8lh1.png?width=1920&format=png&auto=webp&s=aadf1540f28cbe359516ba6dc212e5423be1973e\n\nI have an Acer Predator tower with a height of 87cm, length of 92cm and width of 22cm, and a 27\" screen, and I am not sure how best to wall-mount these in my Beneteau 32s5, any suggestions?",
+   "comments": [
+    {
+     "id": "p5iwzvr",
+     "author": "Table-Playful",
+     "body": "Best to switch to a Laptop",
+     "replies_to": "1vwpwel",
+     "score": 19
+    },
+    {
+     "id": "p5jnief",
+     "author": "kynde",
+     "body": "Wouldn't space be your primary resource as a liveaboard.\n\nA tower is extremely wasteful at that.\n\nA laptop and a tiny space heater will take one tenth of that volume.",
+     "replies_to": "p5j6cbc",
+     "score": 11
+    },
+    {
+     "id": "p5j8m92",
+     "author": "foilrider",
+     "body": "87x92x22 is insane. It’s 176 liters. I have a 5070 machine that is 7.2 liters. ",
+     "replies_to": "1vwpwel",
+     "score": 10
+    },
+    {
+     "id": "p5jugxu",
+     "author": "VilleeZ",
+     "body": "That prebuilt pc is just way oversized. I get that you don't want to switch to a laptop for the reasons you've told and I can come up with a few more.\n\nI would suggest building a small formfactor pc. It doesn't need to be the smallest but you would be able cut the size by at least 70% easily. That would be much easier to fit wherever you really like.\n\nPCs sure do produce heat, but unless fully loaded constantly, that would only be like maximun 100W of heat. Not very effective. And a modern PC at full load would in most cases not surpass 600-800W, so still not very impressive.",
+     "replies_to": "1vwpwel",
+     "score": 8
+    },
+    {
+     "id": "p5jrh2w",
+     "author": "Wander_Globe",
+     "body": "I liveaboard and managed space, just barely, for a 32. You'll be thankful. Movies, internet and my PS5 help pass those cold wet winters here in BC and having a nice screen helps. Even bought a mini Vizio soundbar and it really makes a difference. Looking at your picture I'd say right side on a swing arm so that it can extend to the middle if you have friends over. Just jerry rig something to lock it all in place or take it down when sailing. ",
+     "replies_to": "p5j6cbc",
+     "score": 3
+    },
+    {
+     "id": "p5jvsgi",
+     "author": "Spare-Peace-3474",
+     "body": "Rinuncerei al tower, il riscaldamento invernale non è un motivo valido per sprecare tutto quel volume.\nIo ho installato un mini PC Windows 4gb RAM con memorie SD, nascondendolo negli stipetti.\nIl solo spazio di cui mi preoccupo è il monitor e la tastiera ;)",
+     "replies_to": "1vwpwel",
+     "score": 3
+    },
+    {
+     "id": "p5j6cbc",
+     "author": "Low_Imagination_9670",
+     "body": "plan to liveaboard, and figured the tower + screen can heat the room in winter",
+     "replies_to": "p5iwzvr",
+     "score": 2
+    },
+    {
+     "id": "p5j8obn",
+     "author": "Robxray",
+     "body": "43 is the new 27. if you are wallmounting it just stick the 27  monitor on the table. ",
+     "replies_to": "1vwpwel",
+     "score": 1
+    },
+    {
+     "id": "p5l7ojz",
+     "author": "follyrob",
+     "body": "Agreed. That size tower is ridiculous.",
+     "replies_to": "p5j8m92",
+     "score": 1
+    },
+    {
+     "id": "p5l8mw8",
+     "author": "InvictusFrags",
+     "body": "Personally would try to get it to fit between the table flanges or what ever it’s called. Then put the monitor on a swivel mount in the middle ",
+     "replies_to": "1vwpwel",
+     "score": 1
+    }
+   ]
+  },
+  "1vwq3jk": {
+   "title": "Stolen B40 8/22 NYC",
+   "author": "everything0bagel",
+   "day": "2026-08-24",
+   "body": "Stolen B40 8/22 NYC\n\nNeighbors boat was stolen this weekend. Last know headed out of the NY Harbor.",
+   "comments": [
+    {
+     "id": "p5j7tb9",
+     "author": "oogaboogaman_3",
+     "body": "Always a fascinating to think about, I could steal any sailboat at any yacht club in my city with a couple friends and favorable winds, but there is nowhere to hide and nowhere to run unless you plan to cross the ocean to another country, and likely a country with minimal ties to your own. Additionally you would be ostracized from your sailing community and the sailing community as a whole. Wonder what this person's plan is.",
+     "replies_to": "1vwq3jk",
+     "score": 122
+    },
+    {
+     "id": "p5jgbch",
+     "author": "KiroTheSorcerer",
+     "body": "I would think their plan is to hide the boat, repaint it, then sell it on marketplace or something for several thousand dollars as a \"no title\" boat.\n\nOr it was a bunch of dumbasses doing it for the thrill of stealing a huge boat and sailing away on it, prolly gonna anchor it somewhere later that same day amd leave it",
+     "replies_to": "p5j7tb9",
+     "score": 66
+    },
+    {
+     "id": "p5j6gyp",
+     "author": "TangoLimaGolf",
+     "body": "It’s a sailboat not an airplane. How far could they have possibly gone before the U.S. coast guard picks them up?",
+     "replies_to": "1vwq3jk",
+     "score": 55
+    },
+    {
+     "id": "p5jnao7",
+     "author": "Retumbo77",
+     "body": "YOU BOYS EVER BEEN TO MEX-ICO?",
+     "replies_to": "p5j6gyp",
+     "score": 32
+    },
+    {
+     "id": "p5ji6zb",
+     "author": "CollectionOk8253",
+     "body": "Had a mentally unstable guy steal one in our harbor. They were sailing south to get to warmer weather. ",
+     "replies_to": "p5jgbch",
+     "score": 28
+    },
+    {
+     "id": "p5jv24p",
+     "author": "stfjs20",
+     "body": "Rory effing Gilmore is at it again. Toxic little girl.",
+     "replies_to": "1vwq3jk",
+     "score": 18
+    },
+    {
+     "id": "p5kdpr2",
+     "author": "Spiggots",
+     "body": "We used dock at that marina, and know that boat well. Gorgeous boat, beautifully maintained. Owner was a super nice guy, used to single hand her all the time. But she would be a tricky boat for a single (I assume?), unfamiliar thief to single hand in the night. ",
+     "replies_to": "1vwq3jk",
+     "score": 14
+    },
+    {
+     "id": "p5l104t",
+     "author": "HappilyDisengaged",
+     "body": "Exactly. The thing is moving at 7kts ",
+     "replies_to": "p5j6gyp",
+     "score": 13
+    },
+    {
+     "id": "p5kyu6q",
+     "author": "Shhheeeesshh",
+     "body": "As long as the engine works, I can single hand any boat. ",
+     "replies_to": "p5kdpr2",
+     "score": 12
+    },
+    {
+     "id": "p5jg4oy",
+     "author": "menachinite",
+     "body": " Very far in this season of the year ",
+     "replies_to": "p5j6gyp",
+     "score": 10
+    },
+    {
+     "id": "p5jjb5j",
+     "author": "lemao_squash",
+     "body": "wonder which countries reallt use this? I've never been asked for one",
+     "replies_to": "p5j95eh",
+     "score": 10
+    },
+    {
+     "id": "p5koace",
+     "author": "roberbear",
+     "body": "Wow that’s so sad. I hope he gets it back undamaged. Used to dock there and it is like a really shady marina. I remember the people who suck their own boat. 😬",
+     "replies_to": "1vwq3jk",
+     "score": 10
+    },
+    {
+     "id": "p5kk1d8",
+     "author": "Electrical_Cut8610",
+     "body": "Thats a loooooot of time and effort for a few thousand bucks ",
+     "replies_to": "p5jgbch",
+     "score": 8
+    },
+    {
+     "id": "p5jppeq",
+     "author": "blogito_ergo_sum",
+     "body": "That's a lot of boat to steal",
+     "replies_to": "1vwq3jk",
+     "score": 7
+    },
+    {
+     "id": "p5kypsx",
+     "author": "Shhheeeesshh",
+     "body": "A us flagged vessel never needs a Zarpe when leaving the USA. ",
+     "replies_to": "p5j95eh",
+     "score": 6
+    }
+   ]
+  },
+  "1vwrle5": {
+   "title": "AI use in regatta posters",
+   "author": "rowingatlas",
+   "day": "2026-08-24",
+   "body": "AI use in regatta posters\n\nPersonally, I’m disappointed to see the popularity of AI image and poster creation to advertise local regattas. It’s at a point now where I can tell which model has generated a logo. Remember when each regatta logo/poster had a unique voice to it and also looked genuinely cool?\n\nRevamp the old 70s/80s/90s designs! Retro is in!\n\nTYRC! ",
+   "comments": [
+    {
+     "id": "p5jdmhs",
+     "author": "SoundByte",
+     "body": "That is an odd move in a hobby so deeply rooted in tradition and craftsmanship. A sailor should appreciate true artistry. ",
+     "replies_to": "1vwrle5",
+     "score": 67
+    },
+    {
+     "id": "p5j9xxt",
+     "author": "cruisinbears",
+     "body": "Boomers in yacht clubs… they love that AI slop. ",
+     "replies_to": "1vwrle5",
+     "score": 42
+    },
+    {
+     "id": "p5k85a0",
+     "author": "Budgies2022",
+     "body": "They’re usually all volunteers trying to get stuff done ",
+     "replies_to": "p5jskiz",
+     "score": 25
+    },
+    {
+     "id": "p5jrrkx",
+     "author": "Budgies2022",
+     "body": "Why don’t you take on organising the poster yourself? ",
+     "replies_to": "1vwrle5",
+     "score": 24
+    },
+    {
+     "id": "p5kho2g",
+     "author": "SorryButterfly4207",
+     "body": "A bunch of volunteers cared enough to give up their time to organize and run a race FOR YOU, and you're bitching about the poster.",
+     "replies_to": "p5jskiz",
+     "score": 17
+    },
+    {
+     "id": "p5kjdgi",
+     "author": "SorryButterfly4207",
+     "body": "No sure if a lot of the posters here are racers, or even sailors, but except for a very small percentage of events, regattas are organized and run by volunteers, and do not earn a profit.\n\nThere is no money to hire a graphic designer  ",
+     "replies_to": "1vwrle5",
+     "score": 16
+    },
+    {
+     "id": "p5jix95",
+     "author": "atomicskiracer",
+     "body": "If you’re using AI pics for your food you’re misrepresenting your product. jPeople who take pride in their craft don’t sue AI. ",
+     "replies_to": "p5jiolo",
+     "score": 15
+    },
+    {
+     "id": "p5katoh",
+     "author": "TheFluffiestRedditor",
+     "body": "Using genAI demonstrates a lack of care about art and the artists who create it, which is another way of saying they’re selfish pieces of shît. So yes, even the menu.",
+     "replies_to": "p5jiolo",
+     "score": 14
+    },
+    {
+     "id": "p5lrahr",
+     "author": "gc1",
+     "body": "Seriously. Tell the race director it would be faster if we used motorboats!",
+     "replies_to": "p5jdmhs",
+     "score": 13
+    },
+    {
+     "id": "p5k2cy1",
+     "author": "FullyFocusedOnNought",
+     "body": "Yeah cos the sailing world is so notoriously hard up. If I spent many thousands of dollars on a regatta I’d like to think I could spare 50-100 dollars for some art student to create a decent poster so I didn’t make the event look super cheap and crappy.",
+     "replies_to": "p5jtyhe",
+     "score": 10
+    },
+    {
+     "id": "p5m6hrw",
+     "author": "BigBudZombie",
+     "body": "The people at my marina just learned about AI this year, now all our flyers and posters are all AI slop. Multiple times they've had to send out corrections after they distributed posters and noticed afterwards the dates and info was wrong..",
+     "replies_to": "1vwrle5",
+     "score": 10
+    },
+    {
+     "id": "p5jrtd9",
+     "author": "aquisalid",
+     "body": "Call out the slop and sloppists. It is embarrasing.",
+     "replies_to": "1vwrle5",
+     "score": 9
+    },
+    {
+     "id": "p5l9jac",
+     "author": "Buzzard7547",
+     "body": "He who complains or speaks the loudest about it gets the task next time. ",
+     "replies_to": "1vwrle5",
+     "score": 7
+    },
+    {
+     "id": "p5ldaq6",
+     "author": "barthrh",
+     "body": "The sailing world is really hard up. Tiny low budget regatta outnumber the likes of Antigua Sailing Week 100 to 1. I’ve volunteered on many committees for race regatta and there is in fact no money in it and they try to keep fees low because the average boat owner is not sitting on a high budget asset but rather the 20 year old boat they saved to buy, or a cheap used dinghy, or a family boat passed on. Higher fees = lower participation and no one smart or who appreciates the volunteers gives a crap about whether the poster was made by AI or not.",
+     "replies_to": "p5k2cy1",
+     "score": 7
+    },
+    {
+     "id": "p5jxv4e",
+     "author": "RED_BaronJ",
+     "body": "RC are using Mark Set Bots, the Vakaros automatically gives us distance to the line. \n\nIt’s the golden age of yachting.",
+     "replies_to": "1vwrle5",
+     "score": 6
+    }
+   ]
+  },
+  "1vwuva5": {
+   "title": "CABRERA",
+   "author": "Jerrytravelintime",
+   "day": "2026-08-24",
+   "body": "CABRERA",
+   "comments": []
+  },
+  "1vwwpjh": {
+   "title": "Today (22/08) off the coast of Dieppe, France.",
+   "author": "titulum",
+   "day": "2026-08-24",
+   "body": "Today (22/08) off the coast of Dieppe, France.\n\nBeautiful sight of dolphins playing in and around the wake of the sailboat.",
+   "comments": [
+    {
+     "id": "p5n2xbt",
+     "author": "Weary_Boat",
+     "body": "Whoa... at first I was thinking orcas",
+     "replies_to": "1vwwpjh",
+     "score": 3
+    },
+    {
+     "id": "p5qxo80",
+     "author": "dmd_double_face",
+     "body": "They have a much larger dorsal fin, but I get why you’d think that. Beautiful!",
+     "replies_to": "p5n2xbt",
+     "score": 2
+    },
+    {
+     "id": "p5tzitv",
+     "author": "Weary_Boat",
+     "body": "Yeah I just saw the location and thought of all the news lately. I always expect the worst on Reddit 😂",
+     "replies_to": "p5qxo80",
+     "score": 1
+    }
+   ]
+  },
+  "1vwz6sl": {
+   "title": "What should I be worried about before buying this Drascombe Lugger?",
+   "author": "teacher-dude",
+   "day": "2026-08-24",
+   "body": "What should I be worried about before buying this Drascombe Lugger?\n\nI'm considering buying this boat, motor and trailer in Thailand for about $12K.  Obviously, I can't hire an inspector, but I can have the owner take us out for a sail.  What should I be looking for here?  The trailer has obvious rust, but I'm not overly worried about that since the sale will include delivery and I wouldn't be towing it after that.  The motor needs to work, but I'd prefer to replace it with an ePropulstion Spirit 2.0 eventually anyway.  I'm more worried about the rigging and sails and other things I can't think of right now.  Any help would be appreciated...",
+   "comments": [
+    {
+     "id": "p5kqtmj",
+     "author": "Andechser",
+     "body": "What you should be worried about? That it is too expensive?",
+     "replies_to": "1vwz6sl",
+     "score": 24
+    },
+    {
+     "id": "p5kr57z",
+     "author": "markboats",
+     "body": "Owned one for a few years, they're pretty simple things\n\n The centreboards can corrode, but other than that there's not anything that's a well known issue.\n\nMake sure the outboard shaft is supported when towing",
+     "replies_to": "1vwz6sl",
+     "score": 10
+    },
+    {
+     "id": "p5krenc",
+     "author": "mujolsubmarino",
+     "body": "The Royal Navy?",
+     "replies_to": "1vwz6sl",
+     "score": 7
+    },
+    {
+     "id": "p5krhpf",
+     "author": "LastHorseOnTheSand",
+     "body": "Looks pretty good from the photos if theyte up to date. That's a lot of money for a day sailer (but a gorgeous one at that). Check for soft spots and the spare are in good nick ",
+     "replies_to": "1vwz6sl",
+     "score": 6
+    },
+    {
+     "id": "p5kyqy3",
+     "author": "d2minik",
+     "body": "sunburn ;)  \nslap som SFP50+ and an long sleeve shirt on and you gonna have a great day :)",
+     "replies_to": "1vwz6sl",
+     "score": 6
+    },
+    {
+     "id": "p5l6pts",
+     "author": "ChazR",
+     "body": "I don't know the local market, but that price seems very high.\n\nI used to know Pete Watkinson, the guy who designed the Drascombe boats. Lovely chap, very smart and had many strong views on dinghy design.\n\nThe boats themselves are fun, robust, slow, but very easy to sail.\n\nHave fun!",
+     "replies_to": "1vwz6sl",
+     "score": 5
+    },
+    {
+     "id": "p5krpc6",
+     "author": "teacher-dude",
+     "body": "Of course I'm going to try to negotiate a lower price, but my research says that the asking price for this boat isn't far off what they've been selling for recently.  But if you know better, please share...\n\n",
+     "replies_to": "p5kqtmj",
+     "score": 4
+    },
+    {
+     "id": "p5kukdd",
+     "author": "fattailwagging",
+     "body": "Pull the centerboard completely out to inspect the board and the pivot point. They are usually made of carbon steel.",
+     "replies_to": "p5kr57z",
+     "score": 4
+    },
+    {
+     "id": "p5ky3sf",
+     "author": "Andechser",
+     "body": "Just out of curiosity I checked the web and there is one with the same name (different boat though, but better condition) for sale in Germany at the moment for 3400€. ",
+     "replies_to": "p5krpc6",
+     "score": 4
+    },
+    {
+     "id": "p5kt5jg",
+     "author": "markboats",
+     "body": "I sold it almost a decade back now, although I remember some people found an off the shelf tent that would stick the poles in four well placed holes drilled in the gunwales... ",
+     "replies_to": "p5ksvui",
+     "score": 3
+    },
+    {
+     "id": "p5kwsmn",
+     "author": "SuperFlyChris",
+     "body": "No advice - apart from the price seems eyewatering to me... but!\n\nFun fact, it shares a name with the USS Kittiwake, a former U.S. Navy submarine rescue vessel that was sunk intentionally in January 2011, it now rests as a popular artificial reef and shipwreck dive site off the coast of Grand Cayman in the Caribbean. Great dive! ",
+     "replies_to": "1vwz6sl",
+     "score": 3
+    },
+    {
+     "id": "p5ox1zk",
+     "author": "Raneynickelfire",
+     "body": "Iis 8k too much.",
+     "replies_to": "1vwz6sl",
+     "score": 3
+    },
+    {
+     "id": "p5ksvui",
+     "author": "teacher-dude",
+     "body": "Thanks brother!  I recently saw a video or one that had a tent covering the front of the boat.  If I buy this boat, I'd be interested in getting one of those.  Do you have one?\n\n",
+     "replies_to": "p5kr57z",
+     "score": 2
+    },
+    {
+     "id": "p5l307r",
+     "author": "teacher-dude",
+     "body": "Thank you!  🙏🏼 I’ve been looking worldwide but this one didn’t show up in my search.  While I’m certain I could never talk them down this far, it’s excellent ammunition during negotiations if the boat shows well.",
+     "replies_to": "p5ky3sf",
+     "score": 2
+    },
+    {
+     "id": "p5l5dqi",
+     "author": "teacher-dude",
+     "body": "Cool!  Not sure I’ll keep the name if I buy it, but if I do, I’ll try to keep it off the bottom.",
+     "replies_to": "p5kwsmn",
+     "score": 2
+    }
+   ]
+  },
+  "1vx21mw": {
+   "title": "RYA Day Skipper school letdown Learn2Sail Iberia",
+   "author": "kommunek",
+   "day": "2026-08-24",
+   "body": "RYA Day Skipper school letdown Learn2Sail Iberia\n\nDid my Day Skipper practical course (Competent Crew as well,10 days) with Learn2Sail Iberia in Portugal recently and came away pretty disappointed with how much of the actual syllabus got covered. Some examples:\n\n* Never sailed a run, despite asking the instructor to on multiple occasions. The answer was \"thats coastal skipper level skills\"\n* No night sailing at all, despite asking multiple times if the schedule could shift for it\n* 2 of the 10 days we didn't sail at all, we spent incredible amounts of time docking ad nauseam\n* Generally poor education on various boat components. We never touched on what an outhaul or traveler does, despite asking about it.\n\nI raised it with the instructor multiple times on the water but never got anywhere, and when I wrote to the school afterward asking for a partial refund, they pushed back. Eventually they offered a discounted refresher course but I was not about to invest more money in a school that performed so poorly the first time around.\n\nHas anyone dealt with something similar? Also curious if anyone else here has trained with this school and had a similar or different experience. What did you do/What can you do?\n\nThanks and fair winds all!",
+   "comments": [
+    {
+     "id": "p5lflxq",
+     "author": "Rino-feroce",
+     "body": "I did a few rya courses with schools in UK, gibraltar, spain, and never had particularly bad experiences. In fact probably the best instructor I had was a danish guy in a Barcelona course (Coastal skipper). \n\nLooking back on my competent crew (UK) / dayskipper (Gibraltar) courses I would have loved to have spent two days just practicing docking, picking up buoys under engine.... Instead we did a couple of hours of alongside docking and departing, and spend a lot of time sailing in fair weather. I don't even think each of us had a go at helming to pick up a buoy .\n\nNightsailing practice was interesting in Gibraltar \n\nWhen you say \"never sailed a run\" do you mean you never practiced gybing? that would be bad. ",
+     "replies_to": "1vx21mw",
+     "score": 10
+    },
+    {
+     "id": "p5m21n4",
+     "author": "realityking89",
+     "body": "Especially on the Day Skipper I expect a lot of time spent on marina maneuvers. Marina skills are the hardest learn without an instructor as nobody lets you practice with their boat in a marina. Its also skill where people fail their day skipper or even coastal skipper.\n\nNot doing a dead run is, in my opinion. fine. It‘s a bit of advanced skill. I hope you did a broad reach and gybing, including as the helmsman.\n\nThe lack of night sailing is more troubling. Experiencing a night sail, including entering or leaving a port is part of the day skipper syllabus and quite valuable.\n\nYou could complain to the RYA if you like. They‘ll take it into account the next time they audit the centre.",
+     "replies_to": "1vx21mw",
+     "score": 9
+    },
+    {
+     "id": "p5m4llr",
+     "author": "sola_mia",
+     "body": "Docking and engine is vital. Sail trimming can be learnt over time. The former need foundation of day 1.  IMHO ",
+     "replies_to": "1vx21mw",
+     "score": 6
+    },
+    {
+     "id": "p5lhhw6",
+     "author": "BroWay",
+     "body": "Sounds like a bad course for sure, the only course I ever did we covered everything you mention over a 3,5 day long weekend course. \n\nIt will be hard to argue for a refund if you did not document the lack of training during the course, and if the others in your course are not involved in complaining. \n\nNight-sailing is really good to know, as it usually provides additional insight into how to use old navigation methods like time, speed and course calculation and lighthouses (which are good to know if you should loose electricity to nav-systems etc)  \n\nNot even touching on the traveler is silly, literally should take no more than 30 minutes in some wind to explain the difference it makes for sail trim when going different directions/wind angles.\n\nThe sailboat may not have an outhaul, if the sail is instead supported by a boom-kick or similar lifting equipment. My sailboat has no outhaul set-up. \n\nNot sailing 2 out of 10 days may have to do with conditions, which you do not mention in your post. If the captain/instructor deems the wind to powerful it may not be safe to bring an inexperienced crew out to sea. If there is not wind at all, its kind of fair to consider it a better use of time to practice manouvering in the docks and practicing different kinds of docking techniques. ",
+     "replies_to": "1vx21mw",
+     "score": 4
+    },
+    {
+     "id": "p5lvoqk",
+     "author": "fuchs31",
+     "body": "What school was the Barcelona course? Thinking of doing mine there ",
+     "replies_to": "p5lflxq",
+     "score": 3
+    },
+    {
+     "id": "p5mjm0c",
+     "author": "budgester",
+     "body": "15 years of sailing and I'm still learning Sail trimming. ",
+     "replies_to": "1vx21mw",
+     "score": 3
+    },
+    {
+     "id": "p5r8bwr",
+     "author": "steveth3b",
+     "body": "Ah yes, nothing like making small adjustments to make your telltales tell you what you need them to and slowing yourself down a quarter knot. To be fair, that's more changing swell hitting more of my hull/bridge deck though. ",
+     "replies_to": "p5mjm0c",
+     "score": 2
+    },
+    {
+     "id": "p5lxayv",
+     "author": "Rino-feroce",
+     "body": "It was Blue Oyster Sailing. But that danish instructor is no longer there (he bought a boat and now offers offshore passages & courses around the world)",
+     "replies_to": "p5lvoqk",
+     "score": 1
+    }
+   ]
+  },
+  "1vx4h0a": {
+   "title": "**Stolen Boat** Please be on the lookout! Jersey Shore, Long Island, Ct, RI, etc.",
+   "author": "eight13atnight",
+   "day": "2026-08-24",
+   "body": "**Stolen Boat** Please be on the lookout! Jersey Shore, Long Island, Ct, RI, etc.\n\nTrying to get the word out to the sailing community. My neighbors boat was stolen Saturday night and was last seen headed out towards open water South of the Verrazano bridge. Please keep a lookout if you're located along the Jersey Shore, Long Island Sound, Connecticut coast, Rhode Island, etc. \n\nIf you see this boat please report it immediately!",
+   "comments": [
+    {
+     "id": "p5mc8l9",
+     "author": "GerbilArmy",
+     "body": "Wild - unless you know the boat and its condition… taking an unknown boat out into the open water is a wildly risky move. ",
+     "replies_to": "1vx4h0a",
+     "score": 57
+    },
+    {
+     "id": "p5merwv",
+     "author": "thetaoofroth",
+     "body": "I think hijacking a boat in new York harbor is even more wildly risky than going for an offshore joyride.  It boggles my mind that they were not intercepted like immediately.",
+     "replies_to": "p5mc8l9",
+     "score": 29
+    },
+    {
+     "id": "p5mi7cx",
+     "author": "Icy_Basil_372",
+     "body": "At least the thief had taste?",
+     "replies_to": "1vx4h0a",
+     "score": 23
+    },
+    {
+     "id": "p5mhyhu",
+     "author": "cody_mf",
+     "body": "ive always wondered what the end game for stealing a boat is. Like you obviously cant sell it, unless sailboat fences are actually lucrative and Im in the wrong business",
+     "replies_to": "1vx4h0a",
+     "score": 19
+    },
+    {
+     "id": "p5mf4vh",
+     "author": "ncbluetj",
+     "body": "You don’t often see sailing yachts stolen.  Good luck with recovery!",
+     "replies_to": "1vx4h0a",
+     "score": 12
+    },
+    {
+     "id": "p5mprpx",
+     "author": "AnalogNavigator",
+     "body": "She's the [SailNYC.com](http://SailNYC.com) charter yawl, correct?  Beautiful boat.  Fleet blue Hinckleys are common, but a 1968 Bermuda 40 Yawl, not so much.  That extra mast culls out about 97% of anything sailing out there. Problem is, she's a blue water cruiser, so if they prepped, it could easily be next-stop-Barbados. The Sandy Hook Pilot boat sits out there by Ambrose all day long, and the CG has traffic control radar with history.  AIS has her last ping 1.5 days ago, see screenshot below.  Keep us updated, and good luck to your neighbor.\n\nhttps://preview.redd.it/hj4nn5wspclh1.png?width=1792&format=png&auto=webp&s=88300a5966afeeacaa0d36b45ceb19b1370632b3\n\n",
+     "replies_to": "1vx4h0a",
+     "score": 12
+    },
+    {
+     "id": "p5no17o",
+     "author": "pab_guy",
+     "body": "Why?  If you just get on a boat and take it, no one knows you aren't the owner or otherwise authorized.",
+     "replies_to": "p5merwv",
+     "score": 9
+    },
+    {
+     "id": "p5nv7on",
+     "author": "LRJetCowboy",
+     "body": "Haven’t heard any discussion about the possibility that it was simply repossessed. That makes more sense to me than it being stolen. I flew a jet for a guy and showed up one day to find the hangar empty. He told me to report it stolen, he had no idea it was going to happen. Eerily similar.",
+     "replies_to": "1vx4h0a",
+     "score": 9
+    },
+    {
+     "id": "p5nszry",
+     "author": "sea_enby",
+     "body": "I think you have to chase a yankee low-laden with gold, cracked four-pounders making an awful din!",
+     "replies_to": "p5mhyhu",
+     "score": 8
+    },
+    {
+     "id": "p5nydwp",
+     "author": "thetaoofroth",
+     "body": "Yes, but NYC has VTS, USN, NPS, USCG, NYPD, PAPD, NOAA, USGS, USACE, and any other alphabet soup agency in the water at all times basically.  There is basically zero chance nobody saw this boat slip away in the middle of the night and idk a Hinckley 40 at 3am seems a little suspicious to me.  It isn't like some 23' plastic thing, it kind of sticks out.  Like if someone stole it from Montauk in the middle of the night I'd be like okay, there was a plan, but to be sailing away at 0 dark thirty, and have USCG and others notified first thing a.m. I'm surprised they weren't immediately located.  There are helicopters, fishermen, offshore wind assets literally everywhere out there, like, nobody saw where they went?  It's wild to me.",
+     "replies_to": "p5no17o",
+     "score": 8
+    },
+    {
+     "id": "p5o6irs",
+     "author": "DryInternet1895",
+     "body": "Given the apparent level of sophistication here I’m leaning towards repossession or an ownership dispute. ",
+     "replies_to": "p5nv7on",
+     "score": 6
+    },
+    {
+     "id": "p5n8zqk",
+     "author": "dfsw",
+     "body": "depends on what country you take it to",
+     "replies_to": "p5mr2u1",
+     "score": 4
+    },
+    {
+     "id": "p5ngya9",
+     "author": "thetaoofroth",
+     "body": "Idk about that, I would think it's a uscg documented vessel since its for charter.  I feel like trying to reflag it or get it legitimized elsewhere isn't really possible, especially anywhere it can get to on its bottom from NYC.",
+     "replies_to": "p5n8zqk",
+     "score": 4
+    },
+    {
+     "id": "p5notgv",
+     "author": "UmbralWaffle",
+     "body": "In all seriousness, good luck with recovery.\n\nWhoever they find on board had better have an eye patch!\n\nhttps://preview.redd.it/gp8jlnxggdlh1.jpeg?width=735&format=pjpg&auto=webp&s=06ad74c2aa676a7ca0836cf522945d78a09d99e9",
+     "replies_to": "1vx4h0a",
+     "score": 4
+    },
+    {
+     "id": "p5novxn",
+     "author": "turkphot",
+     "body": "I will keep a sharp lookout in switzerland",
+     "replies_to": "1vx4h0a",
+     "score": 4
+    }
+   ]
+  },
+  "1vx8obc": {
+   "title": "America’s Cup handkerchief showing NYC area yacht clubs circa 1910",
+   "author": "Unionforever1865",
+   "day": "2026-08-24",
+   "body": "America’s Cup handkerchief showing NYC area yacht clubs circa 1910",
+   "comments": [
+    {
+     "id": "p5mus04",
+     "author": "Unionforever1865",
+     "body": "From left to right:\n\nLeft to right:  \nAmerican Yacht Club (Rye, New York)  \nCarolina Yacht Club (Wrightsville Beach, North Carolina)  \nLarchmont Yacht Club (Larchmont, New York)  \nKnickerbocker Yacht Club (New York City, New York)  \nArcanum Yacht Club (Brooklyn, New York)  \nAtlantic Yacht Club (Brooklyn, New York)  \nMotor Boat Club of Buffalo (Buffalo, New York)  \nHighland Boat Club (Peekskill, New York)  \nCorinthian Yacht Club of New York (New York City, New York)  \nSeawanhaka Corinthian Yacht Club (Oyster Bay, New York)  \nBrooklyn Yacht Club (Brooklyn, New York)  \nNew York Yacht Club (New York City, New York)",
+     "replies_to": "1vx8obc",
+     "score": 2
+    }
+   ]
+  },
+  "1vxdlm7": {
+   "title": "Chain sheet questions for racing…",
+   "author": "Panem-et-circenses25",
+   "day": "2026-08-24",
+   "body": "Chain sheet questions for racing…\n\nOur skipper on a recent race asked to rig a “chain sheet.” We already had barber haulers rigged and were racing jib and main only in 15knot winds. So I brought up an old jib sheet to be used. Here’s the exchange I had with skipper after the race, but I still don’t understand what purpose it serves. ",
+   "comments": [
+    {
+     "id": "p5o1u29",
+     "author": "foilrider",
+     "body": "Try being less afraid to say \"What do you mean? I don't know what you're asking\" to your skipper.",
+     "replies_to": "1vxdlm7",
+     "score": 9
+    },
+    {
+     "id": "p5o0r6u",
+     "author": "Which-Bid7754",
+     "body": "CHANGE/Changing SHEET. Allows you to swap from the jib Top>Regular headsails, without having to relead everything. \n\n",
+     "replies_to": "1vxdlm7",
+     "score": 7
+    },
+    {
+     "id": "p5o27fg",
+     "author": "Westar-35",
+     "body": "This. \n\nThink a jib sheet with a soft shackle at the clew of the jib instead of a lark’s head knot",
+     "replies_to": "p5o0r6u",
+     "score": 4
+    },
+    {
+     "id": "p5o39ix",
+     "author": "Panem-et-circenses25",
+     "body": "OH…CHANGE sheet, not CHAIN sheet. Got it now.",
+     "replies_to": "p5o0r6u",
+     "score": 4
+    },
+    {
+     "id": "p5o6leu",
+     "author": "Westar-35",
+     "body": "Sure, but a sheet that can be permanently routed but easily swapped to the clew of a new sail is all that we’re talking about. A soft shackle just makes it super easy, and not knock someone out like a regular shackle would. \n\nLark’s Head knot, aka luggage tag knot, aka girth hitch. Is normally preferred because they’re less likely to snag on other rigging. \n\nhttps://preview.redd.it/8rahdvkztdlh1.jpeg?width=1320&format=pjpg&auto=webp&s=0f24f7d484f7c51846f8bbe6b1d53539cad72736",
+     "replies_to": "p5o3o9z",
+     "score": 4
+    },
+    {
+     "id": "p5p66rx",
+     "author": "TriXandApple",
+     "body": "1) The guy you're messaging is just saying words for the sake of words in my opinion  \n2) A change sheet is generally exactly what you brought up. It's just a spare line. What you'll normally do is attach your change sheet to the clew of the working sail, take the load off of your working sheet, onto your change sheet, using an auxiliary winch. This lets you rig your new jib on the \"normal\" sheets, so the moment it goes in the air, you can trim it like normal. Sometimes you might run a change sheet through a jammer.\n\n3) It sounds like it was a close reach on the next leg, and they wanted to go to a bigger jib for the reach(too tight for a zero), then go to back to a smaller jib for the next upwind. When they're talking about \"handcuffing\" themselves, they're talking about not being able to peel or change jibs because you've run out of sheets, blocks or winches. \n\nLike I said in point 1, this is just what happens when people think too much about sail changes. This really isn't a skippers role, this is a conversation the bow team should be having, and they certainly shouldn't be putting that sort of pressure on you when you don't know what a change sheet it. ",
+     "replies_to": "p5o3o9z",
+     "score": 3
+    },
+    {
+     "id": "p5o1m1o",
+     "author": "Westar-35",
+     "body": "Think a jib sheet with a soft shackle at the clew of the jib instead of a lark’s head knot",
+     "replies_to": "1vxdlm7",
+     "score": 2
+    },
+    {
+     "id": "p5o3o9z",
+     "author": "Panem-et-circenses25",
+     "body": "The change sheet I used was just a regular job sheet. I do not know what a lark’s head knot is",
+     "replies_to": "p5o27fg",
+     "score": 2
+    },
+    {
+     "id": "p5p8usz",
+     "author": "Panem-et-circenses25",
+     "body": "Oh man that makes much more sense! I understand it now. Thanks for explaining it like that. \n\nOh and the skipper/boat owner was the bowman for this race because it was a special ladies race and the skipper had to be a woman, so he was just helping out wherever he could. Thanks again!",
+     "replies_to": "p5p66rx",
+     "score": 2
+    },
+    {
+     "id": "p5rdfjn",
+     "author": "TriXandApple",
+     "body": "AH then in that case it all makes sense!",
+     "replies_to": "p5p8usz",
+     "score": 2
+    },
+    {
+     "id": "p5o6ubv",
+     "author": "Panem-et-circenses25",
+     "body": "Awesome, thanks!",
+     "replies_to": "p5o6leu",
+     "score": 1
+    },
+    {
+     "id": "p5ofn7g",
+     "author": "Free_Range_Lobster",
+     "body": "Why does he think you would need a double switch? That makes no sense. ",
+     "replies_to": "1vxdlm7",
+     "score": 1
+    },
+    {
+     "id": "p5p5u0j",
+     "author": "Panem-et-circenses25",
+     "body": "This was his response to my question about it:\n\nhttps://preview.redd.it/xgfbe0xwnelh1.jpeg?width=1206&format=pjpg&auto=webp&s=3cf9997ee07fdffbf7d89789429073e350cfb366",
+     "replies_to": "p5ofn7g",
+     "score": 1
+    },
+    {
+     "id": "p5p6dpa",
+     "author": "TriXandApple",
+     "body": "Sounds like plan was 2->jt->2, with option to go 2->jt->3, and wanted a change sheet pre rigged if peel from 3->2 was required on last leg. ",
+     "replies_to": "p5ofn7g",
+     "score": 1
+    }
+   ]
+  },
+  "1vxehst": {
+   "title": "Don’t forget to pull your bumpers up *before* you start sailing away!!",
+   "author": "steelerector1986",
+   "day": "2026-08-24",
+   "body": "Don’t forget to pull your bumpers up *before* you start sailing away!!\n\nA friend caught a nice shot of us leaving an anchorage a few weeks ago, and naturally I had forgotten to pull in the fenders in my rush to get to the under sail and the motor off. ",
+   "comments": [
+    {
+     "id": "p5o9wgt",
+     "author": "fergehtabodit",
+     "body": "My friend would be more mad about saying \"bumpers\"...",
+     "replies_to": "1vxehst",
+     "score": 347
+    },
+    {
+     "id": "p5o9yt4",
+     "author": "Ok_Lengthiness5926",
+     "body": "Not putting your fenders away, once underway, increases the risk of your boat bursting into flames.",
+     "replies_to": "1vxehst",
+     "score": 180
+    },
+    {
+     "id": "p5o7wru",
+     "author": "justforkinks0131",
+     "body": "i honestly dont get why people are making such a big deal about hanging fenders",
+     "replies_to": "1vxehst",
+     "score": 115
+    },
+    {
+     "id": "p5ob4vg",
+     "author": "DanielBG",
+     "body": "and ropes",
+     "replies_to": "p5o9wgt",
+     "score": 97
+    },
+    {
+     "id": "p5odqfh",
+     "author": "Pocket_Aces11",
+     "body": "It’s laughable though how many sailors lose their mind about this.",
+     "replies_to": "1vxehst",
+     "score": 91
+    },
+    {
+     "id": "p5oas4g",
+     "author": "brazil598",
+     "body": "In The Netherlands we would call you Germans",
+     "replies_to": "1vxehst",
+     "score": 86
+    },
+    {
+     "id": "p5oah7a",
+     "author": "steelerector1986",
+     "body": "It really is a miracle that I made it home without exploding. ",
+     "replies_to": "p5o9yt4",
+     "score": 67
+    },
+    {
+     "id": "p5oal10",
+     "author": "Krunkledunker",
+     "body": "But but but every time one splashes the water it creates drag that will slow you down by a millisecond… which means absolutely nothing while cruising… some people are just type-a perfectionists and it irks their efficiency above all else mentality. I like to leave em out and see who comments while the rest of us watch the sunset ",
+     "replies_to": "p5o7wru",
+     "score": 65
+    },
+    {
+     "id": "p5obs9b",
+     "author": "Both_String_5233",
+     "body": "So this is basically the socks and sandals of sailing?",
+     "replies_to": "p5oas4g",
+     "score": 53
+    },
+    {
+     "id": "p5ougu5",
+     "author": "NuklearFerret",
+     "body": "...bed, bedroom, rear, front, wall...",
+     "replies_to": "p5ob4vg",
+     "score": 34
+    },
+    {
+     "id": "p5oc537",
+     "author": "hottenniscoach",
+     "body": "Yup. When we see people dangling their fenders we radio them and proclaim that they are riding-dirty.  It’s fun to watch the lockers open and the FENDERS disappear. ",
+     "replies_to": "p5o9wgt",
+     "score": 32
+    },
+    {
+     "id": "p5oivgw",
+     "author": "Small_Dog_8699",
+     "body": "Fenders!\n\nhttps://preview.redd.it/0lewrb5r3elh1.jpeg?width=720&format=pjpg&auto=webp&s=ecfd904aec69fcb2f33ef0f684489c3c6cf058ab\n\n",
+     "replies_to": "1vxehst",
+     "score": 32
+    },
+    {
+     "id": "p5oduay",
+     "author": "Polyfrequenz",
+     "body": "Interesting, here in Germany we'd call you Dutch 🧐",
+     "replies_to": "p5oas4g",
+     "score": 30
+    },
+    {
+     "id": "p5ofkcy",
+     "author": "hexarobi",
+     "body": "[Sometimes I have difficulty talking to people who don't race sailboats.](https://www.youtube.com/watch?v=ehC5aYj2xNc)",
+     "replies_to": "p5oal10",
+     "score": 28
+    },
+    {
+     "id": "p5oxt8n",
+     "author": "Midisland-4",
+     "body": "Steering wheel",
+     "replies_to": "p5ougu5",
+     "score": 28
+    }
+   ]
+  },
+  "1vxep2h": {
+   "title": "Best option for attaching continuous genoa sheet",
+   "author": "Weird_Grapefruit2226",
+   "day": "2026-08-24",
+   "body": "Best option for attaching continuous genoa sheet\n\nThe other day the wind picked up to 25+ knots out of the blue, the forecast said maximum 20, but that's beside the point. I chucked a reef in and furled my genoa in about half way (bad I know, but I was solo and didn't have my smaller genoa on hand, and was almost back at the marina anyway). As I was winching it in it didn't seem to be getting any tighter, and then would slowly lose tension the longer I sailed on that tack. Getting home I found the issue - the continuous genoa sheet has slidden through the whipping, it's now really short on one side and excessively long on the other. I can't seem to push it back through the whipping, and now can't trust the whipping anyway.\n\nWhat's the best option for adjusting then securing it? Re-whip it? Tie a knot? Some form of fancy splicing?",
+   "comments": [
+    {
+     "id": "p5o9k92",
+     "author": "iron82",
+     "body": "Cow hitch through the cringle. Get rid of the ad hoc shackle.",
+     "replies_to": "1vxep2h",
+     "score": 21
+    },
+    {
+     "id": "p5ol885",
+     "author": "New_Sun6390",
+     "body": "Are we the only sailors with two genny sheets, tied to clew with bowlines?",
+     "replies_to": "1vxep2h",
+     "score": 13
+    },
+    {
+     "id": "p5oxoa0",
+     "author": "Acrobatic_Show8919",
+     "body": "29er definitely falls in the category of smaller sails.",
+     "replies_to": "p5ovzs4",
+     "score": 9
+    },
+    {
+     "id": "p5oa26v",
+     "author": "bright_yellow_vest",
+     "body": "Butterfly ",
+     "replies_to": "1vxep2h",
+     "score": 6
+    },
+    {
+     "id": "p5q1mum",
+     "author": "foilrider",
+     "body": "lol, 29er is a boat class. It is one of the most popular racing dinghies in the world. ",
+     "replies_to": "p5p59mw",
+     "score": 6
+    },
+    {
+     "id": "p5on784",
+     "author": "foilrider",
+     "body": "This is the point of continuous sheets. A single line that connects in the middle to the jib is not really a continuous sheet, it's ergonomically identical to two separate sheets tied to the same place. A continuous sheet is an endless loop, and that's generally what people mean when they talk about continuous sheets.\n\nIf you don't want them connected in the cockpit you can just cut the sheet you have right now in half, tie two bowlines, and your problem is solved.",
+     "replies_to": "p5ogf41",
+     "score": 5
+    },
+    {
+     "id": "p5o9x1c",
+     "author": "get_MEAN_yall",
+     "body": "Just tie a knot. Idk why it was set up like that to begin with",
+     "replies_to": "1vxep2h",
+     "score": 4
+    },
+    {
+     "id": "p5o9s77",
+     "author": "yowhywouldyoudothat",
+     "body": "I do larks head onto a soft shackle but it may not be the safest. I’ll let others chime in. ",
+     "replies_to": "1vxep2h",
+     "score": 3
+    },
+    {
+     "id": "p5o9vkr",
+     "author": "foilrider",
+     "body": "Tie the sheet to the sail at one end, run the sheet through the various cars and things on one side to the cockpit, run it back up the other side of the boat to the genoa. Tie the other end of the sheet to the genoa. Both ends of the sheet are at the sail.\n\nTo maker it prettier, splice eyes into both ends and attach both to the clew with a soft shackle, but this is effectively the same setup.",
+     "replies_to": "1vxep2h",
+     "score": 3
+    },
+    {
+     "id": "p5ocd4m",
+     "author": "Paleolithicster",
+     "body": "I'm struggling to picture this. The sheet just goes across the cockpit??",
+     "replies_to": "p5o9vkr",
+     "score": 3
+    },
+    {
+     "id": "p5ocqzt",
+     "author": "casablanca_1942",
+     "body": "I use an Alpine Butterfly.",
+     "replies_to": "1vxep2h",
+     "score": 3
+    },
+    {
+     "id": "p5ocsvy",
+     "author": "foilrider",
+     "body": "Working jib rather than genoa, but yes (it's the green line):\n\nhttps://preview.redd.it/19m8dd8wydlh1.jpeg?width=5712&format=pjpg&auto=webp&s=3a7e50d794f764bad9a6f5ec8bd823a1ca36908e\n\n",
+     "replies_to": "p5ocd4m",
+     "score": 3
+    },
+    {
+     "id": "p5ortqb",
+     "author": "knifter",
+     "body": "Or it might irritate the hell out of you when it clogs up with other ropes in the cockpit. Ask me how i know. I've even seen it on the spinaker sheet, that'll be fun...",
+     "replies_to": "p5ogf41",
+     "score": 3
+    },
+    {
+     "id": "p5p9z2n",
+     "author": "dackasaurus",
+     "body": "https://youtu.be/o5Tv7SWdmpc?t=112&is=UoKSHmqJtMCjZPfD",
+     "replies_to": "p5p6p4a",
+     "score": 3
+    },
+    {
+     "id": "p5pa5t3",
+     "author": "uthyrbendragon",
+     "body": "Nah, we do it too, no single point of failure.",
+     "replies_to": "p5ol885",
+     "score": 3
+    }
+   ]
+  },
+  "1vxevpy": {
+   "title": "Replacement rudder for catalina 22?",
+   "author": "Ninja_Wrangler",
+   "day": "2026-08-24",
+   "body": "Replacement rudder for catalina 22?\n\nMy kick up rudder snapped off yesterday while cruising, and I'm having a hell of a time finding a replacement blade for it since apparently ruddercraft doesn't exist anymore.\n\nI called Catalina direct, and they are working on manufacturing these but with no timetable on that. I love this rudder and want to replace the blade, but in the meantime I'll buy pretty much any rudder to get me back out there.\n\nI'm having some trouble finding anything at all in stock anywhere. Any ideas?",
+   "comments": [
+    {
+     "id": "p5qf4u5",
+     "author": "the-montser",
+     "body": "Definitely sucks. \n\nGood news is that making a wooden one for a boat that size is really easy.",
+     "replies_to": "p5q45hb",
+     "score": 2
+    },
+    {
+     "id": "p5odgfy",
+     "author": "the-montser",
+     "body": "Make a wooden one. It’s not hard.",
+     "replies_to": "1vxevpy",
+     "score": 1
+    },
+    {
+     "id": "p5pk84b",
+     "author": "Ninja_Wrangler",
+     "body": "I'm leaning towards doing this until I can get a proper HDPE one made",
+     "replies_to": "p5odgfy",
+     "score": 1
+    },
+    {
+     "id": "p5prnla",
+     "author": "the-montser",
+     "body": "If you make the wood one properly you won’t have to make another one. \n\nHDPE is not a good material for a rudder anyway. ",
+     "replies_to": "p5pk84b",
+     "score": 1
+    },
+    {
+     "id": "p5q45hb",
+     "author": "Ninja_Wrangler",
+     "body": "Fortunately I have both pieces to use as a template, so this project is not as daunting as it could be. Just sucks in general and derails my season for a bit",
+     "replies_to": "p5prnla",
+     "score": 1
+    }
+   ]
+  },
+  "1vxfy7k": {
+   "title": "just a little sailing humor",
+   "author": "Chemical-Artist3687",
+   "day": "2026-08-24",
+   "body": "just a little sailing humor",
+   "comments": []
+  },
+  "1vxkc4q": {
+   "title": "Is this 1980 Oday 23-2 a good first boat?",
+   "author": "SeirusTheStarDragon",
+   "day": "2026-08-25",
+   "body": "Is this 1980 Oday 23-2 a good first boat?\n\nHello, im currently looking at this Oday23 on FBmarketplace owner says no soft spots and rigging was updated a few years ago. New sails. Trailer redone 2 years ago. And the chainplate covers were reembedded to avoid rotting the bulkhead. Its around 4.5k for it",
+   "comments": [
+    {
+     "id": "p5piy1g",
+     "author": "DanielBG",
+     "body": "It always depends on the type of sailing you intend to do. My first was an O'Day 270 with a shoal keel. She was a beautiful boat and never let us down. We were day sailors and port hoppers, but never took her out past coastal cruising.",
+     "replies_to": "1vxkc4q",
+     "score": 20
+    },
+    {
+     "id": "p5pjctb",
+     "author": "SeirusTheStarDragon",
+     "body": "I mostly intend to daysail/cruise on the chesepeake bay, I would launch from Annapolis. Maybe sleep overnight on the boat but that would be less than 10 nights a year",
+     "replies_to": "p5piy1g",
+     "score": 14
+    },
+    {
+     "id": "p5pk414",
+     "author": "DanielBG",
+     "body": "You are looking at the right type of boat then. I'm not too familiar with Eastern coastal cruising, but from my understanding the Chesepeake is mostly mild. Watch your weather reports and sail safe. She's a beauty!",
+     "replies_to": "p5pjctb",
+     "score": 11
+    },
+    {
+     "id": "p5pkemv",
+     "author": "DrRadiate",
+     "body": "The 1979 O day 23 is my first boat and it's been a god one so far! Big enough to kinda hang out on, small enough to manage. ",
+     "replies_to": "1vxkc4q",
+     "score": 7
+    },
+    {
+     "id": "p5ptjso",
+     "author": "UpwardFlow",
+     "body": "I have the same boat!  Mine needed some serious work but was less than half the price so the value probably makes sense.  I’m not sure what your experience level is but this can be single-handed with some practice.\n\nThe masthead rig seems to heel a bit harder than my fractional boat did.  I’ve broached and it recovers nicely.  Partially furling the headsail can easily mitigate some of that on a gusty day.\n\nIn all honesty though, I personally wouldn’t get much use out of it if I didn’t keep it in a slip.  I had an Oday 192 that was easy to rig solo.  The 23 has a heavier mast that takes a bit more planning.  Keep that in mind if you plan to rig it solo.  I probably wouldn’t go through the hassle to rig it for an afternoon.  If I’m trailering it out somewhere else, it would have to be at least a three day weekend.\n\nI know the owner said that it doesn’t have softspots but double check and keep up with mitigation.  Mine had water intrusion around the mast wiring and the core was completely rotted under the mast.  It was hardly noticeable from the outside but repairing it was a major surgery.\n\nGood luck!",
+     "replies_to": "1vxkc4q",
+     "score": 5
+    },
+    {
+     "id": "p5qcu2t",
+     "author": "Switch-in-MD",
+     "body": "23 is too small for Annapolis.   So much chop and so little wind that you will end up bouncing around more than sailing.   However South River and Magothy are both more conducive.   \n\nYou may want to learn how much it costs to scrap the boat.  You may be the last purchase before donation or dumpster, so when you get fed up with her, you may have to pay someone $3k to dispose of her.  ",
+     "replies_to": "p5pjctb",
+     "score": 3
+    },
+    {
+     "id": "p5qij55",
+     "author": "SeirusTheStarDragon",
+     "body": "Is it too small? I also have a 18ftcc that I use for fishing that I run from the bay bridge all the way to Solomons during rockfish season and then down to Norfolk for Cobia. I've found the bay is pretty mild most of the time. Shouldn't a bigger boat be better? And yea I haven't thought about it being end of life.",
+     "replies_to": "p5qcu2t",
+     "score": 3
+    },
+    {
+     "id": "p5ql93t",
+     "author": "SubcommanderMarcos",
+     "body": "Hear me out\n\nMy brother was likely conceived on one\n\nIt's solid I suppose",
+     "replies_to": "1vxkc4q",
+     "score": 3
+    },
+    {
+     "id": "p5qptoo",
+     "author": "HelicopterUpbeat5199",
+     "body": "Gin pole!",
+     "replies_to": "p5ptjso",
+     "score": 3
+    },
+    {
+     "id": "p5r69bk",
+     "author": "Switch-in-MD",
+     "body": "Sailboats are way different than power.   It takes time for the wind to power the sailboat into acceleration (all the way up to 6 kn).   Every time you hit a set of boat wakes, you have to start that time over.  \n\nTake your 18 footer, down to Annapolis next weekend.   Sit at the shoal pole (Horn Point / Eastport) and watch the little sailboats get bounced around.   ",
+     "replies_to": "p5qij55",
+     "score": 3
+    },
+    {
+     "id": "p5s4iu0",
+     "author": "HotMountain9383",
+     "body": "Probably a little small to be honest. I would go at least 30",
+     "replies_to": "1vxkc4q",
+     "score": 3
+    },
+    {
+     "id": "p5t61nw",
+     "author": "SeirusTheStarDragon",
+     "body": "Yea I saw a video of a guy raising the mast in about 20mins or less with one made from 2 pieces of wood bolted together",
+     "replies_to": "p5qptoo",
+     "score": 3
+    },
+    {
+     "id": "p5rggrr",
+     "author": "canofmixedveggies",
+     "body": "that's at the upper end of the price I think, but the ofay is an excellent boat.\nI've only been around Annapolis on my grandparents 46 ft boat but it felt pretty protected,I saw a lot of lasers and sunfish and I also watched the canoe races at the Chesapeake bay maritime museum. \n\nthe boat will handle better under sail then motor. ",
+     "replies_to": "1vxkc4q",
+     "score": 2
+    },
+    {
+     "id": "p5s4fef",
+     "author": "HotMountain9383",
+     "body": "Yes pending a proper survey and a decent price. ",
+     "replies_to": "1vxkc4q",
+     "score": 2
+    },
+    {
+     "id": "p5s6c3o",
+     "author": "ordosays",
+     "body": "I mean, it’s certainly a boat. ",
+     "replies_to": "1vxkc4q",
+     "score": 2
+    }
+   ]
+  },
+  "1vxl6ct": {
+   "title": "470 jib on a 420?",
+   "author": "Sir_Theodoret",
+   "day": "2026-08-25",
+   "body": "470 jib on a 420?\n\nHas anyone tried using a 470 jib on a 420? \n\nThey use the same luff wire rigging system\n\nI do not race my boat in club spec races, or any regattas. I just like to go fast. & I want to increase the power of my boat in light wind conditions.\n\nThis idea came to me while looking at listings for 25-35ft sailboats, some of which had \"125% or 130%\" jib sails.\n\nThe 420's jib area is 2.8m2 & the 470's jib area is 3.58m2. Making the 470 jib 127% the size of the 420 jib.",
+   "comments": [
+    {
+     "id": "p5pqzpr",
+     "author": "the-montser",
+     "body": "Too big. \n\nPercentages on the jib represent the luff perpendicular (shortest distance from luff to clew) relative to the J measurement (distance from mast to headstay base). The luff is the same length regardless of jib size.\n\nThe luff of the 470 sail will be too long. Also, 420s don’t have adjustable leads so even if the luff did work the clew would be in the wrong spot and wouldn’t sheet properly.",
+     "replies_to": "1vxl6ct",
+     "score": 15
+    },
+    {
+     "id": "p5tgy3b",
+     "author": "__slamallama__",
+     "body": "Yup, this is spot on. By the time you've modified the 470 jib to fit you could have built a whole new sail, AND the bias in the fabric will be so wonky it'll stretch like crazy and eat any performance improvement you were hoping for. \n\nTrying to make a 420 fast is like trying to tune a PT cruiser. Technically possible but your base is not exactly an ideal subject for that work.",
+     "replies_to": "p5pqzpr",
+     "score": 2
+    },
+    {
+     "id": "p5qnjbc",
+     "author": "pdq_sailor",
+     "body": "yes.. \n\nWe carry multiple genoas on our 34' boat.... drifter is 175%, all purpose #1 is 155%, #2 is 135%, #3 is full hoist blade at 100% and the #4 is 75%... ",
+     "replies_to": "1vxl6ct",
+     "score": 1
+    },
+    {
+     "id": "p5tgha7",
+     "author": "Charles_W_Morgan",
+     "body": "Probably won’t work. BUT, according to a quick search the forestay on a 420 is about 14.5’ while the jib luff is only 11.48’. And the luff of a 470 jib is about 13.45’.  It may physically fit. You will definitely run into sheeting angle problems (foot length and leech tension). However if you just wanted to blast around on a reach, it might work. Find a free 470 jib and report back! ",
+     "replies_to": "1vxl6ct",
+     "score": 1
+    },
+    {
+     "id": "p5x0v3u",
+     "author": "Sir_Theodoret",
+     "body": "My girlfriend has a surf kite, but I'm a large guy (6'4 240lbs) so I'm not really the right size for that kind of toy. I also have aspirations of sail camping which would be hard on a windfoil.",
+     "replies_to": "p5ptz1b",
+     "score": 1
+    },
+    {
+     "id": "p5x10vn",
+     "author": "Sir_Theodoret",
+     "body": "Yeah, based on my measurments it should fit. I'm in the process of finding the sail now. Just wondering if anyone has tried it before/had any insight.",
+     "replies_to": "p5tgha7",
+     "score": 1
+    },
+    {
+     "id": "p5xkj4p",
+     "author": "Sir_Theodoret",
+     "body": "You're absolutely right. Becoming a better sailor is the best course of action.\n\nHowever, I enjoy tinkering and modifying things, and I already own this boat. The 470 jib prospect is enticing because of this.\n\nAccording to the measurements I've taken; the 470 luff will fit (just barely) I'm not sure I understand the adjustable leads part? Couldn't I just swap that for a static sheet like the 420 has?",
+     "replies_to": "p5pqzpr",
+     "score": 1
+    },
+    {
+     "id": "p5xrqsc",
+     "author": "the-montser",
+     "body": "The luff will be too long. It’s more complicated than simply will it fit. You don’t want the luff to be that close to the top of the headstay. It won’t fly correctly. \n\nThe positioning of the jib lead relative to the clew is extremely important for getting the proper sail shape, especially in light air. Since the 420 jib lead is not adjustable and the 470 jib will have the clew in a different location, it won’t trim properly and will likely be slower than you would be with the properly sized and trimmed jib.\n\nYou could put a new lead in the new correct place, but there is no backing block in that location and it likely would not be strong enough. And you still have the issue of the luff being too long. ",
+     "replies_to": "p5xkj4p",
+     "score": 1
+    },
+    {
+     "id": "p5ptz1b",
+     "author": "Weird_Grapefruit2226",
+     "body": "Sell the 420 and take up wingfoiling, high speed even in the lightest of wind..",
+     "replies_to": "1vxl6ct",
+     "score": -3
+    }
+   ]
+  },
+  "1vxq80t": {
+   "title": "I made a mistake",
+   "author": "ShawnEric88",
+   "day": "2026-08-25",
+   "body": "I made a mistake\n\nI took the ASA 101 class this weekend, I fear this is gonna get expensive, as the sailing bug has bit me and it's itching ",
+   "comments": [
+    {
+     "id": "p5qswk9",
+     "author": "bbauer1973",
+     "body": "Next thing you know you’ll be rationalizing the purchase of a blue water capable 50 footer.  Welcome!",
+     "replies_to": "1vxq80t",
+     "score": 190
+    },
+    {
+     "id": "p5qsz3l",
+     "author": "Unlucky-Cook2578",
+     "body": "Purely through ASA, yes very expensive. \n\nYou'd probably have a cheaper time buying a dinky boat for a summer. Spending all your time on that.\n\nThat said the ASA classes have legit curriculum. It's just a question of approach to learning.",
+     "replies_to": "1vxq80t",
+     "score": 47
+    },
+    {
+     "id": "p5sahmn",
+     "author": "pedal-force",
+     "body": "Think about how much you'll save on vacations though!",
+     "replies_to": "p5qswk9",
+     "score": 41
+    },
+    {
+     "id": "p5rlppy",
+     "author": "ShawnEric88",
+     "body": "It was actually super helpful to me. To ask the questions in real time about wind, and having real time corrections, for a 2 day class I learned a lot I don't think I would have been able to connect from reading to practice on my own. All that to say in the grand scheme of boat ownership the education will be the cheapest part.. ",
+     "replies_to": "p5qsz3l",
+     "score": 33
+    },
+    {
+     "id": "p5scxgu",
+     "author": "worktogethernow",
+     "body": "Sailing a dinghy will give you immediate answers to questions you didn't even think to ask about the wind.",
+     "replies_to": "p5rlppy",
+     "score": 28
+    },
+    {
+     "id": "p5r1cnf",
+     "author": "mathworksmostly",
+     "body": "Yeah and then you do that and realize that it’s kinda slow and boring and you should’ve just bought a birdyfish and a good tent. ",
+     "replies_to": "p5qswk9",
+     "score": 27
+    },
+    {
+     "id": "p5sfese",
+     "author": "iamtheperiphery",
+     "body": "I took my 101 and 103, and then found a racing group to volunteer as crew. It was relatively easy to join, my instructor recommended me and I started sailing with other people on their boats. The experience is great and free! ",
+     "replies_to": "1vxq80t",
+     "score": 21
+    },
+    {
+     "id": "p5qtraj",
+     "author": "Naive_Adeptness6895",
+     "body": "Remember, 10-17 feet is the funnest size. You will lust for more and will get it. But the funnest will remain the funnest. ",
+     "replies_to": "1vxq80t",
+     "score": 13
+    },
+    {
+     "id": "p5sryam",
+     "author": "BeerForThought",
+     "body": "Questions like why isn't there enough wind and why is there suddenly way too much wind? I found out later that during my first solo trip on a 14' hobie there were tornadoes in a different part of Alabama.",
+     "replies_to": "p5scxgu",
+     "score": 13
+    },
+    {
+     "id": "p5qu2dr",
+     "author": "Wilhelm591373",
+     "body": "ASA was great, except for the 116 docking class, and the ASA 105, which you need to pass ASA 107 Coastal Cruising. \n\nThe docking class handbook made absolutely no sense, compared to the practical portion of the class, and the test was miserable… \n\nThe ASA 105 course, sort of made sense? But our review booklets wound up being COMPLETELY different from the teacher’s booklet. The practical navigation from 104 and 107 did not seem to transfer over easily… This may have been an issue with the study books/ teacher, but it was absolutely awful, compared to what we learned practically on the boat. ",
+     "replies_to": "1vxq80t",
+     "score": 12
+    },
+    {
+     "id": "p5u7ldz",
+     "author": "twitchMAC17",
+     "body": "Go small, go cheap, go now",
+     "replies_to": "p5qswk9",
+     "score": 12
+    },
+    {
+     "id": "p5qszge",
+     "author": "dripppydripdrop",
+     "body": "I had a lot of fun with ASA 104 ",
+     "replies_to": "1vxq80t",
+     "score": 11
+    },
+    {
+     "id": "p5slrk1",
+     "author": "hertzsae",
+     "body": "You could likely take every class they offered for under $5k. That is not the expensive part of sailing for most, especially if you count time spent not sailing and performing maintenance as a cost.",
+     "replies_to": "p5qsz3l",
+     "score": 8
+    },
+    {
+     "id": "p5ukv7x",
+     "author": "Automatic_Grab_1051",
+     "body": "Not a hobby. A lifestyle investment. ",
+     "replies_to": "p5svqmj",
+     "score": 8
+    },
+    {
+     "id": "p5s5lb9",
+     "author": "Conscious-Soil9055",
+     "body": "Anything less would be unsafe.",
+     "replies_to": "p5qswk9",
+     "score": 7
+    }
+   ]
+  },
+  "1vxtzkb": {
+   "title": "Yet another question about reefing the main",
+   "author": "McScones",
+   "day": "2026-08-25",
+   "body": "Yet another question about reefing the main\n\nI have now adjusted the reefing point on the boom which have  maid reefing a lot more easy.  \nBut there to put the excess sail? I have seen a video there the guy rolled the sail  as shown on picture 2 and 4. I have a full batten mainsail, ind it feels more stiff then what was shown in the video. Especially in the 2nd reef it is a lot of canvas as seen in picture 4. What do you do?",
+   "comments": [
+    {
+     "id": "p5rm2wb",
+     "author": "Senior-Jellyfish-452",
+     "body": "Your reefing lines are not set up correctly still. See below.\n\nhttps://preview.redd.it/kf14lcz2khlh1.jpeg?width=1000&format=pjpg&auto=webp&s=c1ecca1a5697e1c8ec4eb76d2aa1aa183c37f5e1\n\nAs to the excess sail. You can roll it then put a sail ties in a few places to hold it there. But rolling it with full battens can be hard work. But fold it up works just as well. Take the bottom of the excess and fold it up to the top of the boom and then repeat. Then a sail tie to hold it in place. Working from either from the gooseneck backwards or from the end of the boom.\n\nEnsure the sail ties are secured with a slip knot and all of these are removed before taking the reef out. Not doing that is an expensive lesson.\n\nGL",
+     "replies_to": "1vxtzkb",
+     "score": 20
+    },
+    {
+     "id": "p5rp7lh",
+     "author": "McScones",
+     "body": "https://preview.redd.it/3187bnohphlh1.jpeg?width=3024&format=pjpg&auto=webp&s=6a0ec8659c88f6eca2a2a10e8b7985fd979a283c\n\n  \nI have now moved the reefing point forward as seen on the picture",
+     "replies_to": "1vxtzkb",
+     "score": 7
+    },
+    {
+     "id": "p5rt0ry",
+     "author": "ThorsFather",
+     "body": "I feel like there would be a lot of friction where the reefing lines pass through the sail. If you get a lot of tugging/friction in this corners, I'd personally look into getting a stainless ring or a low friction eye in there to make sure it passes smoothly. \n\n",
+     "replies_to": "1vxtzkb",
+     "score": 7
+    },
+    {
+     "id": "p5s1570",
+     "author": "ForInfoPurpOnly",
+     "body": "I don't think he has a loose-footed sail.",
+     "replies_to": "p5rx2e5",
+     "score": 7
+    },
+    {
+     "id": "p5rjffj",
+     "author": "Happy-as-it-is",
+     "body": "I will come back to you, you’ve got an expensive mailsail.. be careful with it! But the reef lines are still not in the optimal position.. ",
+     "replies_to": "1vxtzkb",
+     "score": 6
+    },
+    {
+     "id": "p5rk9ez",
+     "author": "M37841",
+     "body": "If you are cruising rather than racing you might want to look at a stack pack. Then you can drop your sail directly into the pack nice and neat. ",
+     "replies_to": "1vxtzkb",
+     "score": 5
+    },
+    {
+     "id": "p5rlu01",
+     "author": "Broken_Syntax_01",
+     "body": "Each slider in the boom should be just behind the reef point of the clew. That way you have one part of the reef line pulling the clew down and the other aftwards. This way you have a tight leech and the boom is raised slightly (for safety reasons). The excess sail is usually tied up with sail ties, and rolling the sail first just makes it tidier, something easier to do when putting a reef ahead of expected heavy weather. A good practice is to have coloured sail ties, so you don't forget to take them out before shaking out the reef. An alternative is to use a set of lazy jacks.\n\n [https://www.modernsailing.com/article/sailing-lazy-jacks-and-stack-packs](https://www.modernsailing.com/article/sailing-lazy-jacks-and-stack-packs)",
+     "replies_to": "1vxtzkb",
+     "score": 3
+    },
+    {
+     "id": "p5rtbsj",
+     "author": "Mjmartin_nz",
+     "body": "What do you do if the foot of the sail has no gap, mine has a rope sewed into the bottom which goes into a channel, so I can't pass the Reef line between the sail and the boom",
+     "replies_to": "p5rm2wb",
+     "score": 3
+    },
+    {
+     "id": "p5s51dw",
+     "author": "ForInfoPurpOnly",
+     "body": "If you have a footed mainsail, you could try sailing it loose-footed anyway and see how the sail performs.  Or talk to your sailmaker about if they can recut it to be loose-footed.\n\nAfter looking at your other picture in a reply, it appears that you have a loose-footed main, or the bolt rope of the foot ends before the place where the reef lines go around the boom, so you should be able to tie them on correctly.\n\nhttps://preview.redd.it/mejkm1bs9ilh1.png?width=1125&format=png&auto=webp&s=0cc93108cbca6ab53b8abe4147d59151644bbe1e\n\n",
+     "replies_to": "p5rtbsj",
+     "score": 3
+    },
+    {
+     "id": "p5sntmk",
+     "author": "hertzsae",
+     "body": "I was thinking the same. Those lines passing through fabric on the sail are going to chafe it.",
+     "replies_to": "p5rt0ry",
+     "score": 3
+    },
+    {
+     "id": "p5t80rp",
+     "author": "Happy-as-it-is",
+     "body": "I see a lot of good advises, make sure the first reef is for instance on the port side of the boom, the second should be onnthe starboard side and the third on the port side again. The mainsail connection to the mast requires longer lines the more reefs you make..",
+     "replies_to": "p5rjffj",
+     "score": 3
+    },
+    {
+     "id": "p5rmpjk",
+     "author": "Pumbaasliferaft",
+     "body": "That reefing line is too far back, you only need a slight aft angle, I'm sure someone else has already said this but there is usually a route of reefing eyes that you can use to gather the excess sail up with.\n\nYou main sheet, is that temporarily attached? Those are not for main sheets, they are reefing bails / terminals. Totally different kind of load. A hard gybe will rip  that out. The main sheet could even be attached with heavy webbing ",
+     "replies_to": "1vxtzkb",
+     "score": 2
+    },
+    {
+     "id": "p5rnlfc",
+     "author": "Ok_Panic_7112",
+     "body": "My two cents don’t include the boom when tying up the sail. A lot of stress can go on the new foot of a reefed man sail and including the boom in the tie will add extra load on the tied down sail. After you remove the sail ties always release the reef line first when shaking out the reef.  ",
+     "replies_to": "1vxtzkb",
+     "score": 2
+    },
+    {
+     "id": "p5rx2e5",
+     "author": "FutureConsistent8611",
+     "body": "Tie them around the boom, someone posted a good picture of it. And slightly more to the back.",
+     "replies_to": "p5rp7lh",
+     "score": 2
+    },
+    {
+     "id": "p5s21ww",
+     "author": "ElProfeGuapo",
+     "body": "I have the same issue as you. No gap in the foot. The most important thing is to have the new “clew” (i.e. the reefing point in the leech) firmly tied at 90º against the boom. I use a separate tie to do that. I’m not sure if you asking about this, but my mainsail has a bunch of parallel holes in the mainsail in line with the reefing points, and I use another separate tie to wrap up the excess sail that way.  Very loosely though, as that’s more of an aesthetic issue than a functional one, and I read that if you tie those too tightly, you might rip the sail, since they’re not really set up to be load bearing. ",
+     "replies_to": "p5rtbsj",
+     "score": 2
+    }
+   ]
+  },
+  "1vxvfia": {
+   "title": "Finally did it!",
+   "author": "merrypippins69",
+   "day": "2026-08-25",
+   "body": "Finally did it!\n\nI finally took the leap, and bought a boat. I have sailed my whole life, but mostly on other peoples boats, or as a skipper. Now I have a Bavaria 37ac from 2001. Super proud. \n\nProblem is, it doesn't have a spinnaker. Thought perhaps I could fit a genaker instead, anyone have any experience with this?",
+   "comments": [
+    {
+     "id": "p5rudyt",
+     "author": "BjarteM",
+     "body": "I have a self-tacking jib on my SO409, and I ruled against a spinaker since I am mostly sailing alone. Instead, I have a Code-0 that I can manage on my own. Is that an option for you?",
+     "replies_to": "1vxvfia",
+     "score": 39
+    },
+    {
+     "id": "p5rx26x",
+     "author": "Mehfisto666",
+     "body": "First thing first adjust those halyards' tension! :D",
+     "replies_to": "1vxvfia",
+     "score": 21
+    },
+    {
+     "id": "p5rut2p",
+     "author": "merrypippins69",
+     "body": "Code -0 is a good option. I have never tried it, but will consider it for sure! Thanks :)",
+     "replies_to": "p5rudyt",
+     "score": 20
+    },
+    {
+     "id": "p5rystx",
+     "author": "PeculiarNed",
+     "body": "If you sail shorthanded a lot get a code zero on torsion furler and put it in front of the genoa. ",
+     "replies_to": "p5rut2p",
+     "score": 14
+    },
+    {
+     "id": "p5ryxyz",
+     "author": "merrypippins69",
+     "body": "Haha, picture from previous owner, I swear!",
+     "replies_to": "p5rx26x",
+     "score": 13
+    },
+    {
+     "id": "p5shmfe",
+     "author": "morologous",
+     "body": "I sail our boat solo or short handed routinely.   Just furl the code early, tack through, unfurl.   If you are solo there’s no need to carry it until the last minute.    Just get a nice long furling loop and bring it as far back as is workable and convenient.   \n\nThe goal when you are shorthanded or soloing is to never be in a hurry.   Plan ahead and give yourself time so you never have to be in two places at once. ",
+     "replies_to": "p5sd721",
+     "score": 11
+    },
+    {
+     "id": "p5tp9ym",
+     "author": "gc1",
+     "body": "There are scalloped shapes along the leading vertical edge (luff) of the main sail along the mast just above the boom.  This indicates the halyard (the vertical line that pulls the head of the sail up to the top of the mast when you raise it) should be pulled tighter.  With slack in the luff, scallops will naturally bulge to leeward whichever way the boat turns, but this is not really a windward/leeward side issue, as there is only one main halyard, and it goes straight up.\n\nSee the fabric bunching lines radiating from the tack of the jib too?  You would ideally want that sail to be smooth.  There is a separate halyard for the jib.  Noting there is a reef in the main sail (some folds of sail lashed to the boom so all the canvas is not up) and the jib is a furling sail (wraps and unwraps around itself like an umbrella being put away) that is not fully unfurled, it can be a little trickier to get the tension right on the jib.  The parent commenter is suggesting both halyards need more tension.",
+     "replies_to": "p5sbolx",
+     "score": 6
+    },
+    {
+     "id": "p5ryvhz",
+     "author": "merrypippins69",
+     "body": "Thanks, just standard. Main with lazybag and rolling genoa. ",
+     "replies_to": "p5ryojk",
+     "score": 4
+    },
+    {
+     "id": "p5s2xrr",
+     "author": "1panki",
+     "body": "Forget the spinnaker…code 0",
+     "replies_to": "1vxvfia",
+     "score": 4
+    },
+    {
+     "id": "p5scoo8",
+     "author": "Zesty-B230F",
+     "body": "Nice boat, congrats. We had a couple boats with spinnakers. My family was never adept enough to help, so we never used the spinnaker. We talked about asymmetricals, but giant 155% genoa was what we did.",
+     "replies_to": "1vxvfia",
+     "score": 4
+    },
+    {
+     "id": "p5rzrfr",
+     "author": "judyalvarezx",
+     "body": "How much did you pay for the boat? if it's not private tho.",
+     "replies_to": "p5ryvhz",
+     "score": 3
+    },
+    {
+     "id": "p5ryojk",
+     "author": "judyalvarezx",
+     "body": "Congradulations!! What's your rig setup like?",
+     "replies_to": "1vxvfia",
+     "score": 3
+    },
+    {
+     "id": "p5sbz8y",
+     "author": "cycle-nerd",
+     "body": "Nice, congrats. When sailing mostly shorthanded, I wouldn’t bother with a spinnaker, way too much hassle. Gennaker + Code 0, mount an aftermarket bowsprit to attach it.",
+     "replies_to": "1vxvfia",
+     "score": 3
+    },
+    {
+     "id": "p5sd721",
+     "author": "brufleth",
+     "body": "That's a slick idea.  I've heard of people struggling to tack it to the point that they had to roll up and re-deploy to bring the sail across though.  Suppose it depends on the boat's layout.",
+     "replies_to": "p5rystx",
+     "score": 3
+    },
+    {
+     "id": "p5sdmdy",
+     "author": "PeculiarNed",
+     "body": "If it's in front of the Genoa you will always have furl to tack. But the use case is for long distance sailing so you don't tack often anyway... If you want quick adjustable sails you're gonna have to switch to Hank ons. ",
+     "replies_to": "p5sd721",
+     "score": 3
+    }
+   ]
+  },
+  "1vxyvdq": {
+   "title": "Adjusting Outhaul before casting off",
+   "author": "TradeResident1978",
+   "day": "2026-08-25",
+   "body": "Adjusting Outhaul before casting off\n\nUsually I adjust the outhaul, backstay and downhaul before I leave the mooring. I had someone on board insist that in light air that I should tighten the main sail flat and then ease the outhaul while under sail because it helpsyou get going better in light wind. I don’t understand why or what they claimed this. Anyone help me out? Am I missing something or are they mistaken? This is on a Sonar, 23 foot sailboat casting off the mooring under sail (no motor) ",
+   "comments": [
+    {
+     "id": "p5srwyu",
+     "author": "ForInfoPurpOnly",
+     "body": "Airflow will detach from the back of the main in really light air and cause drag instead of lift.  When you get the boat moving, that will generate more apparent wind and make the airflow over the back better letting you ease it out to continue to maintain proper flow over both sides.  Telltales across the main (as opposed to just attached to the leech) can help you see this visually if you don't have them.",
+     "replies_to": "1vxyvdq",
+     "score": 15
+    },
+    {
+     "id": "p5u27nc",
+     "author": "ForInfoPurpOnly",
+     "body": "I wish I could credit the countless people it took to beat this into my brain.",
+     "replies_to": "p5twj64",
+     "score": 5
+    },
+    {
+     "id": "p5smtbb",
+     "author": "Onedtent",
+     "body": "Sailing in very light wind is an art.  It can be beneficial to flatten the mainsail (as you described) and then ease it out as speed/wind increases. \n\nCasting off from a mooring you would probably have better results by deliberately heeling the boat to induce a curve into the mainsail. ",
+     "replies_to": "1vxyvdq",
+     "score": 4
+    },
+    {
+     "id": "p5t0q4i",
+     "author": "Broken_Syntax_01",
+     "body": "The thing that led me to understand sailtrim was to sail on many types of boats, and with different crews. Having had my own J24 for six years, I was asked to lend it out to an American who won at American National Championship level. He wanted to show some others how to sail a J24. I was allowed to remain onboard as \"ballast\". It was a game changing experience. Understanding the theory, and then putting that into practice puts you in the position to optimize your sailing capabilities, but there is always room to learn more.",
+     "replies_to": "p5spy0f",
+     "score": 4
+    },
+    {
+     "id": "p5ssyyu",
+     "author": "Broken_Syntax_01",
+     "body": "Sailtrim is so specific, in relationship to the prevailing conditions while actually sailing, not really while still moored up. I think that you would want power (a deeper sail) to begin with because that gives you steering ability. Once the jib is hoisted the mainsail shape is linked to air coming off the leech of the jib. That's when you start adjusting the outhaul, downhaul and backstay. Yes, you don't want too much depth in the main in light air, as that stalls the airflow, especially with a scooping leech. ",
+     "replies_to": "1vxyvdq",
+     "score": 3
+    },
+    {
+     "id": "p5twj64",
+     "author": "pembquist",
+     "body": "You know, in my autodidact way of exploring sail trim this is one of the best straight forward simple explanations I have encountered.",
+     "replies_to": "p5srwyu",
+     "score": 3
+    },
+    {
+     "id": "p5u7n7p",
+     "author": "RockHead-MA",
+     "body": "They are technically correct. A flatter shape does help the airflow attach to both sides of the sail more quickly and easily. The same argument can be made for adding backstay at that point. \n\nHowever... \nIt's the benefit sufficient and meaningful enough to be faffing about with? Almost certainly not in practice. That transitional period is simply too short.\n\nSources/C.V.: Coached 4 Paralympic sailing campaigns, 3 in Sonars, one gold medal in another class. Rep for the Sonar builder. Teach sailing & racing at MIT Sailing recreational program, focus on using theory to explain practice. Wicked smart engineering students, my favorites are the Aero/Astro PhD candidates. My most coming answer to any question is, \"It depends.\" I teach wildly more technically than I ever have before. I get a lot of deeply technical questions and actually read obscure doctoral thesis on questions like this! Recently had theoretical q&a about if a flat plane can generate lift sufficient to sail, how and why. An IMOCA team couldn't come to consensus. The science says yes. I had to research the \"why & how\" to satisfy the questioner, and link him to the source materials. Fun stuff! 😊",
+     "replies_to": "1vxyvdq",
+     "score": 3
+    },
+    {
+     "id": "p5t8eez",
+     "author": "NotASexJoke",
+     "body": "Sail controls are adjustable precisely because they need constant tweaking to the current conditions in order to maximise efficiency. There are general rules for how to set sails in different conditions, but you will only learn what your boat likes through constant tweaking and seeing how she responds. ",
+     "replies_to": "1vxyvdq",
+     "score": 2
+    },
+    {
+     "id": "p5toyiz",
+     "author": "foilrider",
+     "body": "You should adjust the outhaul for the wind conditions. If you want the boat to go fast, it should change most every time the wind strength or point of sail changes. \n\nThere is no part of sail trim where “set it at the dock and forget it” is optimal. ",
+     "replies_to": "1vxyvdq",
+     "score": 2
+    },
+    {
+     "id": "p5xxoc8",
+     "author": "fredtopia",
+     "body": "Any ding-dong power boater could figure out how to sail in 4+knots of wind....a true sailor, who understands the light air, sail shape, drag, etc are the masters.\n\nMany of you guys have great suggestions!   I belong to a local sail boat race club and have learned so much more about sailing during a 2knot wind race from the other boats with more experience.\n\nSailing is a true skill.",
+     "replies_to": "1vxyvdq",
+     "score": 2
+    },
+    {
+     "id": "p5tltz2",
+     "author": "gsasquatch",
+     "body": "I like outhaul and vang loose for the hoist to make that easier.    Outhaul loose works better in light.\n\nI like to do the outhaul when the main is still flopping after the hoist.    I'll adjust in conditions, but mine needs the main eased to bring it in.\n\nI leave the backstay off or loose until I need it to dump wind to balance the helm or otherwise optimize.\n\nOuthaul is something that really only maybe shows on the knot meter  or vs. another boat.    Having it set wrong won't make much of a difference at all without that sort of measurement.   It is something for ekeing out the last 0.1kt",
+     "replies_to": "1vxyvdq",
+     "score": 1
+    },
+    {
+     "id": "p5vl692",
+     "author": "Nearby_Maize_913",
+     "body": "what about on a multihull?",
+     "replies_to": "1vxyvdq",
+     "score": 1
+    },
+    {
+     "id": "p5wggcn",
+     "author": "TradeResident1978",
+     "body": "I am open to learning and part of that means being wrong at times. I tend to like to adjust everything before I leave the mooring and then again as needed because I rarely have an experienced enough crew to worry about sail adjusting for fun day sails (not racing). ",
+     "replies_to": "p5u7n7p",
+     "score": 1
+    },
+    {
+     "id": "p5whb5r",
+     "author": "TradeResident1978",
+     "body": "I’ll remember that next time I am in light air. I agree it’s an art! The hardest days I have ever had (including almost running aground) were in light wind days. Between keeping crew happy in baking hot and low wind can lead to getting pulled ashore… ahhhh… light wind is the wind I like least. I love the 15-20 knot days when gusts from 3 directions… keeps me on my toes. That’s my ideal fun sailing! ",
+     "replies_to": "p5smtbb",
+     "score": 1
+    },
+    {
+     "id": "p5wicui",
+     "author": "TradeResident1978",
+     "body": "I have found that sailing with blown out sails of the rental sonar I use, it makes very little difference in how the sails are trimmed, to a point. In over 40 lessons I have taken, the center I go to has never taught me to properly adjust the sails for maximum efficiency. They focus on trying to “make it fun” at the expense of actually becoming proficient and not just relying on the books I have read. ",
+     "replies_to": "p5ssyyu",
+     "score": 1
+    }
+   ]
+  },
+  "1vy0els": {
+   "title": "CLC Nor'easter Dory at 11,400'",
+   "author": "DipshitPartiPoodle",
+   "day": "2026-08-25",
+   "body": "CLC Nor'easter Dory at 11,400'\n\nLikely the highest altitude sailing Ill ever do!  Near Guanella Pass in Colorado, USA.  Treeline Sailing!  ",
+   "comments": [
+    {
+     "id": "p5t8ram",
+     "author": "Stygg_Varg",
+     "body": "Tremendous",
+     "replies_to": "1vy0els",
+     "score": 2
+    },
+    {
+     "id": "p5uom8q",
+     "author": "ppitm",
+     "body": "With LWL of 11,400' your hull speed is 143 kts!",
+     "replies_to": "1vy0els",
+     "score": 2
+    }
+   ]
+  },
+  "1vy3op1": {
+   "title": "SHE 27 - Kicker Bracket snapped - how to replace?",
+   "author": "googlered",
+   "day": "2026-08-25",
+   "body": "SHE 27 - Kicker Bracket snapped - how to replace?\n\nSo a simple question really - I hadn't noticed that my kicker bracket on the mast had seized so gybing on my way back it snapped off. In the picture you can see it sheared off. The kicker is a Seldon Rodkicker Mk II.\n\n  \nOption 1 - remove the seized bolt (can't be done from below because of the next fitting) - have put WD40 on it and left it as it would NOT move (1/2\" bolt - not 13mm!!). If this can be removed I need that part again - but I have no idea where to get one!\n\n  \nOption 2 - drill out the pop rivets and replace. However the replacements I see online are larger than this version. and there is a small loop with 4 pop rivets just above that I don't know what it is for.\n\n  \nAny ideas on solving / acquiring parts - or should I junk both kicker and fitting and go back to the SHE 27's original system?\n\n  \nTIA.\n\n  \nBTW boat is in Chatham on the Medway - East Coast England.",
+   "comments": [
+    {
+     "id": "p5tqhcd",
+     "author": "ForInfoPurpOnly",
+     "body": "[Heat can sometimes help with a seized bolt.](https://engineerfix.com/how-to-heat-up-a-bolt-for-removal/)  Worst case, you should be able to remove the head (carefully!) with an angle grinder or similar.\n\n  \nOnce you have the bolt out, you should be able to take the pieces of the broken part to a machine shop and ask them to fabricate a replacement.",
+     "replies_to": "1vy3op1",
+     "score": 1
+    },
+    {
+     "id": "p5tylkb",
+     "author": "Broken_Syntax_01",
+     "body": "If the base plate (on the mast) is still perfectly still in place, do everything to get only the swivelling part off. You should be able to buy a replacement part having the same bolt hole diameter. Should it be too short you can fill that room up with washers. Avoid having to drill new holes in the mast. Make sure there is something supporting the top flange when you punch the bolt out, even if its just some soft wood.",
+     "replies_to": "1vy3op1",
+     "score": 1
+    },
+    {
+     "id": "p5tyzqe",
+     "author": "BebopBeachBum",
+     "body": "I'd hit the bolt with PB Blaster or Kroil a few times over a day or so. Let it soak then hit it with a torch if necessary.",
+     "replies_to": "1vy3op1",
+     "score": 1
+    },
+    {
+     "id": "p5vgyqf",
+     "author": "Imaginary-Season141",
+     "body": "You can drill out the rivets and then work to get the swivel part off. This might be easier than doing it when it still attsched to your mast.",
+     "replies_to": "1vy3op1",
+     "score": 1
+    }
+   ]
+  },
+  "1vy58lc": {
+   "title": "Beautiful day for sailing in Block Island",
+   "author": "timeport-0",
+   "day": "2026-08-25",
+   "body": "Beautiful day for sailing in Block Island\n\nPlease ignore my chatty autopilot or mute the sound if he's too much for you",
+   "comments": [
+    {
+     "id": "p5u2sq4",
+     "author": "Ai_bot_6969",
+     "body": "Need someone to scrape the bottom when u tie up??",
+     "replies_to": "1vy58lc",
+     "score": 2
+    },
+    {
+     "id": "p5u59r8",
+     "author": "Ai_bot_6969",
+     "body": "I’ll clean it for free in the sound I’m in new London lol ",
+     "replies_to": "p5u4h7p",
+     "score": 2
+    },
+    {
+     "id": "p5v46ml",
+     "author": "johnatsea12",
+     "body": "Are you in the salt pond?",
+     "replies_to": "1vy58lc",
+     "score": 2
+    },
+    {
+     "id": "p5w19q0",
+     "author": "AnalogNavigator",
+     "body": "Looks like Mudslide time!",
+     "replies_to": "1vy58lc",
+     "score": 2
+    },
+    {
+     "id": "p5u4h7p",
+     "author": "timeport-0",
+     "body": "she's pretty clean already. besides no bottom cleaning allowed in the pond!",
+     "replies_to": "p5u2sq4",
+     "score": 1
+    },
+    {
+     "id": "p5vuptv",
+     "author": "timeport-0",
+     "body": "yea over by the dinghy beach",
+     "replies_to": "p5v46ml",
+     "score": 1
+    }
+   ]
+  },
+  "1vy7hdh": {
+   "title": "Which Sailors Cap Should I Wear As A Civilian (Not In The Coast Guard Or The Navy)?:",
+   "author": "67boylover",
+   "day": "2026-08-25",
+   "body": "Which Sailors Cap Should I Wear As A Civilian (Not In The Coast Guard Or The Navy)?:",
+   "comments": []
+  },
+  "1vy8j7r": {
+   "title": "Recommend smallest compact sailing dinghy",
+   "author": "Classic_Emergency336",
+   "day": "2026-08-25",
+   "body": "Recommend smallest compact sailing dinghy\n\nRenting a dinghy appears to be a great challenge. So I consider buying the cheapest, smallest, foldable dinghy. I also want it to be easy to transport. Can anyone recommend something?",
+   "comments": [
+    {
+     "id": "p5uyoe5",
+     "author": "TheWorldEndsWithCake",
+     "body": "Laser 😎\n\nMast folds into two pieces. Everything fits on a sedan roof rack. What else do you need?",
+     "replies_to": "1vy8j7r",
+     "score": 10
+    },
+    {
+     "id": "p5uxq5p",
+     "author": "captain-cowboy",
+     "body": "Nesting pram.  I've got an Ozona X from Bedard in Florida, but  there's tons of similar from Chesapeake light craft.  It's a 10' wooden pram, two 50 lbs. halves bolt together with 4 screws, sails like a dream, with the two halves nested it fits up on the bow of my sailboat in a footprint of probably about 5'6\" by 4'",
+     "replies_to": "1vy8j7r",
+     "score": 5
+    },
+    {
+     "id": "p5vg8vz",
+     "author": "Far_Dentist4880",
+     "body": "Dinghygo Orca. ",
+     "replies_to": "1vy8j7r",
+     "score": 4
+    },
+    {
+     "id": "p5uvgwb",
+     "author": "YAMMYRD",
+     "body": "foldable? seems like a tall order. anything that compact and transportable will have a lot of setup time and probably not be very seaworthy. there are many very easily cartop options, and even simpler trailer dinghies that can be rigged very quickly.",
+     "replies_to": "1vy8j7r",
+     "score": 2
+    },
+    {
+     "id": "p5uyykt",
+     "author": "Classic_Emergency336",
+     "body": "I am ok with lake worthy)",
+     "replies_to": "p5uvgwb",
+     "score": 2
+    },
+    {
+     "id": "p5ybhwr",
+     "author": "gc1",
+     "body": "A laser is 130 lbs even without a waterlogged hull.  Depending on your size and strength, and the proportions of your car, it can be a bit of a beast to get it on and off a car top.   I wouldn’t personally plan on that without a garage ceiling rig on the home and and a plan to hoist it on and off at the dock. \n\nMaybe consider an RS Aero if this issue concerns you and budget permits.  ",
+     "replies_to": "p5uyoe5",
+     "score": 2
+    },
+    {
+     "id": "p5uw1qa",
+     "author": "LongBedroom8355",
+     "body": "Tiwal makes an awesome inflatable dinghy that absolutely whips through the water. setup takes about 40 minutes though.",
+     "replies_to": "1vy8j7r",
+     "score": 1
+    },
+    {
+     "id": "p5uyui0",
+     "author": "iron82",
+     "body": "Cheapest, smallest folding dinghy would be a packraft. They are designed to be carried long distances by hikers. There are lots of kinds.",
+     "replies_to": "1vy8j7r",
+     "score": 1
+    },
+    {
+     "id": "p5v1bjc",
+     "author": "cib2018",
+     "body": "Those inflatable are too compromised to be fun for a sailor. Look in the 14-18’ range with a trailer. Much better boats. ",
+     "replies_to": "1vy8j7r",
+     "score": 1
+    },
+    {
+     "id": "p5v4dgl",
+     "author": "interessenkonflikt",
+     "body": "It costs 10k for an essential bic skiff. ",
+     "replies_to": "p5uyn46",
+     "score": 1
+    },
+    {
+     "id": "p5v574x",
+     "author": "LongBedroom8355",
+     "body": "I mean, I got mine used for $6k",
+     "replies_to": "p5v4dgl",
+     "score": 1
+    },
+    {
+     "id": "p5wnekz",
+     "author": "Individual-Area7121",
+     "body": "How fast do you want it to go and how many people do you want it to hold?\n\nDolphin Jr., Butterfly, Sunfish and Laser are technically car toppable, though they are a bit heavy for that, imo. Especially if you plan to do it yourself. The Dolphin and Butterfly are displacement hulls which will top out around 5knots due to hull speed. the Sunfish and Laser are planing hulls that will go quite a bit faster in a stronger wind but also are a bit more tippy for the same reasons. \n\nIf you want the EASIEST to get onto the water, a Snark is also an option if you can find one.  I have an old Sunflower 3.3 from the 80's. It's a styrofoam hull covered with abs plastic and it has a lanteen sail. The hull is 50lbs and the whole thing with rigging is under 75lbs.  At 11' long, it fits into the back of my 6' bed pickup with just a few feet beyond the tailgate. I move it to the beach with a modified golf push cart. It's slow, of course, and about as simple a sailboat as you can get, but it was cheap and it's fun to tool around with on my local reservoir.  One of my favorite things about it is you can comfortably fit two people sitting IN the boat rather than on top of it so you don't have to duck under the sail every time you tack. I spend most of my time while sailing it laying back with my feet dangling in the water.",
+     "replies_to": "1vy8j7r",
+     "score": 1
+    },
+    {
+     "id": "p5wz7c0",
+     "author": "Classic_Emergency336",
+     "body": "Not too fast with two medium size people.",
+     "replies_to": "p5wnekz",
+     "score": 1
+    },
+    {
+     "id": "p5xegub",
+     "author": "Lord-of_the-files",
+     "body": "One note of caution on these, if you capsize and don't remain attached to the boat, it will take off downwind a LOT faster than you can swim...",
+     "replies_to": "p5uw1qa",
+     "score": 1
+    },
+    {
+     "id": "p5zjsg3",
+     "author": "thebugman40",
+     "body": "fliptail 6 \n\nyou will have to make it yourself but the instructions are very good.",
+     "replies_to": "1vy8j7r",
+     "score": 1
+    }
+   ]
+  },
+  "1vyagrj": {
+   "title": "Anyone sail a lot that has serious back injuries?",
+   "author": "waubers",
+   "day": "2026-08-25",
+   "body": "Anyone sail a lot that has serious back injuries?\n\nSo, I'm in the process of rehabbing an Oday 272 and I have a Zuma dinghy.  I also have a herniated L5-S1 disc. It burst/herniated to the left, and as a result I have nerve damage down my left leg and an altered gate.  I had surgery to repair the disc in 2024.  Unfortunately, that same disc was also bulging on the right side.\n\nI'm finding that anytime I sail my dinghy, I'm getting a pretty bad sciatica flare up for the next 2-3 days afterward.  No doubt from the hunched over and odd positions I have to get in sailing it.  I can live with not being able to sail the dinghy, but now I'm really concerned because of the need to lift/apply force to things sailing my Oday. \n\nBetween the compromised balance and gait from the left side herniation, and the risk of herniating my right side as well, I'm sadly thinking I need to probably reconsider this as a long term hobby.  A bummer since I finished my 103/104 this spring, but man, it seems every time I muck around on any of my boats I wind up with bad right side sciatica afterward.  And I'm not someone who never does anything that uses my back. It feels like the ergonomics of sailing though, might be a deal killer for me.\n\nAnyone else do a lot of sailing with bad sciatica and bulging discs? ",
+   "comments": [
+    {
+     "id": "p5vchay",
+     "author": "dingleberry1001",
+     "body": "Blew my back up at 2012 Farr 40 worlds in chicago, still did melges 32 worlds in Newport the next week.\n\nSpent 4 years managing it and then had a micro disc/lami done.\n\nYou can sail with a bad back. Just gotta take care of your core.",
+     "replies_to": "1vyagrj",
+     "score": 2
+    },
+    {
+     "id": "p5veo34",
+     "author": "Mrshadowsys",
+     "body": "4 strokes , 2 at sea , one with a medevac by the navy , 2 back injuries from my rally days , still sailing almost daily , whether is on commercial boats or for pleasure.   \nat the end sailing teaches you about life , no matter how hard the pain is , you cannot quit , you dont quit .. \n\nmy humble advice is move to bigger boats , and quit racing , i quit racing after my second stroke, last time i had spinal pain i spent 2 days on a storm on bed that was taking water from a improperly sealed window , was a nightmare , the pain , the humidity , and falling a few times while fighting waves inside a harbor , made the decision to stay  aboard and wait to recover before moving from that harbor , notified the local Volunteer Lifeboat organization and they checked every few hours with me over the radio , when the storm passed a bit received their visit , one of them was a paramedic and checked my leg that was still dumb. a week later i was again at sea , fighting another storm. \n\nBiggest risk from back injuries or hernias is not pain , is loss of leg control and falling. \n\nread your limits , but never quit sailing , its a passion , its built into your mind , theres a time in every sailors heart that he or she will sail anything , from fishing boats to container ships ..\n\n",
+     "replies_to": "1vyagrj",
+     "score": 1
+    },
+    {
+     "id": "p5xtvlo",
+     "author": "2hullz",
+     "body": "Sail bigger boats, more slowly (no racing) ",
+     "replies_to": "1vyagrj",
+     "score": 1
+    }
+   ]
+  },
+  "1vyaop3": {
+   "title": "Moving from Lake to Coastal Sailing Tips?",
+   "author": "Interesting-Chest520",
+   "day": "2026-08-25",
+   "body": "Moving from Lake to Coastal Sailing Tips?\n\nI'm fairly new to sailing and am feeling a little nervous moving from sailing on a lake to sailing in open water. Is there much practical difference?",
+   "comments": [
+    {
+     "id": "p5vgbtz",
+     "author": "barefootviking",
+     "body": "Tides, currents and fewer obstacles to hit when offshore \n\nTake it easy. Small steps until you get comfortable. ",
+     "replies_to": "1vyaop3",
+     "score": 5
+    },
+    {
+     "id": "p5vhci3",
+     "author": "Guygan",
+     "body": "Water is salty.",
+     "replies_to": "1vyaop3",
+     "score": 5
+    },
+    {
+     "id": "p5vi92o",
+     "author": "ForInfoPurpOnly",
+     "body": "Salt water is the devil. Rinse off everything you care about.",
+     "replies_to": "1vyaop3",
+     "score": 5
+    },
+    {
+     "id": "p5vhgif",
+     "author": "Stygg_Varg",
+     "body": "Nothing like some offshore dinghy sailing",
+     "replies_to": "p5vgbtz",
+     "score": 3
+    },
+    {
+     "id": "p5vjkm9",
+     "author": "Stygg_Varg",
+     "body": "Surfing with a laser is a bloody good time mate. Windsurfing 100 miles is insane, but those things can really rip",
+     "replies_to": "p5vi09e",
+     "score": 3
+    },
+    {
+     "id": "p5vko49",
+     "author": "iron82",
+     "body": "You are required to have additional safety gear. Look up USCG required safety equipment.",
+     "replies_to": "1vyaop3",
+     "score": 3
+    },
+    {
+     "id": "p5vctpa",
+     "author": "circuitously",
+     "body": "Tide?",
+     "replies_to": "1vyaop3",
+     "score": 2
+    },
+    {
+     "id": "p5vi09e",
+     "author": "barefootviking",
+     "body": "I used to take my Laser out of Camp Pendleton, CA…sail out and surf it back. I was young and wild. So fun!  \n\nOf course, Hobie 16’s sail from Miami to Bimini occasionally and I worked w a guy who windsurfed from Havana to Key West!!! (Desperation is a motivator)",
+     "replies_to": "p5vhgif",
+     "score": 2
+    },
+    {
+     "id": "p5vkd6u",
+     "author": "barefootviking",
+     "body": "His name is/was Roberto…there was talk of making a movie of his experience. He drank tons of water, shoved food and a water bottle in his Speedo and sailed for freedom! He showed up looking for a windsurfing instructor job (Key Biscayne, Miami) and was hired on the spot. ",
+     "replies_to": "p5vjkm9",
+     "score": 2
+    }
+   ]
+  },
+  "1vyavce": {
+   "title": "Sailing tomorrow.",
+   "author": "dawa43",
+   "day": "2026-08-25",
+   "body": "Sailing tomorrow.\n\nAnyone want to go sailing tomorrow on Lake Michigan out of Muskegon? ",
+   "comments": [
+    {
+     "id": "p60bex9",
+     "author": "Small-Growth7809",
+     "body": "If I was there I would go! I’m in Kansas lol",
+     "replies_to": "1vyavce",
+     "score": 1
+    }
+   ]
+  },
+  "1vybmw9": {
+   "title": "Chainplate rust second opinion",
+   "author": "Fansipan305",
+   "day": "2026-08-25",
+   "body": "Chainplate rust second opinion\n\nHi, I would appreciate a second opinion.\n\n1998 Oceanis 351\n\nMy port chainplate (thick pin fiberglassed into hull) is a bit rusted. It's behind the gally so a bit difficult to get in on it properly without taking things apart. I asked a surveyor about it and got their opinion but would really appreciate any other opinions. \n\nI plan on replacing the rigging this winter anyway but I'm a little scared of the chainplate situation. \n\nI found one other thread with this similar situation but they didn't post about their fix/conclusion.\n\nQuestions on my mind:\n\nHow bad is it?\n\nAnyone deal with this specific situation?\n\nWhat is the best way to replace new? (How much gutting at the fiberglass is required?)",
+   "comments": [
+    {
+     "id": "p5vlwrq",
+     "author": "mwax321",
+     "body": "That looks incredibly bad from that photo. Dont sail on that.",
+     "replies_to": "1vybmw9",
+     "score": 5
+    },
+    {
+     "id": "p5vo3zm",
+     "author": "Stygg_Varg",
+     "body": "Looks a bit nasty honestly. If it was my boat I would be on that with a wire brush and some acid to see how bad it really is, perhaps the rust is mostly superficial. It's very hard to tell from a photo. Best of luck. ",
+     "replies_to": "1vybmw9",
+     "score": 5
+    },
+    {
+     "id": "p5vwdg3",
+     "author": "mover_of_bridges",
+     "body": "Needs to be disassembled to assess section loss.\n\nWithout knowing more about the construction, that pin might just be epoxied in to the glass and might be able to be broken loose and pivoted out instead of busting out the glass.  Tension only load so no need to put glass on the underside, but you do want epoxy for load transfer into the glass.\n\nSource: am engineer.",
+     "replies_to": "1vybmw9",
+     "score": 3
+    },
+    {
+     "id": "p5vwib2",
+     "author": "CaptainMcSmoky",
+     "body": "Listen to the surveyor and do not take random peoples advice on the Internet as gospel.\n\nI'd personally not risk it and get it replaced ASAP, I'd also be concerned about the part that is inside the GRP that you can't see. ",
+     "replies_to": "1vybmw9",
+     "score": 3
+    },
+    {
+     "id": "p5vpftw",
+     "author": "the-montser",
+     "body": "No, that is the chainplate. \n\nBeneteaus of this era use a thick horizontal rod set in sockets in the hull grid as chainplates instead of a more traditional chainplate like you’re describing.",
+     "replies_to": "p5vkrxu",
+     "score": 2
+    },
+    {
+     "id": "p5vpq69",
+     "author": "uthyrbendragon",
+     "body": "A few points to consider, take them as you wish:\n\n1) how on earth do you know the credentials of some random people on the internet who may say something is good or bad?  \n2)  to my point above, I am a naval architect with a degree in naval architecture (yacht design) and a post-grad in advanced composites but you should not take my word for it.  \n3) it looks bad but without a proper inspection and cleaning the scale away it is impossible to determine the actual wastage.  \n4) given typically large FoS, I might try and clean it up best I can and get a better view, I would not take it out for a play in anything lumpy and 20kts of breeze until I know for sure, I would however personally take it out in light airs and not worry too much.  \n5) if you missed point 2 above - DO NOT TAKE MY WORD FOR IT - you have a surveyor so why not listen to them?",
+     "replies_to": "1vybmw9",
+     "score": 2
+    },
+    {
+     "id": "p5wsmmr",
+     "author": "Purple-Hearing-3893",
+     "body": "Last year there was a boat, SV Quiet, that lost its mast crossing the Pacific. I was actually having drinks with the captain a few nights ago and got the story first hand. To summarize- he knew his chain plates needed to be replaced but thought he had more time. They were hard to get too and didn't look that bad. It only took one going out for the whole mast to come down ",
+     "replies_to": "1vybmw9",
+     "score": 2
+    },
+    {
+     "id": "p5vkrxu",
+     "author": "Holden_Coalfield",
+     "body": "That’s just the attachment and it’s about to twang any second\n\nShould be a long wide bar with several large bolts holding that on the bulkhead or hull",
+     "replies_to": "1vybmw9",
+     "score": 1
+    },
+    {
+     "id": "p5vw0ow",
+     "author": "whyrumalwaysgone",
+     "body": "Not good. That's about to go, and take your rig with it. Bare minimum that pin needs replacement, but if its that bad you will want to dig deeper.\n\nUsually the process is open everything up with a grinder, inspect and replace as needed, then reglass. Its a scrappy job, sorry. Get a good metal shop to look at what comes out and replace as needed. Anything stainless needs to go, the bronze/chrome toggles may be salvagable\n\n",
+     "replies_to": "1vybmw9",
+     "score": 1
+    },
+    {
+     "id": "p5w1nnk",
+     "author": "Spiritual-End7310",
+     "body": "Unless I have proof that the rigging and everything associated with it has been replaced in the last 5-10 years (which has never happened) I always replace the chainplates, stays/shrouds, and tangs on every new boat I get. Granted, my boats are always 25ft or less, so it’s not that expensive, but the peace of mind is worth the cost. \n\nI’m getting titanium chainplates on my newest boat for the first time. ",
+     "replies_to": "1vybmw9",
+     "score": 1
+    },
+    {
+     "id": "p5wk104",
+     "author": "AppropriateBunch147",
+     "body": "It’s the pin replace it ",
+     "replies_to": "1vybmw9",
+     "score": 1
+    },
+    {
+     "id": "p5zn1hq",
+     "author": "Fansipan305",
+     "body": "Thanks for super interesting thought. Going to see if I can find more information on whether this is epoxied in!",
+     "replies_to": "p5vwdg3",
+     "score": 1
+    },
+    {
+     "id": "p61nvap",
+     "author": "Fansipan305",
+     "body": "Thanks to everyone for your thoughts and criticalness! Not to worry, I'm definitely taking the professional's advice which aligns with some of the comments on here - detach the rigging and clean back the rust and then go from there.\n\nSuper interesting point on whether that pin is just epoxied in. Wonder if anyone knows if this is true?",
+     "replies_to": "1vybmw9",
+     "score": 1
+    },
+    {
+     "id": "p63o0no",
+     "author": "bill9896",
+     "body": "Geez, what a terrible design!  Not because it is not strong, but because it can not be inspected with any degree of certainty.  Stainless is not going to be rust free around salt water.  The presence of rust in itself is not proof of a problem, but it IS pointing to a potential problem that needs closer examination.  \n\nThe problem is that you are looking for very small cracks in the metal that can be very hard to see with the naked eye. The suggestion repeated here several times to \"wire brush\" the rust off will absolutely not leave a surface smooth enough to really see cracks, even with magnification. That really takes a very smooth, nearly polished surface.  \n\nTo be really sure this chunk of metal is OK, you really need to do a dye test on it.  I don't know if it is possible to do that in situ in this case.  And if you are doing all the work to take it out, and by the time you do that, you might as well just put a new part in.",
+     "replies_to": "1vybmw9",
+     "score": 1
+    }
+   ]
+  },
+  "1vyddql": {
+   "title": "Bahamas customs",
+   "author": "JDarbsR",
+   "day": "2026-08-25",
+   "body": "Bahamas customs\n\nI’m planning on sailing south from Chesapeake bay, and then over to the Bahamas this winter. My question is, how terribly bad of an idea is it to take a thc vape along w me? Is that any better than flower? I cannot drink and have not done so in almost ten years, so the devils cabbage helps me a lot. Thank you for your thoughts.\n\n ",
+   "comments": [
+    {
+     "id": "p5w4dpp",
+     "author": "hottenniscoach",
+     "body": "lol, there is actually a tip jar on the counter of customs at west end. Be sure to use it!",
+     "replies_to": "1vyddql",
+     "score": 9
+    },
+    {
+     "id": "p5w0wct",
+     "author": "thebemusedmuse",
+     "body": "Fines in the Bahamas for use are steep, and there's jail time for marijuana possession. It's a long way down there though, and you can always toss what's left in international waters.",
+     "replies_to": "1vyddql",
+     "score": 8
+    },
+    {
+     "id": "p5w0m6n",
+     "author": "imagine30",
+     "body": "Is it likely to be a problem? No. But the unbelievable clusterfuck that will result if you end up getting randomly boarded (which does happen) and caught with it is absolutely not worth it. They can seize your boat. How is getting high worth that risk?",
+     "replies_to": "1vyddql",
+     "score": 7
+    },
+    {
+     "id": "p5w0zoy",
+     "author": "salty-walt",
+     "body": "https://www.bahamaspress.com/bimini-female-arrested-for-100-marijuana-infused-gummies/\n\nThey don't play....\n\nWould you get caught? Most likely not. But you can also end up in jail. ",
+     "replies_to": "1vyddql",
+     "score": 7
+    },
+    {
+     "id": "p5w07tg",
+     "author": "irotc",
+     "body": "I wouldn’t do it, but it would probably be fine. ",
+     "replies_to": "1vyddql",
+     "score": 6
+    },
+    {
+     "id": "p5weo9y",
+     "author": "wkavinsky",
+     "body": "JFC, don't throw trash (and especially vapes) in the bloody ocean.",
+     "replies_to": "p5w6bwe",
+     "score": 5
+    },
+    {
+     "id": "p5wieng",
+     "author": "jonathanrdt",
+     "body": "That is neither proof of anything nor good advice.",
+     "replies_to": "p5w9jr9",
+     "score": 4
+    },
+    {
+     "id": "p5w9jr9",
+     "author": "chinarider888",
+     "body": "I take them everywhere. Never had a problem. ",
+     "replies_to": "1vyddql",
+     "score": 3
+    },
+    {
+     "id": "p5wkjbx",
+     "author": "midnightseanavy",
+     "body": "I am an environmentalist but let’s put things in perspective. These are the same waters traveled by cruise ships and military ships. Do you think they really store their trash onboard ?  \nI really doubt one empty cartridge is gonna tip the balance of the ocean. ",
+     "replies_to": "p5weo9y",
+     "score": 3
+    },
+    {
+     "id": "p5wqsbr",
+     "author": "ceciltech",
+     "body": "Most places make you leave the gun with them when after declaring it and you need to leave from same port to get it back.",
+     "replies_to": "p5wksjj",
+     "score": 3
+    },
+    {
+     "id": "p5wehvw",
+     "author": "wkavinsky",
+     "body": "Do you enjoy prison in foreign countries?\n\nIf not, you need to learn (and obey) what is legal in the countries you visit.\n\nLeave any drugs, or paraphernalia at home.\n\nLikewise for guns, gun accessories or ammo - those can, (and have) landed tourists flying into the country in prison, even for just one forgotten bullet in their luggage.",
+     "replies_to": "1vyddql",
+     "score": 2
+    },
+    {
+     "id": "p5wq18n",
+     "author": "NorbertIsAngry",
+     "body": "….a Bahamian jail. ",
+     "replies_to": "p5w0zoy",
+     "score": 1
+    },
+    {
+     "id": "p5w6bwe",
+     "author": "midnightseanavy",
+     "body": "Locals and tourists alike have recently gone to jail for importing vapes. Don’t try it. Chuck it when get in there waters. Buy some flower from a local. It’s odd, they simultaneously don’t care most of the time, but also have very harsh penalties. Not worth it.",
+     "replies_to": "1vyddql",
+     "score": 1
+    },
+    {
+     "id": "p5wi8ca",
+     "author": "jonathanrdt",
+     "body": "Just fyi: the coast guard can impound your boat even if you have weed in the waters of a legal state. I wouldnt mess with it domestically much less the bahamas.",
+     "replies_to": "1vyddql",
+     "score": 1
+    },
+    {
+     "id": "p5wksjj",
+     "author": "midnightseanavy",
+     "body": "I think he can actually have guns if you declare them at customs. ",
+     "replies_to": "p5wehvw",
+     "score": 1
+    }
+   ]
+  },
+  "1vyfeya": {
+   "title": "Sailing past the wind turbines south of Block Island",
+   "author": "timeport-0",
+   "day": "2026-08-25",
+   "body": "Sailing past the wind turbines south of Block Island",
+   "comments": [
+    {
+     "id": "p5wj71f",
+     "author": "Suomasema",
+     "body": "There must be these fans along the coasts. How could there be wind for all the sailors without them?",
+     "replies_to": "1vyfeya",
+     "score": 107
+    },
+    {
+     "id": "p5wfh95",
+     "author": "smashcuts",
+     "body": "Drink a mudslide at the oar for me ",
+     "replies_to": "1vyfeya",
+     "score": 46
+    },
+    {
+     "id": "p5xirbz",
+     "author": "timeport-0",
+     "body": "They were installed by the ancients to keep the earth spinning!",
+     "replies_to": "p5wj71f",
+     "score": 45
+    },
+    {
+     "id": "p5whjjj",
+     "author": "timeport-0",
+     "body": "apparently they power all of block Island with 10% of the power and sell the remaining 90% back to the mainland ",
+     "replies_to": "p5wh7s0",
+     "score": 29
+    },
+    {
+     "id": "p5wgg0e",
+     "author": "timeport-0",
+     "body": "we went to Dead Eye Dicks tonight...don't know if we will make it to the Oar but if we do will have one in your honor!",
+     "replies_to": "p5wfh95",
+     "score": 23
+    },
+    {
+     "id": "p5wh7s0",
+     "author": "barnaclebill22",
+     "body": "Damn free electricity! Ramming speed!",
+     "replies_to": "1vyfeya",
+     "score": 21
+    },
+    {
+     "id": "p5xflad",
+     "author": "timeport-0",
+     "body": "yep. Tear them all out and just burn more coal which doesn't cause any harmful effects at all!",
+     "replies_to": "p5xdix1",
+     "score": 21
+    },
+    {
+     "id": "p5wrnqx",
+     "author": "maine_buzzard",
+     "body": "No, it’s gay dolphins this week. Fox News has crossdressing sharks penciled in for next week’s green energy disaster. ",
+     "replies_to": "p5wm878",
+     "score": 19
+    },
+    {
+     "id": "p5wm878",
+     "author": "bigmphan",
+     "body": "Sure beats those big diesel generators across from the BIG\n\nEven with the whale cancer and all that",
+     "replies_to": "1vyfeya",
+     "score": 13
+    },
+    {
+     "id": "p5xdix1",
+     "author": "SomewhatInnocuous",
+     "body": "I hear windmills cause cancer too.",
+     "replies_to": "p5wuoys",
+     "score": 12
+    },
+    {
+     "id": "p5xotfj",
+     "author": "timeport-0",
+     "body": "the whales were practically impaling themselves on the turbine blades. I didn't video it because there were workers there and they kept throwing whale bones at us",
+     "replies_to": "p5xmvq6",
+     "score": 12
+    },
+    {
+     "id": "p5wuoys",
+     "author": "mamasemamasamusernam",
+     "body": "Woh! How have you all not gone deaf?",
+     "replies_to": "1vyfeya",
+     "score": 11
+    },
+    {
+     "id": "p5ytgwd",
+     "author": "jmdyason1234",
+     "body": "Proud of this sub for not mentioning main halyard tension 👏",
+     "replies_to": "1vyfeya",
+     "score": 11
+    },
+    {
+     "id": "p5wlxn0",
+     "author": "TheLiquidShoe",
+     "body": "Banana mudslide at champlins is unbeaten! ",
+     "replies_to": "p5wfh95",
+     "score": 10
+    },
+    {
+     "id": "p5xad4f",
+     "author": "timeport-0",
+     "body": "ehhh?",
+     "replies_to": "p5wuoys",
+     "score": 10
+    }
+   ]
+  },
+  "1vyissb": {
+   "title": "Is water pump bad?",
+   "author": "codndb",
+   "day": "2026-08-26",
+   "body": "Is water pump bad?\n\nI am a new sailor who recently purchased our first boat. A Jouet 920.   \nThe fresh water pump worked fine for a couple months but now I can’t get any water to come out of the sink. Manually operating the bulb doesn’t move much water, just small sprays. I can hear the motor making noise, but read that it can still make noise and have the valves be bad. The 2nd motor in the photo was for saltwater that the previous owner disconnected. ",
+   "comments": [
+    {
+     "id": "p5x7xuy",
+     "author": "peezy_squeezy",
+     "body": "My dude… based on how crusted those hose clamps and hoses look you’ve probably got clogged or other stuff up in there. If you have any in-line filters along the hoses of course check those too, but disassembling the pumps is a good move too.  If the rubber on impeller/diaphragm is even slightly rigid try to find a rebuild kit for your pump or just get a new one.",
+     "replies_to": "1vyissb",
+     "score": 12
+    },
+    {
+     "id": "p5xd9et",
+     "author": "otterfish",
+     "body": "You've out of water, or the line is clogged, or the pump doesn't work. My troubleshooting flow would be\n (1)check water level, if good-\n (2) take the hose off the bottom of the pump, see if you can get water from the tank, if you can-\n (3) see if you can pump water from a separate container to the sink. If you can't-\n(4) see if you can pump water from a separate container with the pump discharge disconnected from the sink.",
+     "replies_to": "1vyissb",
+     "score": 3
+    },
+    {
+     "id": "p5yhb90",
+     "author": "doedelflaps",
+     "body": "Careful with those pumps, if they're old the hose connector will snap off very easily. ",
+     "replies_to": "1vyissb",
+     "score": 2
+    }
+   ]
+  },
+  "1vyjgne": {
+   "title": "Hi! I am 32 female who owns 2 sailboats and i dont go out. I want to make friends. 😬",
+   "author": "Relevant_Support_972",
+   "day": "2026-08-26",
+   "body": "Hi! I am 32 female who owns 2 sailboats and i dont go out. I want to make friends. 😬",
+   "comments": []
+  },
+  "1vyk5ff": {
+   "title": "Moon over the North Atlantic Ocean",
+   "author": "timeport-0",
+   "day": "2026-08-26",
+   "body": "Moon over the North Atlantic Ocean",
+   "comments": [
+    {
+     "id": "p5xi0yc",
+     "author": "woodworkingguy1",
+     "body": "A full moon makes the deck almost glow...no moon...the darkest dark....but the view of the stars very few will ever see",
+     "replies_to": "1vyk5ff",
+     "score": 22
+    },
+    {
+     "id": "p5xhqh9",
+     "author": "lavaeyeye",
+     "body": "Insane!\n\n(not much else to add)",
+     "replies_to": "1vyk5ff",
+     "score": 8
+    },
+    {
+     "id": "p5xi8b8",
+     "author": "timeport-0",
+     "body": "Yep it went down around 3am...pure dark, about 50 miles offshore",
+     "replies_to": "p5xi0yc",
+     "score": 8
+    },
+    {
+     "id": "p5xjn3y",
+     "author": "YoLoDrScientist",
+     "body": "I saw the moon like this once while I was on acid. I couldn’t believe it was real, lol. Literally made the ocean look like almost day time. Incredible shot!",
+     "replies_to": "1vyk5ff",
+     "score": 7
+    },
+    {
+     "id": "p5y2kk5",
+     "author": "EmotioneelKlootzak",
+     "body": "Are you going to still be offshore for the total lunar eclipse tomorrow?",
+     "replies_to": "p5xi8b8",
+     "score": 6
+    },
+    {
+     "id": "p5xi8hy",
+     "author": "Small-Growth7809",
+     "body": "Wow that’s awesome, wish I was there!",
+     "replies_to": "1vyk5ff",
+     "score": 3
+    },
+    {
+     "id": "p5xk698",
+     "author": "-Maris-",
+     "body": "It’s so hard to video rhe moon as bright as is she is in person, this is a nice video and the swell looks a bit choppy. It’s a good video demonstrating conditions.",
+     "replies_to": "1vyk5ff",
+     "score": 3
+    },
+    {
+     "id": "p5xkluq",
+     "author": "timeport-0",
+     "body": "yea I'm surprised it came out well. Lense was a little dirty (hence the diagonal distortion) -- but didn't have anything handy that would suffice to clean it. \n\nSwells were probably \\~5ft on about a 6s interval. And at just the right angle so they were just nice gentle up-and-down without much rocking. ",
+     "replies_to": "p5xk698",
+     "score": 3
+    },
+    {
+     "id": "p5xnekg",
+     "author": "-Maris-",
+     "body": "Sounds like a perfect evening, thanks for sharing! ",
+     "replies_to": "p5xkluq",
+     "score": 3
+    },
+    {
+     "id": "p5xkb0c",
+     "author": "Busy_Safe7389",
+     "body": "WOW, beautiful! \n\nWere you in your Mac that far offshore, and is that pretty common for you, and at night?\n\nI love the Macs but haven't yet pulled the trigger.\n\n",
+     "replies_to": "1vyk5ff",
+     "score": 2
+    },
+    {
+     "id": "p5xp732",
+     "author": "Busy_Safe7389",
+     "body": "That's impressive. Have you heard of AdventuremanDan on YT - he has similar plans after swapping his keelboat for a 26x.\nSounds like you overnighted at sea?",
+     "replies_to": "p5xlluf",
+     "score": 2
+    },
+    {
+     "id": "p5xpzbp",
+     "author": "dawa43",
+     "body": "Sailing under a full moon is incredible! ",
+     "replies_to": "1vyk5ff",
+     "score": 2
+    },
+    {
+     "id": "p5xvw1p",
+     "author": "dcmathproof",
+     "body": "Yes, I'm bein' followed by a moonshadow\nMoonshadow, moonshadow\nLeapin' and hoppin' on a moonshadow\nMoonshadow, moonshadow.... ",
+     "replies_to": "1vyk5ff",
+     "score": 2
+    },
+    {
+     "id": "p5zlu8z",
+     "author": "timeport-0",
+     "body": "I haven't heard of him but will go look him up.\n\n  \nand yes it was a 32hr sail, so we sailed the the night",
+     "replies_to": "p5xp732",
+     "score": 2
+    },
+    {
+     "id": "p5zlzdm",
+     "author": "timeport-0",
+     "body": "I didn't know there would be one. we're in Block Island right now but will check it out",
+     "replies_to": "p5y2kk5",
+     "score": 2
+    }
+   ]
+  },
+  "1vyw3xp": {
+   "title": "Stolen Hinckley Bermuda",
+   "author": "PigletSpirited3446",
+   "day": "2026-08-26",
+   "body": "Stolen Hinckley Bermuda\n\nMan caught on camera stealing a 40-foot sailboat https://www.nj.com/hudson/2026/08/man-caught-on-camera-stealing-a-40-foot-sailboat.html",
+   "comments": [
+    {
+     "id": "p60sx7g",
+     "author": "Connect-Winter-7899",
+     "body": "Breaking news. The boat is currently in Newport on Elm Street pier. Suspect has been shot and from the reports I have is now deceased.  I live in the neighborhood where the incident occurred in Newport ",
+     "replies_to": "1vyw3xp",
+     "score": 36
+    },
+    {
+     "id": "p603lqs",
+     "author": "issue9mm",
+     "body": "If you're gonna steal a boat, steal a Hinckley ",
+     "replies_to": "1vyw3xp",
+     "score": 19
+    },
+    {
+     "id": "p60nvft",
+     "author": "zimirken",
+     "body": "What do you do with a stolen sailboat early in the morning?\n\nSail it quick to the caribbean.",
+     "replies_to": "p60brta",
+     "score": 15
+    },
+    {
+     "id": "p60brta",
+     "author": "2Loves2loves",
+     "body": "What would you do with a stolen sailboat?   \n\nI think it would have to be going to the Caribbean.   \n\n",
+     "replies_to": "1vyw3xp",
+     "score": 12
+    },
+    {
+     "id": "p60uj1m",
+     "author": "MildlyAgitatedBovine",
+     "body": "🎵 Sail it up and down on the eastern seaboard\n\nSail it up and down on the eastern seaboard\n\nSail it up and down on the eastern seaboard 🎶 \n\nEarl-y in the MORNING ",
+     "replies_to": "p60nvft",
+     "score": 9
+    },
+    {
+     "id": "p60uq3q",
+     "author": "MildlyAgitatedBovine",
+     "body": "Well that escalated quickly ",
+     "replies_to": "p60sx7g",
+     "score": 6
+    },
+    {
+     "id": "p61hgb1",
+     "author": "Connect-Winter-7899",
+     "body": "Yes\n\nhttps://preview.redd.it/cscj7f161rlh1.jpeg?width=3000&format=pjpg&auto=webp&s=1a8bb0298b0ce3a765b9f37c1fbacdd577953c4e",
+     "replies_to": "p61czb5",
+     "score": 5
+    },
+    {
+     "id": "p61g3ao",
+     "author": "CeramicPapi",
+     "body": "He’s dead now. They caught him in Newport with some bullets ",
+     "replies_to": "1vyw3xp",
+     "score": 4
+    },
+    {
+     "id": "p61d1ha",
+     "author": "2Loves2loves",
+     "body": "[https://www.youtube.com/watch?v=XO9s3zReo00](https://www.youtube.com/watch?v=XO9s3zReo00)\n\nFAFO",
+     "replies_to": "p60sx7g",
+     "score": 4
+    },
+    {
+     "id": "p61e6g6",
+     "author": "Two_Luffas",
+     "body": "Yeah, check out [this guy's post.](https://old.reddit.com/r/sailing/comments/1vyzr21/stolen_hinckley_from_nj_in_newport/)",
+     "replies_to": "p61czb5",
+     "score": 2
+    },
+    {
+     "id": "p614fmt",
+     "author": "-Snappy",
+     "body": "Unless you're using it to escape somewhere  I would theorize that they would either try to sell it without any papers, or part it out and make a profit.",
+     "replies_to": "p60brta",
+     "score": 1
+    },
+    {
+     "id": "p61czb5",
+     "author": "NorbertIsAngry",
+     "body": "Sure it’s the same boat?",
+     "replies_to": "p60sx7g",
+     "score": 1
+    },
+    {
+     "id": "p60u7ie",
+     "author": "PigletSpirited3446",
+     "body": "Whoa! ",
+     "replies_to": "p60sx7g",
+     "score": 0
+    }
+   ]
+  },
+  "1vyw4dg": {
+   "title": "Stolen Hinckley 40",
+   "author": "chrisaa16",
+   "day": "2026-08-26",
+   "body": "Stolen Hinckley 40\n\nA friend sent this to me to help spread the word. This vessel was stolen from his Jersey City marina a few days ago and they are on the lookout for it. See the image for more information.",
+   "comments": [
+    {
+     "id": "p604652",
+     "author": "Weird-Lab-3567",
+     "body": "I hope they make it a fair pursuit and chase him with another sailing vessel....maybe with cannons.  ",
+     "replies_to": "1vyw4dg",
+     "score": 289
+    },
+    {
+     "id": "p6049ew",
+     "author": "rypher",
+     "body": "Just want to say, great poster. So many don’t include basic info like what region in the world it was stolen from.",
+     "replies_to": "1vyw4dg",
+     "score": 187
+    },
+    {
+     "id": "p602ggu",
+     "author": "shadowvox",
+     "body": "Why would Riley from Sailing La Vagabonde want to steal a 40'? Thought they were done with sailing...",
+     "replies_to": "1vyw4dg",
+     "score": 76
+    },
+    {
+     "id": "p607dst",
+     "author": "No-Sail-6510",
+     "body": "Vital to know how much fresh water it can hold. ",
+     "replies_to": "p6049ew",
+     "score": 70
+    },
+    {
+     "id": "p60aw0v",
+     "author": "rypher",
+     "body": "I get it. It optimistic to think anyone would take the theft seriously, but if this was my boat, id want to provide as much information as possible. If the amount of fresh water could indicate weather the thieves need to stop soon, might as well add the info (again, depends on LE actually putting effort into this). \n\nAlso, if I was law enforcement, Id be more likely to take this seriously knowing how much effort was put in by the owner. As a casual bystander, IM more likely to keep an eye out because of the quality of this post.",
+     "replies_to": "p607dst",
+     "score": 68
+    },
+    {
+     "id": "p60216m",
+     "author": "pmax2",
+     "body": "that's exactly the boat I would steal. A real beauty",
+     "replies_to": "1vyw4dg",
+     "score": 67
+    },
+    {
+     "id": "p604acf",
+     "author": "johnbro27",
+     "body": "Sad to see, but you gotta admire the thief's discernment. B40 is possibly the only sailboat from 1968 still worth more than about $5. ",
+     "replies_to": "1vyw4dg",
+     "score": 53
+    },
+    {
+     "id": "p607aha",
+     "author": "Plastic_Table_8232",
+     "body": "I didn’t want to say it because my heart breaks for the owner but I was thinking “at least the thief has good taste”.   \n\n\nWhats sad is the boat is likely worth much less than the time and money the owner has invested in it.\n\nIf it was a brand newish bene he could go out and buy another in similar condition.   ",
+     "replies_to": "p60216m",
+     "score": 51
+    },
+    {
+     "id": "p60roje",
+     "author": "gc1",
+     "body": "Parlay?",
+     "replies_to": "p604652",
+     "score": 45
+    },
+    {
+     "id": "p60oef4",
+     "author": "br0wntree",
+     "body": "Possible update if connected:\n\nhttps://www.wpri.com/news/local-news/east-bay/police-respond-to-shots-fired-incident-in-newport/amp/",
+     "replies_to": "p603s79",
+     "score": 41
+    },
+    {
+     "id": "p605t0f",
+     "author": "SeaweedPrize9606",
+     "body": "Sometimes I wish someone would steal  \nMy boat right before haul out ",
+     "replies_to": "1vyw4dg",
+     "score": 39
+    },
+    {
+     "id": "p603s79",
+     "author": "Level_Improvement532",
+     "body": "This is a wild story. ",
+     "replies_to": "1vyw4dg",
+     "score": 29
+    },
+    {
+     "id": "p607jgx",
+     "author": "br0wntree",
+     "body": "I don’t know how you could sell it without being discovered. You can’t exactly sit on it and any buyer interested in this type of boat would pretty quickly figure out what is going on. ",
+     "replies_to": "p604acf",
+     "score": 24
+    },
+    {
+     "id": "p602dn9",
+     "author": "shipoftheseuss",
+     "body": "Gives you an idea of the plausible radius that the boat could be in ",
+     "replies_to": "p60247q",
+     "score": 23
+    },
+    {
+     "id": "p604bq4",
+     "author": "987nevertry",
+     "body": "Seems like that would be tough to get away with. A very distinctive boat and everyone on the lookout for ya.",
+     "replies_to": "1vyw4dg",
+     "score": 23
+    }
+   ]
+  },
+  "1vyyfq2": {
+   "title": "Near Bute Scotland",
+   "author": "dasblinkinlites",
+   "day": "2026-08-26",
+   "body": "Near Bute Scotland\n\nWas a light day near end of season but this one was moored near Rothesay. Pretty Ketch",
+   "comments": [
+    {
+     "id": "p61vwz6",
+     "author": "Belzoni-AintSo",
+     "body": "A real beaut\n",
+     "replies_to": "1vyyfq2",
+     "score": 3
+    }
+   ]
+  },
+  "1vyyzf5": {
+   "title": "Boat recommendations",
+   "author": "Small-Growth7809",
+   "day": "2026-08-26",
+   "body": "Boat recommendations\n\nI’ve thinking about getting another boat. It needs to be a trailer sailer. Under $5k. I have a diesel truck 3500, but I’m thinking centerboard type boat. We already have a Hobie Getaway and dinghy for wet fun. Need advice for a boat with a focus on quality, reliability and ease of sailing/maintenance over speed. We just like to be in the water and cruise.  I’ve had powerboats for 30 years but got into sailing this year, so I don’t know about what older makes are sought after. I am very mechanically inclined, and respect older quality stuff, I just don’t like working on stuff that’s not very good to begin with. I plan to take sailing classes for keelboats. I want to be prepared in case any jewels come available. Any ideas? Also I am in Kansas.",
+   "comments": [
+    {
+     "id": "p60od5x",
+     "author": "Ninja_Wrangler",
+     "body": "The standard answer would be a Catalina 22 swing keel or similar",
+     "replies_to": "1vyyzf5",
+     "score": 10
+    },
+    {
+     "id": "p60us0p",
+     "author": "Tiny-Ask-7100",
+     "body": "How about a Flying Scott, if you don't need a cabin?  ",
+     "replies_to": "1vyyzf5",
+     "score": 4
+    },
+    {
+     "id": "p61ox3u",
+     "author": "reasonablenotcrazy",
+     "body": "Look at the Rhodes 22. Safest driest boat on the water. Has a mast raising system and newer ones have a mast furling system. Might get something nice in that price range if you look hard enough. Usually the faster/easier it is to rig at the ramp the more it’s used. ",
+     "replies_to": "1vyyzf5",
+     "score": 4
+    },
+    {
+     "id": "p610yuk",
+     "author": "Small-Growth7809",
+     "body": "I should’ve said I do want a cabin. Thanks",
+     "replies_to": "p60us0p",
+     "score": 3
+    },
+    {
+     "id": "p60y7ko",
+     "author": "StumbleNOLA",
+     "body": "In this size and price range condition matters more than make/model. Find something local and in decent shape. ",
+     "replies_to": "1vyyzf5",
+     "score": 2
+    },
+    {
+     "id": "p63nexw",
+     "author": "bright_yellow_vest",
+     "body": "Catalina 25",
+     "replies_to": "1vyyzf5",
+     "score": 2
+    },
+    {
+     "id": "p610uxr",
+     "author": "Small-Growth7809",
+     "body": "I’ll check the out, thanks ",
+     "replies_to": "p60od5x",
+     "score": 1
+    },
+    {
+     "id": "p6111y9",
+     "author": "Small-Growth7809",
+     "body": "Ok thanks for the input",
+     "replies_to": "p60y7ko",
+     "score": 1
+    },
+    {
+     "id": "p615frq",
+     "author": "kosieroj",
+     "body": "At that price I recommend the Macgregor S (swing) or D (daggerboard). Not the X or M with the big motors. ",
+     "replies_to": "1vyyzf5",
+     "score": 1
+    },
+    {
+     "id": "p61y1bs",
+     "author": "Enough_Professor_741",
+     "body": "Look for a catalina 18- stable and easy to maintain. No through holes. \n\n",
+     "replies_to": "1vyyzf5",
+     "score": 1
+    },
+    {
+     "id": "p626lg5",
+     "author": "carrburritoid",
+     "body": "Check San Juan 21",
+     "replies_to": "1vyyzf5",
+     "score": 1
+    },
+    {
+     "id": "p626pqm",
+     "author": "Small-Growth7809",
+     "body": "Will check it out, thanks",
+     "replies_to": "p61ox3u",
+     "score": 1
+    },
+    {
+     "id": "p626sn6",
+     "author": "Small-Growth7809",
+     "body": "Hmm ok, will look at them thanks!",
+     "replies_to": "p615frq",
+     "score": 1
+    },
+    {
+     "id": "p636z8o",
+     "author": "duckgeek",
+     "body": "We’ve had a Hunter 23.5 for a few seasons and it meets your criteria.  ",
+     "replies_to": "1vyyzf5",
+     "score": 1
+    },
+    {
+     "id": "p63esji",
+     "author": "Embarrassed_Can6796",
+     "body": "Compac 23. Heavy mast, though. No standing headroom but good sitting headroom. Fixed keel, stable but a bit slow upwind. Catalina 22 has more headroom and part of the cabin top lifts up on risers. Lower price than your budget, too.",
+     "replies_to": "1vyyzf5",
+     "score": 1
+    }
+   ]
+  },
+  "1vyzr21": {
+   "title": "Stolen Hinckley from NJ in Newport",
+   "author": "Connect-Winter-7899",
+   "day": "2026-08-26",
+   "body": "Stolen Hinckley from NJ in Newport\n\nThe Hinckley is currently on Elm Street pier in Newport.  Suspect was shot by Newport Pd when confronted this morning.  This all happened around the corner from my house",
+   "comments": [
+    {
+     "id": "p60uffu",
+     "author": "Calm-down-its-a-joke",
+     "body": "I guess you are breaking this news I don't see it anywhere else. Seems like a bad place to stop if I were him. ",
+     "replies_to": "1vyzr21",
+     "score": 190
+    },
+    {
+     "id": "p60uzcf",
+     "author": "Connect-Winter-7899",
+     "body": "We live about a block away one of the local media outlets said there was and officer involved shooting that involved a stolen boat and a large police presence so of course I walked over to see what I could find out and I recognized the boat immediately. ",
+     "replies_to": "p60uffu",
+     "score": 166
+    },
+    {
+     "id": "p60umwv",
+     "author": "drseusswithrabies",
+     "body": "damn… i just saw the post announcing its theft. \n\nWhat do sailboat thieves try to do with the boat if they get away? parting it out? ",
+     "replies_to": "1vyzr21",
+     "score": 68
+    },
+    {
+     "id": "p60wxiu",
+     "author": "br0wntree",
+     "body": "I’m guessing this is some sort of personal dispute or the suspect wasn’t in a normal state of mind or both. The suspect shot at police. ",
+     "replies_to": "p60umwv",
+     "score": 65
+    },
+    {
+     "id": "p60xxc6",
+     "author": "Spiritual-End7310",
+     "body": "https://preview.redd.it/lgouokvlmqlh1.jpeg?width=1206&format=pjpg&auto=webp&s=2727824831cca6fd9a45d26947c973c1dfc9bc90",
+     "replies_to": "1vyzr21",
+     "score": 56
+    },
+    {
+     "id": "p60yyb2",
+     "author": "Connect-Winter-7899",
+     "body": "And to bring it to a place where it will be recognized immediately. ",
+     "replies_to": "p60yjmr",
+     "score": 46
+    },
+    {
+     "id": "p61xwv2",
+     "author": "brufleth",
+     "body": "Roughly 150 NM (could have traveled much more).  At 4 knots that's 37 hours.  Boat was stolen about 3.5 days before this happened.  I wonder if he stopped elsewhere.  The poster said it didn't have much fuel or water aboard and it didn't look like he brought much with him.  Such a weird story.",
+     "replies_to": "p60uffu",
+     "score": 41
+    },
+    {
+     "id": "p60zmxi",
+     "author": "icanhazkarma17",
+     "body": "And now they have a haunted boat. ",
+     "replies_to": "1vyzr21",
+     "score": 38
+    },
+    {
+     "id": "p60yt3c",
+     "author": "DarkBlue222",
+     "body": "In Newport, they KILL you if you steal a Hinckley.  ",
+     "replies_to": "1vyzr21",
+     "score": 35
+    },
+    {
+     "id": "p61ja3d",
+     "author": "Thoughtulism",
+     "body": "Suicide by cop is a real thing. \n\nStealing a unique Hinckley yawl and showing up on a public pier a few blocks away from a police station is not really on my list of things that communicate \"I don't want to be caught\"",
+     "replies_to": "p60v245",
+     "score": 35
+    },
+    {
+     "id": "p61269t",
+     "author": "maine_buzzard",
+     "body": "And probably harvest your plasma for teak oil…",
+     "replies_to": "p60yt3c",
+     "score": 32
+    },
+    {
+     "id": "p6143j5",
+     "author": "Candelent",
+     "body": "He knew enough to turn off AIS apparently. ",
+     "replies_to": "p6115sw",
+     "score": 32
+    },
+    {
+     "id": "p60vknx",
+     "author": "Connect-Winter-7899",
+     "body": "The report i got from the scene was when he was confronted by an officer the suspect shot at the officer and the officer returned fire. ",
+     "replies_to": "p60v4ig",
+     "score": 30
+    },
+    {
+     "id": "p618zj7",
+     "author": "blabla8032",
+     "body": "Hydrogen peroxide is great for cleaning blood out of most surfaces and fabrics. \n\nSource: I’m a paramedic. ",
+     "replies_to": "p6158ii",
+     "score": 28
+    },
+    {
+     "id": "p61aal6",
+     "author": "probablynotanostrich",
+     "body": "I’ve heard people say they’d die for a Hinckley but this guy took it literally. ",
+     "replies_to": "1vyzr21",
+     "score": 28
+    }
+   ]
+  },
+  "1vz0pht": {
+   "title": "Can I find just the upper cam cleat for replacement on this block assembly?",
+   "author": "oldmaninparadise",
+   "day": "2026-08-26",
+   "body": "Can I find just the upper cam cleat for replacement on this block assembly?\n\nhttps://preview.redd.it/wsgj28lemqlh1.png?width=691&format=png&auto=webp&s=3e5b5c1a1ead8438ddb7b87adecd2064af445ac5\n\nPut the wrong line on the winch when furling the gennaker and snapped the upper cam cleat on the upper block. I can take the mounting screws off. Is there a way to just buy the cam section. I think this is a selden block but didn't see markings, but it is selden furling gear. Found this PN, but can't find just the cam, no response yet from selden US.",
+   "comments": [
+    {
+     "id": "p61d1rn",
+     "author": "the-montser",
+     "body": "Now you know why you should color code your lines. \n\nYou could definitely replace the only the part, but you’ll have to find someone who will sell it to you. You’ve already contacted Selden. You probably will have to go through a Selden dealer. Selden isn’t very helpful with direct to consumer sales - last year I need some things from them and they told me that they don’t sell direct to consumer at all.",
+     "replies_to": "1vz0pht",
+     "score": 1
+    },
+    {
+     "id": "p62mdpg",
+     "author": "oldmaninparadise",
+     "body": "Continous line, cant color code. But is too long, hence the reason why I grabbed the wrong part to furl when too many things going on...Just a regular day sailing!\n\nAnyway, yeah, I expect to have to go thru dealer, just need to get pn if they will sell part of an assembly. Expecting least replaceable unit is the whole unit though.",
+     "replies_to": "p61d1rn",
+     "score": 1
+    },
+    {
+     "id": "p62snel",
+     "author": "the-montser",
+     "body": "It’s the same color as the spin sheet right next to it. I assumed that was the issue. \n\nBut really, you don’t need a cleat on both directions of a continuous furling line. You only need to be able to cleat the side you pull to furl the sail. The side that unfurls the sail doesn’t need to be cleated because the tension in the sheet will do the same thing, and if the sheets are loose the worst thing that can happen is the sail furls up more. ",
+     "replies_to": "p62mdpg",
+     "score": 1
+    },
+    {
+     "id": "p62zxse",
+     "author": "oldmaninparadise",
+     "body": "Yeah, spin sheet is actually blue w RED  flecks, furler is blue w YELLOW flecks. Was not happy w sailmaker when he delivered the setup to me.",
+     "replies_to": "p62snel",
+     "score": 1
+    }
+   ]
+  },
+  "1vz5ldt": {
+   "title": "Before the storm",
+   "author": "offroadsoul",
+   "day": "2026-08-26",
+   "body": "Before the storm",
+   "comments": []
+  },
+  "1vz84j9": {
+   "title": "Potomac River - learn to sail",
+   "author": "am3741409",
+   "day": "2026-08-26",
+   "body": "Potomac River - learn to sail\n\nHello,  \nI’m going to be spending about 5 weeks around the DC area and was curious if anyone had any opinions on the sailing schools that surround the Potomac area. I’ve looked at a few and all seem reasonable. I would be interested in the basics. I’m not sure whether I should look at the schools that offer ASA101 or the schools that offer US Sailing certifications. Not really sure of any difference. Any help would be appreciated! TIS. ",
+   "comments": [
+    {
+     "id": "p62ryln",
+     "author": "the-montser",
+     "body": "DC Sail",
+     "replies_to": "1vz84j9",
+     "score": 4
+    },
+    {
+     "id": "p62vsnj",
+     "author": "GlenNevis",
+     "body": "Maryland sailor here - I actually learned to sail in the Potomac at Belle Haven and Washington Sailing Marina as a kid in the early 2000s. Nowadays, I’d probably recommend making the trek out to Annapolis or Baltimore, both of which have some pretty fantastic schools. Annapolis has J/World and Annapolis Sailing School, Baltimore has Downtown Sailing Center. I’m not going to say \\_don’t\\_ sail in the Potomac, but as a kid we were regularly pulling our centreboards to clear weeds, and trying to catch the jet-wash off the tip of Dangerfield Island just to stay moving. ",
+     "replies_to": "1vz84j9",
+     "score": 3
+    },
+    {
+     "id": "p62vu02",
+     "author": "primeight1",
+     "body": "When are you going to be there?",
+     "replies_to": "1vz84j9",
+     "score": 3
+    },
+    {
+     "id": "p62wgkh",
+     "author": "Foreign-Campaign-761",
+     "body": "Sail Solomons. Capt Chris was an ASA instructor of the year. Best in the business ",
+     "replies_to": "1vz84j9",
+     "score": 3
+    },
+    {
+     "id": "p635ano",
+     "author": "primeight1",
+     "body": "You may not find any schools operating in October.\n\nBelle Haven has availability on Flying Scots for the weekends of Sept 19 and Sept 26 https://fareharbor.com/embeds/book/saildc/items/398518/?full-items=yes&flow=792300&from-ssl=yes&g4=no&cp=no&csp=no&back=https%3A%2F%2Fwww.saildc.com%2Fadult-basic-course&u=ef9f09a3-e40b-456d-b30c-d95649a93546\n\nI think Belle Haven is a really pretty part of the river and learning on Scots is a good balance. I think dinghys teach skills faster but they tend to be wet. This isn’t a keelboat certification although it probably teaches you a little more about actual sailing than ASA 101.",
+     "replies_to": "p62zghp",
+     "score": 3
+    },
+    {
+     "id": "p63c6n1",
+     "author": "dasreboot",
+     "body": "my school will be giving lessons in october and im about 30 min from manassas. mainsail sailing school in stafford. give me a call",
+     "replies_to": "p62zghp",
+     "score": 3
+    },
+    {
+     "id": "p62y6qw",
+     "author": "Mythurin",
+     "body": "Try https://heritagesails.com. \n\nHe is right down there next to Fort McNair.",
+     "replies_to": "1vz84j9",
+     "score": 2
+    },
+    {
+     "id": "p62zghp",
+     "author": "am3741409",
+     "body": "I’ll be in the Manassas area pretty much mid September to mid October. But this silly job thing of mine will take up much of my week days.. ",
+     "replies_to": "p62vu02",
+     "score": 2
+    }
+   ]
+  },
+  "1vz96oi": {
+   "title": "Sailing lessons? Detroit",
+   "author": "Plastic_Ad_1612",
+   "day": "2026-08-26",
+   "body": "Sailing lessons? Detroit\n\nI live in the Detroit metro and I just bought a hunter 22 is there anybody local that might be able to come out with me for a few hours?   \nI know there are ASA classes I’m signed up but that’s mid September and I’d like to get a bit of a head start.",
+   "comments": [
+    {
+     "id": "p632vfz",
+     "author": "dawa43",
+     "body": "Yes... My boat is in Muskegon how about your first lesson over here. ",
+     "replies_to": "1vz96oi",
+     "score": 2
+    },
+    {
+     "id": "p63bfgb",
+     "author": "Plastic_Ad_1612",
+     "body": "Sent a DM",
+     "replies_to": "p632vfz",
+     "score": 2
+    },
+    {
+     "id": "p631iip",
+     "author": "Gloomy_Transition350",
+     "body": "I’m just 👀 I p l pop a",
+     "replies_to": "1vz96oi",
+     "score": 1
+    },
+    {
+     "id": "p633ca5",
+     "author": "Panem-et-circenses25",
+     "body": "Walk the docks at Bayview, Windmill Pointe Park or Crescent yacht club on a Tuesday night and hop on a boat and crew for a race. The DRYA website also has boats looking for crew. ",
+     "replies_to": "1vz96oi",
+     "score": 1
+    },
+    {
+     "id": "p6352ci",
+     "author": "LongBedroom8355",
+     "body": "I'm considering relocating from Houston to Detroit to be closer to my wife's family. do you know what the local sailing scene is like? I'm interested in joining DYC.",
+     "replies_to": "p632vfz",
+     "score": 1
+    },
+    {
+     "id": "p637hof",
+     "author": "LongBedroom8355",
+     "body": "gonna be a tough adjustment going from South Houston where you can sail 365 days a year to this",
+     "replies_to": "p6378n7",
+     "score": 1
+    },
+    {
+     "id": "p6378n7",
+     "author": "dawa43",
+     "body": "There is not much sailing on lake Erie. You can but the wind, choppy waves and shallow depths can ruin your day. \n\nOnce you are north of the city on Lake St Clare it is good. \n\nLake Huron has a solid sailing community ",
+     "replies_to": "p6352ci",
+     "score": 0
+    }
+   ]
+  },
+  "1vzat4e": {
+   "title": "Haven’t seen any crazy docking stories for a minute… anyone got one they want to share?",
+   "author": "From_Gaming_w_Love",
+   "day": "2026-08-26",
+   "body": "Haven’t seen any crazy docking stories for a minute… anyone got one they want to share?\n\nI just fumbled in the end zone during a heavy blow with wind on my aft quarter… it was looking good until it wasn’t…\n\nThen it was helm on earth. \n\nPhoto is not of the occasion… though I’m not complaining about the view. ",
+   "comments": [
+    {
+     "id": "p63g1ht",
+     "author": "LoveTheDrAche",
+     "body": "Your photo reminds me of the time I was bringing my Catalina 27 into the dock and my wife at the time was waiting to step off and tie us up. The wind was blowing us off the dock. She said I can’t reach the dock. I said you’ll have to jump by which I meant (of course) when and if we are close enough so you will land on the dock. She heard it as jump right now. She jumped and hit her shins on the dock edge. She anded on the dock, held on to the line, and tied us up like a champ. Could barely walk for a day or so. It’s not \\_why\\_ we got divorced but it sure didn’t help. ",
+     "replies_to": "1vzat4e",
+     "score": 56
+    },
+    {
+     "id": "p63fs7w",
+     "author": "Moonafish",
+     "body": "Im sure someone at the marina had a cringe-worthy time watching me dock over the weekend. It was my first time getting back on the dock. Took me about 10 minites and 3 tries. And very nearly ran into my slip neighbor twice. ",
+     "replies_to": "1vzat4e",
+     "score": 37
+    },
+    {
+     "id": "p63jkjg",
+     "author": "Cow_says_moo",
+     "body": "3 tries? Rookie numbers!",
+     "replies_to": "p63fs7w",
+     "score": 20
+    },
+    {
+     "id": "p63qqkz",
+     "author": "FizzBuzz4096",
+     "body": "For any crew, my brief on docking is never jump. Never ever ever. Wait till you can easily step onto the dock. Wife sits on the rail, and when we get close just steps off. \n\nOf course, normally we're blown toward that side. But if docking alongside an upwind dock with enough wind to blow us off I'd seriously think about lassoing a spring line. ",
+     "replies_to": "p63gvmo",
+     "score": 20
+    },
+    {
+     "id": "p63fdq8",
+     "author": "Ir0nh34d",
+     "body": "It's not crazy, just run into it and let people try and catch you. Easy",
+     "replies_to": "1vzat4e",
+     "score": 15
+    },
+    {
+     "id": "p63gvmo",
+     "author": "From_Gaming_w_Love",
+     "body": "My wife has had a few moments like that. I’ve learned that even having the thought “I hope she’s planning on jumping for it” is a warning sign that shift is about to get real. ",
+     "replies_to": "p63g1ht",
+     "score": 14
+    },
+    {
+     "id": "p63gvgm",
+     "author": "Angry_Sparrow",
+     "body": "I’ve only ever docked a 40ft trimaran and I’ve always been envious of anyone docking anything else. It had a 10hp outboard motor. She’s 32 feet wide, like trying to dock a big square. So much windage that she gets blown around like a bar of soap. And the marinas never ever gave us a berth big enough. End ties are best but then you get muppets coming far too close to you, trying to squeeze by.\n\nTrying to turn a trimaran that has a 10hp outboard with very poor reversing in the tight quarters of a marina with any wind at all is a nightmare.",
+     "replies_to": "1vzat4e",
+     "score": 13
+    },
+    {
+     "id": "p63glfy",
+     "author": "From_Gaming_w_Love",
+     "body": "My people! 🫡",
+     "replies_to": "p63fs7w",
+     "score": 12
+    },
+    {
+     "id": "p63wtr8",
+     "author": "Oobenny",
+     "body": "As long as it’s “very nearly” and not “did”, you nailed it. ",
+     "replies_to": "p63fs7w",
+     "score": 8
+    },
+    {
+     "id": "p63yjqm",
+     "author": "Moonafish",
+     "body": "Well, yeah. Total rookie. Ive owned my boat for 30 days and had 1 hour of being on the water. 29 days and 23 hours of cleaning and learning how things work. As rookie as they come.",
+     "replies_to": "p63jkjg",
+     "score": 8
+    },
+    {
+     "id": "p63lkvw",
+     "author": "From_Gaming_w_Love",
+     "body": "I feel all of that. I couldn’t imagine stacking 3 of my boats side by side and trying to pull off what I did today. \n\nI’d be in a record book somewhere… or a faces of death video. ",
+     "replies_to": "p63gvgm",
+     "score": 7
+    },
+    {
+     "id": "p63p2g0",
+     "author": "fuckin_atodaso",
+     "body": "I've had my transmission give out on me the last two times I've been in the middle of docking. The first time the shifter cable snapped and we were fortunately in reverse on a day with no wind, so the end result was us floating gently in the middle of the causeway. We did not hit the numerous much larger and more expensive boats behind us but it was fear inducing at the time. A friend with a dinghy was able to tow us into our dock.\n\nThen this past weekend, after replacing the shifter cable, when I went to reverse as we were coming into the dock nothing happen. The fuckin' thing just went into neutral as we careened forward. Fortunately, there were a number of friends out to catch us as it was a windy day and a dock post got the worst of it. No clue if the linkage broke or what. \n\nThe two hour tow back home is when we finally just accepted we bought a really shitty first boat. Which is not to be confused with the other two hour tow we had last year because our engine was vapor locked due to the weird way the guy routed the hoses from the gas tank. ",
+     "replies_to": "1vzat4e",
+     "score": 7
+    },
+    {
+     "id": "p63xu0r",
+     "author": "DarkVoid42",
+     "body": "80ft steel boat was anchored and started dragging in high waves and wind. was going to take out the whole marina. couple of buddies and myself took a runabout with a pile of fenders to try and board it to stop it moving. as we came alongside we crashed into the side of it. i asked buddy who was on the bow to push it off us. instead of reaching for the boat hook he put both hands on the side of the steel boat and tried pushing it. wave came up and slammed our boat upwards while dropping the other boat down. cracked both his bones in both his arms at the same time. he goes down screaming. i thought he slipped or something until i see both his arms flopping like birds wings. other buddy leapt on the steel boat and wrestled it down while i gunned it for the shore to get him to hospital. not a fun time. ",
+     "replies_to": "1vzat4e",
+     "score": 7
+    },
+    {
+     "id": "p63wuw3",
+     "author": "Gahouf",
+     "body": "Remember that it’s always okay to abort and try again!",
+     "replies_to": "p63fs7w",
+     "score": 5
+    },
+    {
+     "id": "p63y0rf",
+     "author": "Moonafish",
+     "body": "And I did. Got it on the 3rd try! ",
+     "replies_to": "p63wuw3",
+     "score": 5
+    }
+   ]
+  }
+ }
+}
