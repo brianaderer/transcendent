@@ -14,7 +14,9 @@ both have happened.
   (threads given a topic, by attach or by mint), `minted` (new topics), `noise_waiting`
   (threads called noise on their first day, kept for their third), `noise_deleted` (threads
   called noise on their third day, deleted with their posts), and `left_waiting` (threads
-  kept undecided because the agent named a topic that doesn't exist). `decide_all` is any
+  left as they were because the agent named a topic that doesn't exist: on their first day
+  they wait for their third, on their third they keep their first day's topic, if any, and
+  are settled). `decide_all` is any
   function from a day and its briefs to their decisions; the worker passes
   `agent.TaggingAgent(...).decide`, which connects the model and decides the day's groups.
 - `threads.thread_text(post, replies)` — a thread as one text: its post, then its five
