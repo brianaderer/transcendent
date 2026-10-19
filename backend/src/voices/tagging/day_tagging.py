@@ -1,6 +1,7 @@
 """Tags one day's threads (atlas plate 21): each thread on its first or third day is encoded
 as one text, the threads are grouped by meaning, the agent decides each group, the decisions
-are applied, and daily engagement is rebuilt."""
+are applied, threads past their third day with no topic are expired as noise, and daily
+engagement is rebuilt."""
 
 from collections.abc import Callable, Sequence
 from datetime import date
@@ -34,6 +35,7 @@ class DayTaggingStore(Protocol):
     def apply_decisions(
         self, day: date, settled: list[DecidedCluster], keywords: dict[str, list[str]]
     ) -> dict[str, int]: ...
+    def expire_noise(self, day: date) -> int: ...
     def rebuild_engagement(self, first_day: date, last_day: date) -> None: ...
 
 
@@ -67,8 +69,9 @@ class DayTagging:
         settled = settle_mints(self.decide_all(day, briefs))
         self._announce(settled)
         counts = self.store.apply_decisions(day, settled, self._keywords(settled, texts))
+        expired = self.store.expire_noise(day)
         self.store.rebuild_engagement(window_start(day), day)
-        return {"threads": len(texts), "groups": len(briefs), **counts}
+        return {"threads": len(texts), "groups": len(briefs), **counts, "noise_expired": expired}
 
     def _encoded_and_kept(self, texts: dict[str, str]) -> list[EncodedThread]:
         """Embeds each thread's text and saves the embedding with the thread."""

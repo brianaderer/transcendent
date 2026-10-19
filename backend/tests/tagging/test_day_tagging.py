@@ -16,6 +16,7 @@ class FakeStore:
     def __init__(self, threads=()):
         self.threads = list(threads)
         self.saved, self.applied, self.rebuilt = None, None, None
+        self.steps = []
 
     def threads_due(self, day):
         self.asked_for = day
@@ -32,10 +33,16 @@ class FakeStore:
 
     def apply_decisions(self, day, settled, keywords):
         self.applied = (day, settled, keywords)
+        self.steps.append("apply")
         return {"attached": 3}
+
+    def expire_noise(self, day):
+        self.steps.append(("expire", day))
+        return 2
 
     def rebuild_engagement(self, first_day, last_day):
         self.rebuilt = (first_day, last_day)
+        self.steps.append("rebuild")
 
 
 class FakeEmbedder:
@@ -93,6 +100,15 @@ def test_engagement_is_rebuilt_for_the_day_and_the_two_before_it():
 
     assert store.asked_for == DAY
     assert store.rebuilt == (date(2026, 10, 13), DAY)
+
+
+def test_threads_still_without_a_topic_are_expired_after_the_decisions_before_engagement():
+    store = FakeStore([due("t1")])
+
+    counts = run(store)
+
+    assert store.steps == ["apply", ("expire", DAY), "rebuild"]
+    assert counts["noise_expired"] == 2
 
 
 def test_each_decision_is_announced_live():

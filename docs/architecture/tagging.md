@@ -16,7 +16,8 @@ both have happened.
   called noise on their third day, deleted with their posts), and, when the agent named a
   topic that doesn't exist, `left_waiting` (first-day threads, which wait for their third)
   and `settled_unchanged` (third-day threads, settled as they were: they keep their first
-  day's topic, and one with none stays untagged). `decide_all` is any
+  day's topic, and one with none is then expired); and `noise_expired` (threads past their
+  third day with still no topic, deleted with their posts by step 8). `decide_all` is any
   function from a day and its briefs to their decisions; the worker passes
   `agent.TaggingAgent(...).decide`, which connects the model and decides the day's groups.
 - `threads.thread_text(post, replies)` — a thread as one text: its post, then its five
@@ -51,7 +52,7 @@ both have happened.
 - `voices.db.tagging_store.TaggingStore(engine)` — the reads and writes below:
   `threads_due`, `save_thread_embeddings`, `typical_threads`, `nearest_topics`, the tools'
   searches and lookups (`search_posts`, `lookup_post`, `search_topics`), `record_retrievals`,
-  `apply_decisions`, `rebuild_engagement`. `DayTagging` and `TaggingTools` each
+  `apply_decisions`, `expire_noise`, `rebuild_engagement`. `DayTagging` and `TaggingTools` each
   depend only on a small interface (`DayTaggingStore`, `ToolStore`) so tests pass stand-ins.
 
 ## How it works
@@ -105,7 +106,13 @@ For day D (atlas OPEN-29):
    no topic: a first-day thread is decided again on its third day (`left_waiting`); a
    third-day thread keeps the topic its first day gave it, if any, and is settled
    (`settled_unchanged`).
-8. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D, every post counting
+8. **Expiring noise** (atlas OPEN-14, plate 40's "expire noise"). Every thread first seen on
+   or before D−2 that still has no topic is deleted with its posts (`expire_noise`,
+   counted as `noise_expired`): what three days never placed in a topic is noise. This
+   catches the threads no third-day decision deleted, such as one called noise on its first
+   day and sent to a topic that doesn't exist on its third. It runs in its own transaction,
+   after the decisions are applied.
+9. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D, every post counting
    for its thread's topic, so a comment that arrives days later counts for the topic on the
    day it was written: posts, comments, agreeing-reply upvotes that day (also for older
    posts, so a day can have upvotes and no new posts), distinct people, threads started,
@@ -149,4 +156,4 @@ models through `connect_model`, takes its list of right actions from `Action`, a
 `TYPICAL_POST_CHARACTERS = 600`, `UNKNOWN_AUTHOR = "unknown"` (`tagging_store.py`); the model call uses temperature 0, a 120-second timeout
 and 3 retries (`model.py`).
 Writes `topics`, `cluster_decisions`, `threads` (embedding, topic, decision, stage; deletes
-noise with its `posts`), `topic_daily_engagement`, `retrieval_events`.
+noise, and threads past their third day with no topic, with their `posts`), `topic_daily_engagement`, `retrieval_events`.

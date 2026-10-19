@@ -387,14 +387,39 @@ def test_attaching_to_a_missing_topic_on_a_threads_third_day_keeps_its_first_day
     assert (counts["settled_unchanged"], counts["left_waiting"]) == (1, 0)
 
 
-def test_a_first_day_noise_thread_sent_to_a_missing_topic_on_its_third_day_stays_untagged(store):
+def test_a_first_day_noise_thread_sent_to_a_missing_topic_on_its_third_day_is_expired(store):
     store.apply_decisions(DAY, [decided("noise", ["test-1"])], {})
-
     counts = store.apply_decisions(THIRD_DAY, [decided("attach", ["test-1"], topic_id=-1)], {})
 
-    assert topic_of(store, "test-1") is None
+    store.expire_noise(THIRD_DAY)
+
     assert counts["settled_unchanged"] == 1
-    assert "test-1" not in ours(store.threads_due(THIRD_DAY))
+    with pytest.raises(PostNotFound):
+        store.lookup_post("test-2")
+
+
+def test_threads_with_no_topic_by_their_third_day_are_expired_with_their_posts(store):
+    expired = store.expire_noise(THIRD_DAY)
+
+    assert expired == 2
+    for post_id in ["test-1", "test-2", "test-4"]:
+        with pytest.raises(PostNotFound):
+            store.lookup_post(post_id)
+
+
+def test_a_thread_with_no_topic_is_kept_before_its_third_day(store):
+    expired = store.expire_noise(DAY + timedelta(days=1))
+
+    assert expired == 0
+    assert store.lookup_post("test-4")["post_id"] == "test-4"
+
+
+def test_a_thread_with_a_topic_is_never_expired(store):
+    store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
+
+    store.expire_noise(THIRD_DAY)
+
+    assert store.lookup_post("test-2")["post_id"] == "test-2"
 
 
 @pytest.mark.parametrize(("days_later", "revived"), [(7, 0), (8, 1)])
