@@ -397,7 +397,7 @@ const PLATES={
  sum:"The posts (with their agreeing-reply upvotes) and topic tags tables, the daily engagement table that graphs each tag over time, and the daily intake that encodes each thread on day one and again on day three and lets an LLM attach, mint or drop",
  links:["01","40","50","60","90"],
  lead:"How the community's conversation is stored as **topics** that can be followed day by day. This is what the prediction stands on: next week is forecast from how each topic's engagement has been moving, not guessed from one week of text.",
- facts:[["store","Postgres + pgvector (OPEN-4)"],["embedding","one per post or comment, never cut into pieces"],["unit","the thread: post + top comments (OPEN-29)"],["encoded","day one, then again on day three (OPEN-29)"],["grouping","by meaning, fixed cutoff (proposed)",1],["decision","LLM per cluster: attach · mint · noise"],["noise","deleted, not marked"],["cost","about ten LLM calls a day; a few hundred for eight weeks (estimate)",1],["graph table","topic_daily_engagement, under 2,000 rows for eight weeks"]],
+ facts:[["store","Postgres + pgvector (OPEN-4)"],["embedding","one per post or comment, never cut into pieces, half precision (OPEN-34)"],["unit","the thread: post + top comments (OPEN-29)"],["encoded","day one, then again on day three (OPEN-29)"],["grouping","by meaning, fixed cutoff (proposed)",1],["decision","LLM per cluster: attach · mint · noise"],["noise","deleted, not marked"],["cost","about ten LLM calls a day; a few hundred for eight weeks (estimate)",1],["graph table","topic_daily_engagement, under 2,000 rows for eight weeks"]],
  figs:[
   {h:"Tables",cw:250,gx:170,gy:70,valign:"top",
    boxes:[
@@ -450,6 +450,7 @@ const PLATES={
    "Posts are fetched daily and **tagged by day on intake**. Any time range (a week, the eight weeks of history) is then just a range of days (OPEN-10).",
    "Each day, embeddings are clustered with a **three-day lookahead**: a post has three days to fall into a cluster. Each cluster is compared with the tags' embeddings to place it in the domain space, and an LLM makes the final call per cluster: **add it to an existing tag, mint a new tag, or ignore it as noise**. A post that hasn't fallen into a cluster within three days **is noise and is deleted**.",
    "**Posts are not cut into pieces**: one post or comment is one embedding.",
+   "**Embeddings are stored at half precision** (Brian, 2026-10-19, OPEN-34): pgvector's `halfvec`, two bytes a number instead of four, for posts, threads and topic centres. Measured before: 75 MB for the eight weeks once compacted, 37 MB of it embeddings; half precision leaves search and the map's nearest neighbours as they were.",
    "Comments are semantically tied to their post, so it makes sense to **encode the whole thread as one unit**. Comments arriving later are **a heat signal**, and an old thread that **suddenly becomes active again** is another heat signal.",
    "**A thread is encoded on day one, then encoded again on day three** (OPEN-29). Day one avoids a three-day lag before a topic shows; day three uses the comments that have arrived since. This replaces the three-day lookahead above.",
    "**A thread whose opening post we don't have** (removed, or started before our history and brought in by a new comment) is tagged from its **title plus its top comments**, and its days count from the **first comment we see** (OPEN-30, 2026-10-19).",
@@ -809,6 +810,7 @@ const PLATES={
  lead:"Where decisions wait for Brian, and where they're recorded once made.",
  questions:[],
  resolved:[
+  ["OPEN-34", "Embeddings are stored at half precision (pgvector's halfvec: two bytes a number instead of four), for posts, threads and topic centres, so the database stays small. Measured before the change: 75 MB for the eight weeks once compacted, of which 37 MB is embeddings and 2.7 MB the posts' text; expected about 40 MB after. Fewer numbers per embedding (256) was ruled out because search gets blurrier.", "2026-10-19"],
   ["OPEN-13", "The first start loads the history live: it fetches eight weeks from Arctic Shift, embeds, groups and tags day by day, and the reviewer waits it out; nothing is pre-seeded. Measured on two full runs (2026-10-19): about 1 hour 40 minutes on a laptop and $1.30 to $1.70 of OpenRouter credit, recorded in the README's step 4.", "2026-10-19"],
   ["OPEN-1","The frontend's API client is generated from an OpenAPI description the backend publishes (typed TanStack Query hooks, for example with orval). The backend choice must support publishing one.","2026-10-18"],
   ["OPEN-2","The embedding map is drawn with Apache ECharts.","2026-10-18"],

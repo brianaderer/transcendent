@@ -10,6 +10,7 @@
 
 | ID | Decision | Date |
 |---|---|---|
+| OPEN-34 | Embeddings are stored at half precision (pgvector's halfvec: two bytes a number instead of four), for posts, threads and topic centres, so the database stays small. Measured before the change: 75 MB for the eight weeks once compacted, of which 37 MB is embeddings and 2.7 MB the posts' text; expected about 40 MB after. Fewer numbers per embedding (256) was ruled out because search gets blurrier. | 2026-10-19 |
 | OPEN-13 | The first start loads the history live: it fetches eight weeks from Arctic Shift, embeds, groups and tags day by day, and the reviewer waits it out; nothing is pre-seeded. Measured on two full runs (2026-10-19): about 1 hour 40 minutes on a laptop and $1.30 to $1.70 of OpenRouter credit, recorded in the README's step 4. | 2026-10-19 |
 | OPEN-1 | The frontend's API client is generated from an OpenAPI description the backend publishes (typed TanStack Query hooks, for example with orval). The backend choice must support publishing one. | 2026-10-18 |
 | OPEN-2 | The embedding map is drawn with Apache ECharts. | 2026-10-18 |

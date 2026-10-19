@@ -17,6 +17,7 @@ topic's engagement has been moving, not guessed from one week of text.
   to an existing tag, mint a new tag, or ignore it as noise**. A post that hasn't
   fallen into a cluster within three days **is noise and is deleted**.
 - **Posts are not cut into pieces**: one post or comment is one embedding.
+- **Embeddings are stored at half precision** (Brian, 2026-10-19, OPEN-34): pgvector's `halfvec`, two bytes a number instead of four, for posts, threads and topic centres. Measured before: 75 MB for the eight weeks once compacted, 37 MB of it embeddings; half precision leaves search and the map's nearest neighbours as they were.
 - Comments are semantically tied to their post, so it makes sense to **encode the whole
   thread as one unit**. Comments arriving later are **a heat signal**, and an old thread
   that **suddenly becomes active again** is another heat signal (2026-10-18; when the
