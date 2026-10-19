@@ -27,8 +27,10 @@ class Group:
 
 
 def group_by_meaning(threads: Sequence[EncodedThread]) -> list[Group]:
-    if len(threads) < 2:
-        return [_group(list(threads))] if threads else []
+    if not threads:
+        return []
+    if len(threads) == 1:  # the clustering needs at least two threads to compare
+        return [_group(list(threads))]
     directions = _unit_length(np.array([thread.embedding for thread in threads], dtype=float))
     labels = AgglomerativeClustering(
         n_clusters=None,

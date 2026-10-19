@@ -25,7 +25,6 @@ class DueThread:
     """A thread on its first or third day, with the replies it has so far."""
 
     source_id: str
-    author: str
     post: str  # the post's title and text
     replies: list[Reply]
 

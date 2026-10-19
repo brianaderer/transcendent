@@ -104,7 +104,7 @@ class DayTagging:
         for item in settled:
             self.emit(
                 "decision.made",
-                cluster=item.brief.name,
+                group=item.brief.name,
                 threads=len(item.brief.member_ids),
                 action=item.decision.action,
                 topic_id=item.decision.topic_id,

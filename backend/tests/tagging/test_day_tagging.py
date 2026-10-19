@@ -2,14 +2,14 @@ from datetime import date
 
 from voices.tagging.day_tagging import DayTagging
 from voices.tagging.decisions import DecidedCluster, Decision
-from voices.tagging.grouping import EncodedThread, Group
+from voices.tagging.grouping import EncodedThread, Group, group_by_meaning
 from voices.tagging.threads import DueThread, Reply
 
 DAY = date(2026, 10, 15)
 
 
 def due(source_id, post="Impeller failed again", replies=()):
-    return DueThread(source_id, "op", post, list(replies))
+    return DueThread(source_id, post, list(replies))
 
 
 class FakeStore:
@@ -116,7 +116,7 @@ def test_keywords_are_picked_only_for_new_topics_not_merged_into_another():
 def test_a_day_with_no_threads_due_decides_nothing():
     store = FakeStore()
 
-    counts = run(store, groups_of=lambda threads: [])
+    counts = run(store, groups_of=group_by_meaning)
 
     assert counts["groups"] == 0 and store.applied[1] == []
 

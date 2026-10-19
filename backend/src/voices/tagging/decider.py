@@ -180,7 +180,7 @@ class _Conversation:
         self.messages.append(message)
 
     def _log(self, event: str, **fields: object) -> None:
-        log_event(logger, event, cluster=self.brief.name, **fields)
+        log_event(logger, event, group=self.brief.name, **fields)
 
 
 class NoDecision(Exception):

@@ -286,20 +286,6 @@ def test_a_comment_arriving_days_later_counts_for_its_threads_topic_on_its_own_d
     assert (row.posts, row.comments, row.revived_threads) == (0, 1, 0)
 
 
-def test_an_old_thread_that_comes_back_to_life_counts_as_revived(store):
-    store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
-    much_later = DAY + timedelta(days=10)
-    with store.engine.begin() as connection:
-        connection.execute(
-            insert(Post),
-            [post("test-5", "test-1", "comment", "Back again.", at=AT + timedelta(days=10))],
-        )
-
-    store.rebuild_engagement(much_later, much_later)
-
-    assert engagement(store, topic_of(store, "test-1"), much_later).revived_threads == 1
-
-
 def test_upvotes_count_on_a_day_with_no_new_posts(store):
     store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
     later = date(1999, 1, 5)
@@ -329,3 +315,42 @@ def test_search_finds_posts_by_meaning_and_retrievals_are_recorded(store):
 def test_looking_up_an_unknown_post_raises(store):
     with pytest.raises(PostNotFound):
         store.lookup_post("test-nope")
+
+
+def centre_of(store, topic_id):
+    [candidate] = [c for c in store.nearest_topics(vector(1.0), 50) if c.topic_id == topic_id]
+    return candidate.similarity
+
+
+def test_noise_on_a_threads_third_day_moves_the_centre_of_the_topic_it_leaves(store):
+    store.save_thread_embeddings({"test-1": other_axis()})
+    store.apply_decisions(DAY, [decided("mint", ["test-1", "test-4"])], {})
+    topic_id = topic_of(store, "test-1")
+
+    store.apply_decisions(THIRD_DAY, [decided("noise", ["test-1"])], {})
+
+    assert centre_of(store, topic_id) == 1.0  # now only test-4, on the first axis
+
+
+def test_attaching_to_a_missing_topic_on_a_threads_third_day_keeps_its_first_days_topic(store):
+    store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
+    first_topic = topic_of(store, "test-1")
+
+    counts = store.apply_decisions(THIRD_DAY, [decided("attach", ["test-1"], topic_id=-1)], {})
+
+    assert topic_of(store, "test-1") == first_topic
+    assert "test-1" not in ours(store.threads_due(THIRD_DAY))  # settled: not decided again
+    assert counts["left_waiting"] == 1
+
+
+@pytest.mark.parametrize(("days_later", "revived"), [(7, 0), (8, 1)])
+def test_a_thread_counts_as_revived_only_after_seven_days(store, days_later, revived):
+    store.apply_decisions(DAY, [decided("mint", ["test-1"])], {})
+    later = DAY + timedelta(days=days_later)
+    with store.engine.begin() as connection:
+        comment = post("test-5", "test-1", "comment", "Back.", at=AT + timedelta(days=days_later))
+        connection.execute(insert(Post), [comment])
+
+    store.rebuild_engagement(later, later)
+
+    assert engagement(store, topic_of(store, "test-1"), later).revived_threads == revived

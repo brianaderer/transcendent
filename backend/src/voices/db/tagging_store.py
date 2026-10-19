@@ -9,6 +9,7 @@ from sqlalchemy import (
     Connection,
     Engine,
     Insert,
+    Select,
     Update,
     and_,
     bindparam,
@@ -16,6 +17,7 @@ from sqlalchemy import (
     delete,
     func,
     insert,
+    not_,
     or_,
     select,
     text,
@@ -42,19 +44,16 @@ class TaggingStore:
     def threads_due(self, day: date) -> list[DueThread]:
         """Threads on their first day not yet decided, and threads on their third day not yet
         settled, each with its post and the replies it has by the end of the day."""
-        query = (
-            select(Thread.source_id, Post.author, Post.body)
-            .join(Post, Post.source_id == Thread.source_id)
-            .where(_due_on(day))
-        )
+        query = _thread_with_its_post(Thread.source_id, Post.body).where(_due_on(day))
         with self.engine.connect() as connection:
             threads = connection.execute(query).all()
             replies = self._replies(connection, [t.source_id for t in threads], day)
-        return [
-            DueThread(t.source_id, t.author, t.body, replies.get(t.source_id, [])) for t in threads
-        ]
+        return [DueThread(t.source_id, t.body, replies.get(t.source_id, [])) for t in threads]
 
-    def _replies(self, connection: Connection, thread_ids: list[str], day: date) -> dict:
+    def _replies(
+        self, connection: Connection, thread_ids: list[str], day: date
+    ) -> dict[str, list[Reply]]:
+        """Best-scored first."""
         query = (
             select(Post.thread_source_id, Post.body, Post.reddit_score)
             .where(
@@ -73,8 +72,7 @@ class TaggingStore:
         self, ids: Sequence[str], centroid: Sequence[float], limit: int
     ) -> list[TypicalPost]:
         query = (
-            select(Thread.source_id, Post.author, Post.body)
-            .join(Post, Post.source_id == Thread.source_id)
+            _thread_with_its_post(Thread.source_id, Post.author, Post.body)
             .where(Thread.source_id.in_(ids))
             .order_by(Thread.embedding.cosine_distance(centroid))
             .limit(limit)
@@ -213,30 +211,20 @@ class _DecisionApplier:
         """Noise on a thread's third day deletes it with its posts; on its first day the
         thread waits for its third."""
         decision_id = self._record(item, topic_id=None)
-        on_third_day = and_(_members(item), _on_or_after_third_day(self.day))
-        self.counts["noise_deleted"] += self._delete_threads(on_third_day)
-        waiting = (
-            update(Thread)
-            .where(_members(item))
-            .values(stage="decided_once", cluster_decision_id=decision_id)
-        )
-        self.counts["noise_waiting"] += self.connection.execute(waiting).rowcount
+        self._delete_on_third_day(item)
+        self._wait_for_third_day(item, decision_id)
 
     def attach(self, item: DecidedCluster, topic_id: int | None) -> None:
         """Tags the group's threads with the topic. With no topic (the agent named one that
-        doesn't exist) the threads keep waiting for another decision."""
+        doesn't exist) the threads are left as they were."""
         decision_id = self._record(item, topic_id)
         if topic_id is None:
-            members = select(func.count()).select_from(Thread).where(_members(item))
-            self.counts["left_waiting"] += self.connection.scalar(members)
+            self._leave_as_they_were(item)
             return
-        topics_left = self._current_topics(item) - {topic_id}
+        topics_left = self._current_topics(_members(item)) - {topic_id}
         statement = _tag_threads(_members(item), topic_id, decision_id, self.day)
         self.counts["attached"] += self.connection.execute(statement).rowcount
-        last_seen_today = func.greatest(Topic.last_seen, self.day)
-        self.connection.execute(_refresh_topic(topic_id).values(last_seen=last_seen_today))
-        for left in topics_left:
-            self.connection.execute(_refresh_topic(left))
+        self._refresh_topics(left=topics_left, joined=topic_id)
 
     def mint_topic(self, item: DecidedCluster) -> int:
         """Creates the new topic and remembers it for any later group merged into it."""
@@ -245,13 +233,39 @@ class _DecisionApplier:
         self.counts["minted"] += 1
         return topic_id
 
-    def _delete_threads(self, which: ColumnElement[bool]) -> int:
-        doomed = select(Thread.source_id).where(which)
+    def _delete_on_third_day(self, item: DecidedCluster) -> None:
+        on_third_day = and_(_members(item), _on_or_after_third_day(self.day))
+        topics_left = self._current_topics(on_third_day)
+        doomed = select(Thread.source_id).where(on_third_day)
         self.connection.execute(delete(Post).where(Post.thread_source_id.in_(doomed)))
-        return self.connection.execute(delete(Thread).where(which)).rowcount
+        deleted = self.connection.execute(delete(Thread).where(on_third_day)).rowcount
+        self.counts["noise_deleted"] += deleted
+        self._refresh_topics(left=topics_left)
 
-    def _current_topics(self, item: DecidedCluster) -> set[int]:
-        query = select(Thread.topic_id).where(_members(item), Thread.topic_id.is_not(None))
+    def _wait_for_third_day(self, item: DecidedCluster, decision_id: int) -> None:
+        on_first_day = and_(_members(item), not_(_on_or_after_third_day(self.day)))
+        waiting = update(Thread).where(on_first_day)
+        statement = waiting.values(stage="decided_once", cluster_decision_id=decision_id)
+        self.counts["noise_waiting"] += self.connection.execute(statement).rowcount
+
+    def _leave_as_they_were(self, item: DecidedCluster) -> None:
+        """A first-day thread is decided again on its third day; a third-day thread keeps the
+        topic its first day gave it, if any, and is settled."""
+        members = select(func.count()).select_from(Thread).where(_members(item))
+        self.counts["left_waiting"] += self.connection.scalar(members)
+        on_third_day = and_(_members(item), _on_or_after_third_day(self.day))
+        self.connection.execute(update(Thread).where(on_third_day).values(stage="settled"))
+
+    def _refresh_topics(self, left: set[int], joined: int | None = None) -> None:
+        """A topic's centre follows its threads; the topic joined today was also seen today."""
+        if joined is not None:
+            seen_today = func.greatest(Topic.last_seen, self.day)
+            self.connection.execute(_refresh_topic(joined).values(last_seen=seen_today))
+        for topic_id in left:
+            self.connection.execute(_refresh_topic(topic_id))
+
+    def _current_topics(self, threads: ColumnElement[bool]) -> set[int]:
+        query = select(Thread.topic_id).where(threads, Thread.topic_id.is_not(None))
         return set(self.connection.scalars(query))
 
     def _twin_topic(self, item: DecidedCluster) -> int:
@@ -268,6 +282,11 @@ class _DecisionApplier:
 
 class PostNotFound(Exception):
     pass
+
+
+def _thread_with_its_post(*columns) -> Select:
+    """A thread's post shares the thread's id."""
+    return select(*columns).join(Post, Post.source_id == Thread.source_id)
 
 
 def _due_on(day: date) -> ColumnElement[bool]:

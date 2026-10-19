@@ -93,10 +93,11 @@ For day D (atlas OPEN-29):
    centre (a topic left with no threads keeps the centre it had). Mint first creates the
    topic (label, description, keywords picked by code, centre). Noise on a thread's first
    day keeps it, untagged, for its third; noise on its third day deletes the thread with its
-   posts, which also removes their upvote and retrieval rows. An attach to a topic id that
-   doesn't exist is recorded with no topic and the threads are left as they were
-   (`left_waiting`): a first-day thread is decided again on its third day, a third-day one
-   stays untagged.
+   posts, which also removes their upvote and retrieval rows, and moves the centre of any
+   topic its first day gave it. An attach to a topic id that doesn't exist is recorded with
+   no topic and the threads are left as they were (`left_waiting`): a first-day thread is
+   decided again on its third day; a third-day thread keeps the topic its first day gave it,
+   if any, and is settled.
 8. **Engagement.** `topic_daily_engagement` is rebuilt for D−2 to D, every post counting
    for its thread's topic, so a comment that arrives days later counts for the topic on the
    day it was written: posts, comments, agreeing-reply upvotes that day (also for older

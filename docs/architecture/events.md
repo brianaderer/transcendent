@@ -21,7 +21,7 @@ Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.finished`
 (with the day's counts, from loading and tagging together), `day.failed` (with the error,
 as the error's message), and `decision.made` (one per group of threads the tagging agent decides:
-`cluster`, `threads`, `action`, `topic_id`, `label`, `merged_into`, `reason`).
+`group`, `threads`, `action`, `topic_id`, `label`, `merged_into`, `reason`).
 
 ## Uses
 Redis, [logging](logging.md).
