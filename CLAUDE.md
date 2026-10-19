@@ -362,9 +362,13 @@ core feature, not an afterthought:
 - **Ingestion is automated and repeatable:** posts are fetched and processed day by
   day through one catch-up operation (atlas plate 40); each post or comment is
   embedded whole, once. Fetching the same day twice must not create duplicates.
-- **Too much data** is handled as Brian decided (atlas OPEN-14, OPEN-19): drop deleted
-  and bot posts, fold short agreeing replies into their parent's upvotes, and delete
-  posts that fall into no cluster within three days.
+- **Topics are found thread by thread** (atlas OPEN-29): each thread is encoded as one
+  text, its post and its top comments, on day one and again on day three, and the
+  tagging agent attaches it to a topic, starts a new one, or calls it noise. Comments
+  arriving later, and old threads that come back to life, count as heat.
+- **Too much data** is handled as Brian decided (atlas OPEN-14, OPEN-19, OPEN-29): drop
+  deleted, removed and bot posts, fold short agreeing replies into their parent's
+  upvotes, and delete threads the agent calls noise.
 - **Record retrieval statistics:** every time a stored passage is retrieved, count
   it. The app shows which passages are retrieved most.
 - **Show a flattened picture of the embeddings:** squash them down to two dimensions
