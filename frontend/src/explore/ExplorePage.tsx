@@ -1,8 +1,9 @@
-import { keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { type DayCount, useReportDays, useReportMap, useReportTopics } from "../api/generated";
+import { type LiveEvent, useLiveEvents } from "../useLiveEvents";
 import { topicColours } from "./colours";
 import { DotPlot } from "./DotPlot";
 import { type DayRange, describeRange, rangeFrom, shortRange } from "./range";
@@ -11,6 +12,7 @@ import { TopicsPanel } from "./TopicsPanel";
 
 /** The main page (atlas plate 31, screen 1): one date range governs everything on it. */
 export function ExplorePage() {
+  useRefreshWhenADayIsLoaded();
   const days = useReportDays();
   if (days.isPending) return <p>Loading the history…</p>;
   if (days.isError) return <p>The history couldn't be loaded.</p>;
@@ -59,11 +61,10 @@ function ExploreRange({ history }: { history: DayCount[] }) {
   );
 }
 
-/** Drawn now; it starts a report and its comparison in build step 5 (atlas plate 06). */
+/** Starts a report and its comparison for the range (atlas plate 70). */
 function GenerateReport({ range }: { range: DayRange }) {
   return (
     <div className="mt-3 flex items-center justify-end gap-3">
-      <span className="text-xs text-slate-500">Reports arrive in the next build step.</span>
       <button
         type="button"
         disabled
@@ -73,6 +74,18 @@ function GenerateReport({ range }: { range: DayRange }) {
       </button>
     </div>
   );
+}
+
+/** During a first start, each finished day widens the history and changes its topics. */
+function useRefreshWhenADayIsLoaded() {
+  const queryClient = useQueryClient();
+  const refresh = useCallback(
+    (event: LiveEvent) => {
+      if (event.type === "day.finished") queryClient.invalidateQueries();
+    },
+    [queryClient],
+  );
+  useLiveEvents("ingestion", refresh);
 }
 
 function loadedDays(days: DayCount[], latest: string | null): DayCount[] {

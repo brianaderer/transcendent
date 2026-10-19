@@ -4,7 +4,8 @@ import type { MapPoint, TopicInRange } from "../api/generated";
 import { alignTo } from "./align";
 import { createScatter, type Dot, type Scatter } from "./chart";
 import { colourOf } from "./colours";
-import { escapeHtml, redditLink } from "./links";
+import { escapeHtml } from "./html";
+import { redditLink } from "./links";
 import { useUiState } from "./uiState";
 
 type Props = {
@@ -21,8 +22,8 @@ export function DotPlot({ points, topics, colours, recomputing }: Props) {
   const highlighted = useUiState((state) => state.highlightedTopic);
 
   useEffect(() => {
-    const labels = new Map(topics.map((topic) => [topic.id, topic.label]));
-    scatter.current?.show(placed.map((point) => dotFor(point, colours, labels, highlighted)));
+    const style = { colours, labels: new Map(topics.map((t) => [t.id, t.label])), highlighted };
+    scatter.current?.show(placed.map((point) => dotFor(point, style)));
   }, [placed, topics, colours, highlighted, scatter]);
 
   return (
@@ -63,12 +64,14 @@ function useScatter() {
   return [plotArea, scatter] as const;
 }
 
-function dotFor(
-  point: MapPoint,
-  colours: Map<number, string>,
-  labels: Map<number, string>,
-  highlighted: number | null,
-): Dot {
+/** What every dot shares: the topics' colours and names, and which topic is highlighted. */
+type DotStyle = {
+  colours: Map<number, string>;
+  labels: Map<number, string>;
+  highlighted: number | null;
+};
+
+function dotFor(point: MapPoint, { colours, labels, highlighted }: DotStyle): Dot {
   const topic = point.thread_topic_id;
   return {
     id: point.id,
@@ -76,9 +79,14 @@ function dotFor(
     y: point.y,
     colour: colourOf(topic, colours),
     faded: highlighted !== null && topic !== highlighted,
-    card: hoverCard(point, topic === null ? "No topic yet" : (labels.get(topic) ?? "")),
+    card: hoverCard(point, topicName(topic, labels)),
     link: redditLink(point),
   };
+}
+
+function topicName(topic: number | null, labels: Map<number, string>): string {
+  if (topic === null) return "No topic yet";
+  return labels.get(topic) ?? "A smaller topic";
 }
 
 function hoverCard(point: MapPoint, topicLabel: string): string {

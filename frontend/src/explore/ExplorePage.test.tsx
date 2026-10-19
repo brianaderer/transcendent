@@ -16,6 +16,8 @@ vi.mock("./chart", () => ({
 }));
 
 const DAYS = Array.from({ length: 56 }, (_, n) => ({ day: addDays("2026-08-24", n), posts: 10 }));
+let latestDay: string | null = "2026-10-18";
+let daysServed = DAYS;
 const asked: string[] = [];
 const NAVIGATION_SETTLES_MS = 50; // long enough for a navigation, had one been made
 
@@ -48,7 +50,7 @@ const MAP: PostMap = {
 };
 
 standInBackend(
-  http.get("*/api/days", () => HttpResponse.json({ days: DAYS, latest_day: "2026-10-18" })),
+  http.get("*/api/days", () => HttpResponse.json({ days: daysServed, latest_day: latestDay })),
   http.get("*/api/topics", ({ request }) => {
     asked.push(new URL(request.url).search);
     return HttpResponse.json([topic(1, "Impellers", "rising"), topic(2, "Anchoring", "new")]);
@@ -60,13 +62,27 @@ standInBackend(
   ),
 );
 
-class QuietEventSource {
-  onmessage = null;
+class FakeEventSource {
+  static opened: FakeEventSource[] = [];
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  constructor(public url: string) {
+    FakeEventSource.opened.push(this);
+  }
   close() {}
 }
 
+function announce(event: object) {
+  const data = JSON.stringify(event);
+  for (const source of FakeEventSource.opened)
+    source.onmessage?.(new MessageEvent("message", { data }));
+}
+
 beforeEach(() => {
-  vi.stubGlobal("EventSource", QuietEventSource);
+  vi.stubGlobal("EventSource", FakeEventSource);
+  FakeEventSource.opened = [];
+  useUiState.setState({ highlightedTopic: null });
+  latestDay = "2026-10-18";
+  daysServed = DAYS;
   asked.length = 0;
   shown.length = 0;
 });
@@ -147,6 +163,33 @@ test("hovering a topic fades every other topic's dots", async () => {
 
   await vi.waitFor(() => expect(shown.at(-1)!.map((dot) => dot.faded)).toEqual([false, true]));
   expect(useUiState.getState().highlightedTopic).toBe(1);
+});
+
+test("before any day has loaded, the page says the first start fills them in", async () => {
+  latestDay = null;
+
+  openExplore();
+
+  expect(await screen.findByText(/No days are loaded yet/)).toBeInTheDocument();
+});
+
+test("days past the latest fully loaded one are left off the history", async () => {
+  daysServed = [...DAYS, { day: "2026-10-19", posts: 999 }];
+
+  openExplore();
+
+  expect(await screen.findByText("12 Oct – 18 Oct 2026 · 70 posts")).toBeInTheDocument();
+});
+
+test("when a day finishes loading, the page takes it in without a reload", async () => {
+  latestDay = "2026-10-17";
+  openExplore();
+  await screen.findByText(/11 Oct – 17 Oct/);
+
+  latestDay = "2026-10-18";
+  act(() => announce({ type: "day.finished", day: "2026-10-18" }));
+
+  expect(await screen.findByText(/12 Oct – 18 Oct/)).toBeInTheDocument();
 });
 
 test("the Generate report button names the range and waits for the next build step", async () => {

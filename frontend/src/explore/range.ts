@@ -1,13 +1,15 @@
 /** Date ranges on the Explore page (atlas plate 31): whole days, written as ISO dates. */
 
+import { HISTORY_WEEKS } from "../community";
+
 export type DayRange = { start: string; end: string };
 
 export const DEFAULT_DAYS = 7; // the page opens on the last seven days (atlas OPEN-26)
 
 export const PRESETS: { label: string; days: number }[] = [
-  { label: "Last 7 days", days: 7 },
+  { label: `Last ${DEFAULT_DAYS} days`, days: DEFAULT_DAYS },
   { label: "Last 14 days", days: 14 },
-  { label: "All 8 weeks", days: Number.POSITIVE_INFINITY },
+  { label: `All ${HISTORY_WEEKS} weeks`, days: Number.POSITIVE_INFINITY },
 ];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -31,10 +33,6 @@ export function rangeFrom(asked: Partial<DayRange>, history: string[]): DayRange
   const { start, end } = asked;
   if (start && end && first <= start && start <= end && end <= last) return { start, end };
   return lastDays(history, DEFAULT_DAYS);
-}
-
-export function daysIn(range: DayRange): number {
-  return Math.round((Date.parse(range.end) - Date.parse(range.start)) / DAY_MS) + 1;
 }
 
 /** "12 Oct – 18 Oct 2026 · 1,097 posts" */

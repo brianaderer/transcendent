@@ -17,7 +17,7 @@ Screens and parts:
   one), takes the range from the address (`rangeFrom`: kept if it fits inside the history,
   otherwise the last seven days, atlas OPEN-26), and shows the range in words, the slider,
   the dot plot, the topics panel and a **Generate report for …** button that is drawn
-  disabled until build step 5. While a new range loads, the previous range's map and topics
+  disabled until reports are built. While a new range loads, the previous range's map and topics
   stay on screen.
 - `explore/RangeSlider` — two handles over the history with each day's posts as a bar behind
   them, and the presets **Last 7 days**, **Last 14 days**, **All 8 weeks**. A handle changes
@@ -47,7 +47,7 @@ Screens and parts:
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 
 Logic, each in its own small module with its own tests:
-- `explore/range.ts` — `DayRange`, `rangeFrom`, `lastDays`, `addDays`, `daysIn`,
+- `explore/range.ts` — `DayRange`, `rangeFrom`, `lastDays`, `addDays`,
   `describeRange` ("12 Oct – 18 Oct 2026 · 1,097 posts") and `shortRange` ("12–18 Oct",
   "28 Sept – 4 Oct"); `DEFAULT_DAYS = 7`, `PRESETS`.
 - `explore/align.ts` — `alignTo(previous, next)`: the turn (or turn after a flip), scale and
@@ -56,7 +56,9 @@ Logic, each in its own small module with its own tests:
 - `explore/colours.ts` — `topicColours(ids)`: the twelve busiest topics get their own colour
   (`PALETTE`), the rest share `OTHER_TOPIC`; `NO_TOPIC` for posts whose thread waits for a
   decision.
-- `explore/links.ts` — `redditLink(post)`, `escapeHtml(text)`.
+- `explore/links.ts` — `redditLink(post)`. `explore/html.ts` — `escapeHtml(text)`.
+- `community.ts` — `SUBREDDIT` and `HISTORY_WEEKS`, used by the links, the presets and the
+  loading line.
 - `explore/uiState.ts` — the browser-only state (Zustand): which topic is highlighted. The
   theme is not here; `ThemeToggle` keeps it itself and sets the `dark` class on `<html>`.
 - `explore/chart.ts` — `createScatter(element, open)`: ECharts behind a small interface of
@@ -68,10 +70,9 @@ on `<html>`), built by Vite and served by `vite preview` on port 5173 inside its
 (published on your computer as `PORT`, see [environment](environment.md)), which passes
 `/api` through to the API container.
 
-Only the top bar's loading line listens to the live `ingestion` events. The Explore page
-reads `GET /api/days` once (and again only when TanStack Query refetches it, for example when
-the browser tab regains focus), so days loaded after the page opened appear when it is
-reloaded; the README says so.
+The Explore page also listens to the live `ingestion` events: each `day.finished` refetches
+everything it shows, so during a first start the history widens and the topics fill in
+without a reload.
 
 The API calls and their types are **generated** from the backend's OpenAPI description
 (atlas OPEN-1) by orval into `src/api/generated.ts` (React Query hooks such as

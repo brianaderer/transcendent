@@ -1,3 +1,5 @@
+import { SUBREDDIT } from "./community";
+
 export type IngestionStatus = {
   days_done: number;
   days_wanted: number;
@@ -23,9 +25,9 @@ export function describeIngestion(status: IngestionStatus): string {
     return `History up to date through ${shortDate(status.latest_day)} · ${count(status.posts)} posts`;
   }
   if (status.days_done === 0 && !status.running_day) {
-    return "Waiting to start loading r/sailing history";
+    return `Waiting to start loading r/${SUBREDDIT} history`;
   }
-  return `Loading r/sailing history: ${status.days_done} of ${status.days_wanted} days · ${count(status.posts)} posts`;
+  return `Loading r/${SUBREDDIT} history: ${status.days_done} of ${status.days_wanted} days · ${count(status.posts)} posts`;
 }
 
 function shortDate(isoDay: string): string {

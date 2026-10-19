@@ -161,8 +161,7 @@ step 3 says, then run `docker compose up --build` again. Stopping and starting t
 that is tried again is fetched from the start, and nothing in it is counted twice.
 
 **Exploring.** Until the first day has loaded, the page says **No days are loaded yet; the
-first start fills them in.** This part of the page doesn't refresh itself as days arrive, so
-reload the page to include the days loaded since you opened it. Once days have loaded, the
+first start fills them in.** It takes in each day as it finishes loading, without a reload. Once days have loaded, the
 page shows them: it opens on the last seven days, with the range written out (for example
 **12 Oct – 18 Oct 2026 · 1,097 posts**). Drag either handle of the slider, or pick **Last 14 days** or **All 8 weeks**; the range changes
 when you let go, and the address changes with it, so you can share exactly what you see.

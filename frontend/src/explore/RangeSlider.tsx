@@ -6,6 +6,7 @@ import { type DayRange, lastDays, PRESETS } from "./range";
 type Props = { history: DayCount[]; range: DayRange; onChange: (range: DayRange) => void };
 
 const HISTOGRAM_HEIGHT = 40;
+const THUMB_ROOM_PX = 16; // below the bars, where the handles sit
 const THUMB =
   "[&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto";
 
@@ -21,42 +22,78 @@ export function RangeSlider({ history, range, onChange }: Props) {
     if (draft) onChange({ start: days[draft[0]], end: days[draft[1]] });
     setDraft(null);
   };
-  const handle = (label: string, value: number, moved: (index: number) => [number, number]) => (
-    <input
-      type="range"
-      aria-label={label}
-      min={0}
-      max={days.length - 1}
-      value={value}
-      onChange={(event) => setDraft(moved(Number(event.target.value)))}
-      onPointerUp={letGo}
-      onKeyUp={letGo}
-      className={`pointer-events-none absolute inset-x-0 bottom-0 w-full appearance-none bg-transparent ${THUMB}`}
-    />
-  );
+  const last = days.length - 1;
   return (
     <div className="space-y-2">
-      <div className="relative" style={{ height: HISTOGRAM_HEIGHT + 16 }}>
+      <div className="relative" style={{ height: HISTOGRAM_HEIGHT + THUMB_ROOM_PX }}>
         <Histogram history={history} from={from} to={to} />
-        {handle("First day", from, (index) => [Math.min(index, to), to])}
-        {handle("Last day", to, (index) => [from, Math.max(index, from)])}
+        <RangeHandle
+          label="First day"
+          value={from}
+          max={last}
+          onLetGo={letGo}
+          onMove={(index) => setDraft([Math.min(index, to), to])}
+        />
+        <RangeHandle
+          label="Last day"
+          value={to}
+          max={last}
+          onLetGo={letGo}
+          onMove={(index) => setDraft([from, Math.max(index, from)])}
+        />
       </div>
-      <div className="flex flex-wrap gap-2">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.label}
-            type="button"
-            className="rounded-full border border-slate-300 px-3 py-1 text-xs hover:border-teal-600 dark:border-slate-600"
-            onClick={() => onChange(lastDays(days, preset.days))}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
+      <PresetButtons days={days} onChange={onChange} />
     </div>
   );
 }
 
+type HandleProps = {
+  label: string;
+  value: number;
+  max: number;
+  onMove: (index: number) => void;
+  onLetGo: () => void;
+};
+
+/** One handle; both lie over the same track, so only their thumbs take the pointer. */
+function RangeHandle({ label, value, max, onMove, onLetGo }: HandleProps) {
+  return (
+    <input
+      type="range"
+      aria-label={label}
+      min={0}
+      max={max}
+      value={value}
+      onChange={(event) => onMove(Number(event.target.value))}
+      onPointerUp={onLetGo}
+      onKeyUp={onLetGo}
+      className={`pointer-events-none absolute inset-x-0 bottom-0 w-full appearance-none bg-transparent ${THUMB}`}
+    />
+  );
+}
+
+function PresetButtons({
+  days,
+  onChange,
+}: {
+  days: string[];
+  onChange: (range: DayRange) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {PRESETS.map((preset) => (
+        <button
+          key={preset.label}
+          type="button"
+          className="rounded-full border border-slate-300 px-3 py-1 text-xs hover:border-teal-600 dark:border-slate-600"
+          onClick={() => onChange(lastDays(days, preset.days))}
+        >
+          {preset.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 function Histogram({ history, from, to }: { history: DayCount[]; from: number; to: number }) {
   const busiest = Math.max(1, ...history.map((day) => day.posts));
   return (
