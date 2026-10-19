@@ -9,7 +9,9 @@ async def no_events(_stream):
 
 
 def services_with(checks):
-    return ApiServices(health_checks=checks, ingestion_status=dict, event_stream=no_events)
+    return ApiServices(
+        health_checks=checks, ingestion_status=dict, event_stream=no_events, explore=None
+    )
 
 
 def client_with(database_up, queue_up):

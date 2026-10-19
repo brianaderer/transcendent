@@ -9,7 +9,7 @@ async def two_events(_stream):
 
 
 def client_with(status=dict):
-    return TestClient(create_app(ApiServices({}, status, two_events)))
+    return TestClient(create_app(ApiServices({}, status, two_events, explore=None)))
 
 
 def test_ingestion_status_reports_what_the_ledger_says_and_how_many_days_are_wanted():
