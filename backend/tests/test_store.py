@@ -4,7 +4,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime
 
 import pytest
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, select, text
 
 from voices.config import load_settings
 from voices.db.models import (
@@ -124,3 +124,20 @@ def test_threads_deleted_as_noise_are_found_by_their_marker(store):
         connection.execute(insert(NoiseThread), [{"source_id": "test-n", "deleted_on": DAY}])
 
     assert store.noise_thread_ids(["test-n", "test-p"]) == {"test-n"}
+
+
+def column_type(store, table, column):
+    query = text(
+        "select format_type(atttypid, atttypmod) from pg_attribute"
+        " where attrelid = cast(:table as regclass) and attname = :column"
+    )
+    with store.engine.connect() as connection:
+        return connection.scalar(query, {"table": table, "column": column})
+
+
+@pytest.mark.parametrize(
+    ("table", "column"),
+    [("posts", "embedding"), ("threads", "embedding"), ("topics", "centroid")],
+)
+def test_every_embedding_is_stored_at_half_precision(store, table, column):
+    assert column_type(store, table, column) == f"halfvec({EMBEDDING_DIMENSIONS})"

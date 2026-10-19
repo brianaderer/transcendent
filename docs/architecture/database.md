@@ -43,8 +43,13 @@ extension and every table; `0002` adds `ingested_days.error`, why a day failed; 
 tagging (atlas OPEN-29): threads gain `embedding`, `topic_id`, `cluster_decision_id` and
 `stage`, posts lose `status`, `topic_id`, `topic_similarity` and `cluster_decision_id`, and
 `topic_daily_engagement` gains `revived_threads`; `0004` adds `threads.first_seen_on`, the day a thread was
-first stored, filled for stored threads from their earliest post or comment (atlas OPEN-30); `0005` adds `noise_threads` (atlas OPEN-31). Embeddings are `vector(768)`, the size nomic-embed-text
-produces (atlas OPEN-5).
+first stored, filled for stored threads from their earliest post or comment (atlas OPEN-30); `0005` adds `noise_threads` (atlas OPEN-31); `0006` stores every embedding at half
+precision (atlas OPEN-34), converting the stored ones in place (its downgrade converts them
+back). Embeddings (`posts.embedding`, `threads.embedding`, `topics.centroid`) are
+pgvector's `halfvec(768)`: 768 numbers, the size nomic-embed-text produces (atlas OPEN-5),
+at two bytes each instead of four, which halved the database (74 MB to 44 MB once
+compacted, on eight weeks of r/sailing). Read back, an embedding is a pgvector
+`HalfVector`, not a list; `explore_store` turns it into a list of floats with `to_list()`.
 
 Tables: `threads` (the unit of tagging: the thread's own embedding of its post and top
 replies, its topic, the decision that gave it, its `stage`: `new`, `decided_once` on its
@@ -64,11 +69,11 @@ docker compose run --rm --no-deps -v "$PWD/backend/migrations:/srv/migrations" \
   api alembic revision --autogenerate -m "what changed"
 ```
 
-`docker compose run --rm api pytest -m database` runs the fifty tests that need a running
-database: one checks that the models and the applied migrations agree; eight check that
+`docker compose run --rm api pytest -m database` runs the fifty-four tests that need a running
+database: one checks that the models and the applied migrations agree; eleven check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, keeps the day ledger, and finds threads deleted as noise by their marker; and thirty-five check the tagging store: which
+from different days, keeps the day ledger, finds threads deleted as noise by their marker, and stores each of the three embedding columns as `halfvec(768)`; and thirty-five check the tagging store: which
 threads are due on their first and third days (with their replies, best first), a thread
 without its post is due on the day first seen (whether it was started that day or years before), written from its title, is due again two days later, and can be a typical thread (shown by its title, with its author given as unknown), and that a
 settled thread is never due again, minting, attaching, noise on a first day waiting and on a
@@ -78,7 +83,7 @@ first day's topic, and one that had none is expired, its thread gone), threads w
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
-posts), search with recorded retrievals, and looking up an unknown post; and six check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post with no text shown by its title and long text cut, and topics read by id. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+posts), search with recorded retrievals, and looking up an unknown post; and seven check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post's embedding coming back as the list of floats it was saved as, a post with no text shown by its title and long text cut, and topics read by id. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through

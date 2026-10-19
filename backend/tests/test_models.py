@@ -1,3 +1,6 @@
+import pytest
+from pgvector.sqlalchemy import HALFVEC
+
 from voices.db.models import EMBEDDING_DIMENSIONS, Base
 
 
@@ -19,8 +22,15 @@ def test_every_planned_table_is_described():
     }
 
 
-def test_post_embeddings_have_the_embedding_model_size():
-    assert table("posts").c.embedding.type.dim == EMBEDDING_DIMENSIONS
+@pytest.mark.parametrize(
+    ("table_name", "column"),
+    [("posts", "embedding"), ("threads", "embedding"), ("topics", "centroid")],
+)
+def test_embeddings_are_half_precision_at_the_embedding_model_size(table_name, column):
+    embedding_type = table(table_name).c[column].type
+
+    assert isinstance(embedding_type, HALFVEC)
+    assert embedding_type.dim == EMBEDDING_DIMENSIONS
 
 
 def test_a_thread_points_to_its_topic_and_the_decision_that_tagged_it():

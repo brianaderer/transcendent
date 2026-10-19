@@ -121,7 +121,15 @@ def test_a_ranges_posts_come_with_their_thread_and_topic_and_end_with_its_last_d
 
     assert [p.id for p in posts] == ["test-c", "test-t"]  # same time: by id
     assert {p.thread_topic_id for p in posts} == {topic_id}
-    assert len(posts[0].embedding) == EMBEDDING_DIMENSIONS
+
+
+def test_a_posts_embedding_comes_back_as_the_list_of_floats_it_was_saved_as(store):
+    explore, _ = store
+
+    [post, *_] = explore.posts_in(DAY, DAY)
+
+    assert post.embedding == VECTOR  # each value exact at half precision
+    assert all(type(value) is float for value in post.embedding)
 
 
 def test_a_post_with_no_text_is_shown_by_its_title_and_long_text_is_cut(store):

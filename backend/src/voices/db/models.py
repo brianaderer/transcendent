@@ -5,7 +5,7 @@ The plan behind them is atlas plate 21 (topics and engagement) and plate 40 (ing
 
 from datetime import date, datetime
 
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (
     ARRAY,
     BigInteger,
@@ -42,7 +42,7 @@ class Thread(Base):
     # Its first and third days count from here: a thread started before the history, or whose
     # post was removed, is first seen with its first stored comment (atlas OPEN-30).
     first_seen_on: Mapped[date] = mapped_column(Date)
-    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
+    embedding: Mapped[list[float] | None] = mapped_column(HALFVEC(EMBEDDING_DIMENSIONS))
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
     cluster_decision_id: Mapped[int | None] = mapped_column(ForeignKey("cluster_decisions.id"))
     # new: not decided yet; decided_once: decided on its first day; settled: decided on its third
@@ -56,7 +56,7 @@ class Topic(Base):
     label: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
     keywords: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
-    centroid: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
+    centroid: Mapped[list[float]] = mapped_column(HALFVEC(EMBEDDING_DIMENSIONS))
     first_seen: Mapped[date] = mapped_column(Date)
     last_seen: Mapped[date] = mapped_column(Date)
 
@@ -92,7 +92,7 @@ class Post(Base):
     reddit_score: Mapped[int] = mapped_column(Integer, server_default="0")
     upvotes: Mapped[int] = mapped_column(Integer, server_default="0")  # agreeing replies
     parent_source_id: Mapped[str | None] = mapped_column(Text)
-    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
+    embedding: Mapped[list[float] | None] = mapped_column(HALFVEC(EMBEDDING_DIMENSIONS))
 
 
 class PostUpvotesDaily(Base):
