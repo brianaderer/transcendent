@@ -10,7 +10,9 @@ both have happened.
 
 ## Public interface
 - `day_tagging.DayTagging(store, embedder, decide_all, emit).tag(day)` — tags one day's
-  threads and returns counts: `threads` (encoded today), `groups` (decided), `attached`
+  threads, announcing each step live as it begins (`day.step` `grouping` with `threads`
+  before the threads are encoded and grouped, `tagging` with `groups` before the agent
+  decides, `applying` before the decisions are saved; [events](events.md)), and returns counts: `threads` (encoded today), `groups` (decided), `attached`
   (threads given a topic, by attach or by mint), `minted` (new topics), `noise_waiting`
   (threads called noise on their first day, kept for their third), `noise_deleted` (threads
   called noise on their third day, deleted with their posts), and, when the agent named a

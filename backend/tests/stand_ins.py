@@ -1,9 +1,10 @@
 """Stand-ins shared across tests: the API routes' services, and topic data read by day."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 from voices.api.main import ApiServices
 from voices.explore.shapes import DayCount, Days, Map, MapPoint, TopicDay, TopicInfo, TopicInRange
+from voices.ingestion.sync_now import SyncAnswer
 from voices.report.launcher import RunStarted
 from voices.report.runs import RunNotFound, RunState
 from voices.retrievals.shapes import RetrievalStats
@@ -154,6 +155,23 @@ class FakeRetrievals:
         return RetrievalStats(agent=which.agent, runs=[], total=0, posts=[], topics=[])
 
 
+class FakeSync:
+    """Queues nothing; answers that the 19th will be fetched, remembering when it was asked."""
+
+    def __init__(self):
+        self.asked_at = None
+
+    def request(self, now):
+        self.asked_at = now
+        return SyncAnswer(
+            queued=True,
+            reason="days_missing",
+            missing_days=[date(2026, 10, 19)],
+            next_complete_day=date(2026, 10, 20),
+            next_complete_at=datetime(2026, 10, 21, 6, 0, tzinfo=UTC),
+        )
+
+
 def stand_in_services(**chosen):
     """Every service a stand-in, except those chosen by name."""
     services = {
@@ -165,5 +183,6 @@ def stand_in_services(**chosen):
         "topics": FakeTopics(),
         "retrievals": FakeRetrievals(),
         "runs": FakeRuns(),
+        "sync": FakeSync(),
     }
     return ApiServices(**(services | chosen))

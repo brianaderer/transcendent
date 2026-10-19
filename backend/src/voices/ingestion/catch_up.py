@@ -5,7 +5,7 @@ of missing days differs (atlas plate 40).
 """
 
 from collections.abc import Callable
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from typing import Protocol
 
 from voices.config import HISTORY_DAYS
@@ -24,6 +24,12 @@ class Emit(Protocol):
     """Sends one live event on the ingestion stream (atlas plate 41)."""
 
     def __call__(self, event_type: str, **body: object) -> None: ...
+
+
+def announce_step(emit: Emit, day: date, step: str, **numbers: int) -> None:
+    """A step of the day's work is starting (`day.step`, atlas plate 41), with how much it
+    has to get through: posts to embed, threads to group, groups to decide."""
+    emit("day.step", day=day.isoformat(), step=step, **numbers)
 
 
 ProcessDay = Callable[[date], dict[str, int]]
@@ -59,6 +65,12 @@ class CatchUp:
 
 def last_complete_day(now: datetime) -> date:
     return (now - timedelta(hours=ARCHIVE_CATCH_UP_HOURS)).date() - timedelta(days=1)
+
+
+def completes_at(day: date) -> datetime:
+    """The moment `day` becomes complete: last_complete_day returns it from then on."""
+    day_ends = datetime.combine(day + timedelta(days=1), time(), UTC)
+    return day_ends + timedelta(hours=ARCHIVE_CATCH_UP_HOURS)
 
 
 def missing_days(last_complete: date, done: set[date], history_days: int) -> list[date]:

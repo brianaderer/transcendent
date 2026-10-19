@@ -243,6 +243,22 @@ export interface RunState {
   reason?: string | null;
 }
 
+export type SyncAnswerReason = (typeof SyncAnswerReason)[keyof typeof SyncAnswerReason];
+
+export const SyncAnswerReason = {
+  days_missing: "days_missing",
+  nothing_new: "nothing_new",
+  already_running: "already_running",
+} as const;
+
+export interface SyncAnswer {
+  queued: boolean;
+  reason: SyncAnswerReason;
+  missing_days: string[];
+  next_complete_day: string;
+  next_complete_at: string;
+}
+
 /**
  * One tagging decision that built the topic: minting it, or attaching threads to it.
  */
@@ -438,7 +454,8 @@ export const getReportIngestionUrl = () => {
 };
 
 /**
- * How far the catch-up has got through the history.
+ * How far the catch-up has got through the history, and, while the first boot
+ * rebuilds the seed's vectors, how far that has got (atlas plate 07).
  * @summary Report Ingestion
  */
 export const reportIngestion = async (
@@ -546,6 +563,61 @@ export function useReportIngestion<
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+export const getSyncNowUrl = () => {
+  return `/api/catch-up`;
+};
+
+/**
+ * The Sync now button: queues the daily catch-up when a complete day is missing and
+ * none is running, and says which days it will fetch or why nothing was queued.
+ * @summary Sync Now
+ */
+export const syncNow = async (
+  options?: Parameters<typeof fetchOrThrow>[1],
+): Promise<SyncAnswer> => {
+  return fetchOrThrow<SyncAnswer>(getSyncNowUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getSyncNowMutationKey = () => ["syncNow"] as const;
+
+export const getSyncNowMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof syncNow>>, TError, void, TContext>;
+  request?: SecondParameter<typeof fetchOrThrow>;
+}): UseMutationOptions<Awaited<ReturnType<typeof syncNow>>, TError, void, TContext> => {
+  const mutationKey = getSyncNowMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncNow>>, void> = () => {
+    return syncNow(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SyncNowMutationResult = NonNullable<Awaited<ReturnType<typeof syncNow>>>;
+
+export type SyncNowMutationError = unknown;
+
+/**
+ * @summary Sync Now
+ */
+export const useSyncNow = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof syncNow>>, TError, void, TContext>;
+    request?: SecondParameter<typeof fetchOrThrow>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof syncNow>>, TError, void, TContext> => {
+  return useMutation(getSyncNowMutationOptions(options), queryClient);
+};
 
 export const getStreamEventsUrl = (stream: string) => {
   return `/api/streams/${stream}/events`;

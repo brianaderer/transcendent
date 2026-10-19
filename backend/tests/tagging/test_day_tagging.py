@@ -116,6 +116,36 @@ def test_threads_still_without_a_topic_are_expired_after_the_decisions_before_en
     assert counts["noise_expired"] == 2
 
 
+def test_each_step_is_announced_as_it_begins_with_its_numbers_around_the_decisions():
+    happened = []
+
+    class WatchedEmbedder(FakeEmbedder):
+        def embed_documents(self, texts):
+            happened.append("threads encoded")
+            return super().embed_documents(texts)
+
+    def emit(event_type, **body):
+        happened.append(body if event_type == "day.step" else event_type)
+
+    tagging = DayTagging(
+        FakeStore([due("t1"), due("t2"), due("t3")]),
+        WatchedEmbedder(),
+        decide("noise"),
+        emit,
+        lambda threads: one_group_each(threads)[:2],
+    )
+    tagging.tag(DAY)
+
+    assert happened == [
+        {"day": "2026-10-15", "step": "grouping", "threads": 3},
+        "threads encoded",
+        {"day": "2026-10-15", "step": "tagging", "groups": 2},
+        "decision.made",
+        "decision.made",
+        {"day": "2026-10-15", "step": "applying"},
+    ]
+
+
 def test_each_decision_is_announced_live():
     emitted = []
 

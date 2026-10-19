@@ -25,9 +25,10 @@ export async function fetchIngestionStatus(): Promise<IngestionStatus> {
 
 /**
  * One sentence on how far the history has loaded (atlas plates 04 and 07): first the seed's
- * preparation while its vectors are rebuilt, then the catch-up's days.
+ * preparation while its vectors are rebuilt, then the catch-up's days. `step`, when given, is
+ * what the day being loaded is doing now ("embedding 204 posts"), and ends the sentence.
  */
-export function describeIngestion(status: IngestionStatus): string {
+export function describeIngestion(status: IngestionStatus, step: string | null = null): string {
   if (status.backfill) {
     const { what, done, total } = status.backfill;
     return `Preparing the history: ${count(done)} of ${count(total)} ${what}`;
@@ -37,24 +38,32 @@ export function describeIngestion(status: IngestionStatus): string {
     return `Loading stopped at ${shortDate(status.failed_day)}: ${why}`;
   }
   if (status.days_done >= status.days_wanted && status.latest_day) {
-    return describeFullHistory(status, status.latest_day);
+    return describeFullHistory(status, status.latest_day, step);
   }
 
   if (status.days_done === 0 && !status.running_day) {
     return `Waiting to start loading r/${SUBREDDIT} history`;
   }
-  return `Loading r/${SUBREDDIT} history: ${status.days_done} of ${status.days_wanted} days · ${count(status.posts)} posts`;
+  const progress = `Loading r/${SUBREDDIT} history: ${status.days_done} of ${status.days_wanted} days · ${count(status.posts)} posts`;
+  return step ? `${progress} · ${step}` : progress;
 }
 
-/** The history counts as full while the daily run loads yesterday, so name that day. */
-function describeFullHistory(status: IngestionStatus, latestDay: string): string {
+/** The history counts as full while the daily run loads yesterday, so name that day, and
+ * what it is doing once that is known. */
+function describeFullHistory(
+  status: IngestionStatus,
+  latestDay: string,
+  step: string | null,
+): string {
+  if (status.running_day && step) return `Loading ${shortDate(status.running_day)} · ${step}`;
   if (status.running_day) {
     return `Loading ${shortDate(status.running_day)} · history up to date through ${shortDate(latestDay)}`;
   }
   return `History up to date through ${shortDate(latestDay)} · ${count(status.posts)} posts`;
 }
 
-function shortDate(isoDay: string): string {
+/** A day as the page writes it, "19 Oct". */
+export function shortDate(isoDay: string): string {
   const [year, month, day] = isoDay.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });

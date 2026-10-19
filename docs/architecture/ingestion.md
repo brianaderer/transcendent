@@ -1,6 +1,6 @@
 # ingestion
 
-**Source:** `backend/src/voices/ingestion/` (`arctic_shift.py`, `items.py`, `filters.py`, `agreement.py`, `embedder.py`, `day.py`, `catch_up.py`)   ·   **Tests:** `backend/tests/ingestion/`
+**Source:** `backend/src/voices/ingestion/` (`arctic_shift.py`, `items.py`, `filters.py`, `agreement.py`, `embedder.py`, `day.py`, `catch_up.py`, `sync_now.py`)   ·   **Tests:** `backend/tests/ingestion/`
 
 ## Purpose
 Fills the database with r/sailing, one day at a time, from the Arctic Shift archive of
@@ -19,14 +19,33 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
   **body)` sends one event on the ingestion stream (the worker binds `RedisEvents.emit` to
   the `ingestion` stream).
 - `catch_up.missing_days(...)`, `catch_up.last_complete_day(now)` — a day is complete six
-  hours after it ends, so the archive has caught up.
+  hours after it ends, so the archive has caught up. `catch_up.completes_at(day)` is the
+  moment that happens (06:00 UTC the next morning); both read `ARCHIVE_CATCH_UP_HOURS`, the
+  one place the rule lives.
+- `sync_now.SyncNow(progress, queue).request(now)` — the Sync now button behind
+  `POST /api/catch-up` ([api](api.md)). Works out the missing days with `last_complete_day`
+  and `missing_days` over `HISTORY_DAYS`, exactly as the catch-up will, so a day still inside
+  its six hours is never asked for; queues the worker's `voices.catch_up` (`CATCH_UP_TASK`)
+  only when a day is missing and no catch-up is busy, and answers a `SyncAnswer`: `queued`,
+  `reason` (`days_missing`, `nothing_new` or `already_running`), `missing_days`,
+  `next_complete_day` and `next_complete_at`. A busy catch-up is refused rather than queued
+  again: the worker's lock would make a second one do nothing, and a day that becomes
+  complete meanwhile would not be fetched by it either, so saying so is the honest answer.
+  `progress` is a `CatchUpProgress` (`done_days()` and `busy()`); `queue` is a
+  `voices.tasks.Queue` (a task's name and its arguments).
+  `sync_now.a_catch_up_is_busy(ingestion_status, backfill_progress)` — busy while the
+  ledger has a running day or the seed is being prepared.
 - `catch_up.Emit` — the shape of that `emit` function; [tagging](tagging.md) uses it too.
-- `day.DayIngestion(archive, embedder, agreement, store).process(day)` — one day, returning counts
+- `catch_up.announce_step(emit, day, step, **numbers)` — sends `day.step` as a step of the
+  day's work begins ([events](events.md)); used here and by [tagging](tagging.md).
+- `day.DayIngestion(archive, embedder, agreement, store, emit).process(day)` — one day,
+  announcing `day.step` `fetching` before it asks the archive and `embedding` (with
+  `posts`, the items kept to embed) before it embeds, and returning counts
   (`fetched`, `dropped_unwanted`, `dropped_as_noise` (items on a thread already deleted as
   noise, atlas OPEN-31), `dropped_without_thread`, `dropped_orphan_upvotes`,
   `stored`, `threads_added`, `upvotes`), read off what was left after each step. Each
   collaborator is a small interface (`Archive`,
-  `DocumentEmbedder`, `Agreement`, `DayStore`), so tests pass stand-ins.
+  `DocumentEmbedder`, `Agreement`, `DayStore`, and `Emit`), so tests pass stand-ins.
 - `day.DayBatch`, `day.EmbeddedItem`, `day.NewThread` — what one day hands to the store to
   save together.
 - `arctic_shift.ArcticShift` — `posts_created_between`, `comments_created_between`,
@@ -98,7 +117,8 @@ about 2 GB, climbing higher; with length-sized batches it stays under 1 GB.
 [logging](logging.md); [environment](environment.md) (`HISTORY_DAYS` from `voices.config`); the Arctic Shift archive (through `httpx`); the embedding model
 (through `fastembed`), on the `model-cache` volume. It never imports the
 [database](database.md) or [events](events.md) modules: the [worker](worker.md) hands it
-the store and the `emit` function, which match the small interfaces above.
+the store and the `emit` function, which match the small interfaces above. `sync_now`
+uses `voices.tasks.Queue`, the API's way of handing a task to the worker by name.
 
 ## Used by
 [worker](worker.md) (the catch-up job builds and runs it, and hands the same
@@ -112,6 +132,7 @@ the store and the `emit` function, which match the small interfaces above.
 [comparison](comparison.md) and [report](report.md) (the `ComparisonEmbedder` interface;
 `worker/report_task.py` also loads a `NomicEmbedder` with `load_embedder`, once per worker
 process, for version B's searches and for matching topic names).
+[api](api.md) (`POST /api/catch-up` builds a `SyncNow` and answers its `SyncAnswer`).
 
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`

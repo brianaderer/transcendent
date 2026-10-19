@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Protocol
 
+from voices.ingestion.catch_up import Emit, announce_step
 from voices.ingestion.filters import is_unwanted
 from voices.ingestion.items import Item
 
@@ -72,21 +73,30 @@ class DaySteps:
 
 class DayIngestion:
     def __init__(
-        self, archive: Archive, embedder: DocumentEmbedder, agreement: Agreement, store: DayStore
+        self,
+        archive: Archive,
+        embedder: DocumentEmbedder,
+        agreement: Agreement,
+        store: DayStore,
+        emit: Emit,
     ):
         self.archive = archive
         self.embedder = embedder
         self.agreement = agreement
         self.store = store
+        self.emit = emit
 
     def process(self, day: date) -> dict[str, int]:
-        """Fetch, filter, fold and embed one day, save it, and say what happened."""
+        """Fetch, filter, fold and embed one day, save it, and say what happened. Fetching
+        and embedding, the slow steps, are announced live as they begin."""
+        announce_step(self.emit, day, "fetching")
         fetched = self._fetch(day)
         wanted = [item for item in fetched if not is_unwanted(item)]
         off_noise_threads = self._without_noise_threads(wanted)
         threads, threaded = self._attach_threads(off_noise_threads)
         agreeing, kept = self._split_agreeing(threaded)
         upvotes = self._upvotes_for_parents(agreeing, kept)
+        announce_step(self.emit, day, "embedding", posts=len(kept))
         batch = DayBatch(day, threads, self._embed(kept), upvotes)
         self.store.save_day(batch)
         return _day_counts(DaySteps(fetched, wanted, off_noise_threads, threaded, agreeing, batch))

@@ -84,3 +84,21 @@ test("updates the progress when a live event says a day finished", async () => {
   expect(await screen.findByText(/3 of 56 days/)).toBeInTheDocument();
   expect(FakeEventSource.latest.url).toBe("/api/streams/ingestion/events");
 });
+
+test("streams the steps of the day being loaded, then drops them when the day finishes", async () => {
+  serveStatus(() => 2);
+  vi.stubGlobal("EventSource", FakeEventSource);
+  renderStatus();
+  expect(await screen.findByText(/2 of 56 days · 1,000 posts$/)).toBeInTheDocument();
+  const day = "2026-08-25";
+
+  act(() => FakeEventSource.latest.send({ type: "day.step", day, step: "embedding", posts: 204 }));
+  expect(await screen.findByText(/· embedding 204 posts$/)).toBeInTheDocument();
+
+  act(() => FakeEventSource.latest.send({ type: "day.step", day, step: "tagging", groups: 7 }));
+  act(() => FakeEventSource.latest.send({ type: "decision.made", group: "group-1" }));
+  expect(await screen.findByText(/· tagging: 1 of 7 groups decided$/)).toBeInTheDocument();
+
+  act(() => FakeEventSource.latest.send({ type: "day.finished", day }));
+  expect(await screen.findByText(/2 of 56 days · 1,000 posts$/)).toBeInTheDocument();
+});
