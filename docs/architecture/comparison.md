@@ -50,7 +50,8 @@ All shapes are Pydantic models, so the API can return them.
 - **The answer key is the Explore page's own measurement.** `active_topics` calls
   `voices.explore.range_topics.topics_in_range`, the function behind the Explore page's topic
   list, so a topic's engagement and direction (`new` if first seen in the range, otherwise
-  against the period of the same length before it) are exactly the badge a reviewer sees.
+  its momentum within the range, second half against first, OPEN-40) are exactly the badge a
+  reviewer sees.
 - **Matching by meaning.** Every name and every topic text (`"label: description"`) is
   embedded in one call; a name matches its most similar topic when the cosine similarity is
   at least `MATCH_SIMILARITY`. A topic is claimed once: when several names' best match is

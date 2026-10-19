@@ -7,7 +7,7 @@ from datetime import date
 from typing import Protocol
 
 from voices.explore.day_range import DayRange
-from voices.explore.direction import is_new, trend
+from voices.explore.direction import Trend, is_new, trend
 from voices.explore.shapes import TopicDay, TopicInfo, TopicInRange
 
 
@@ -46,8 +46,19 @@ def _topic(info: TopicInfo, rows: list[TopicDay], days: DayRange) -> TopicInRang
         posts=sum(r.posts for r in in_range),
         daily=_daily(in_range, days),
         daily_before=_daily(rows, days.period_before()),
-        direction="new" if is_new(info.first_seen, days) else trend(engagement, before),
+        direction="new" if is_new(info.first_seen, days) else _momentum(in_range, days, before),
     )
+
+
+def _momentum(in_range: list[TopicDay], days: DayRange, before: int) -> Trend:
+    """Where the topic is heading within the range (Brian, OPEN-40): its second half against
+    its first, the middle day of an odd range left out. A one-day range has no halves, so it
+    is compared with the day before."""
+    daily = _daily(in_range, days)
+    half = len(daily) // 2
+    if half == 0:
+        return trend(sum(daily), before)
+    return trend(sum(daily[-half:]), sum(daily[:half]))
 
 
 def _daily(rows: list[TopicDay], days: DayRange) -> list[int]:

@@ -180,7 +180,8 @@ takes a few seconds the first time (**Recomputing map…** shows meanwhile; a we
 5 seconds, all eight weeks about half a minute) and is instant after that. Hover a dot to
 read the post, click it to open it on Reddit. The **Topics** list beside it has the range's
 topics, busiest first, each with a line of its daily activity, its post count and a badge:
-**New**, **Rising**, **Steady** or **Fading** against the same number of days before. Hover a
+**New**, or **Rising**, **Steady** or **Fading** by how the second half of your range compares
+with the first. Hover a
 topic to pick out its dots, or click its name to open its page: its engagement every day
 across the eight weeks (posts, comments and upvotes stacked, the number of different people
 as a line, your range shaded), three typical posts, and **How this topic was built**, the

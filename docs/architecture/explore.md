@@ -25,10 +25,12 @@ dot plot, recomputed for each range (atlas OPEN-20).
     `thread_title`, a short excerpt and `thread_topic_id` (`null` while the thread waits for a
     decision).
 - `direction.is_new(first_seen, days)` — first seen on or after the range's first day.
-  `direction.trend(now, before)` — `rising` or `fading` when the range's engagement is more
-  than a quarter (`CHANGE_THAT_COUNTS`) above or below the period of the same length just
-  before it, and `steady` in between; a topic silent before the range and active in it is
-  `rising`. A topic's badge (`direction`) is `new` when `is_new`, otherwise its trend.
+  `direction.trend(now, before)` — `rising` or `fading` when `now` is more than a quarter
+  (`CHANGE_THAT_COUNTS`) above or below `before`, `steady` in between, `rising` from nothing.
+  A topic's badge (`direction`, in `range_topics._momentum`) is `new` when `is_new`, otherwise
+  its **momentum within the range** (Brian, atlas OPEN-40): the trend of the range's second
+  half against its first half, the middle day of an odd range left out; a one-day range has
+  no halves, so it is compared with the day before.
 - `range_topics.topics_in_range(data, days)` — what `Explore.topics` returns, as a function
   of anything with the two reads in `range_topics.TopicData` (`topic_days`, `topics`), so the
   [comparison](comparison.md)'s answer key measures topics exactly as the page does.

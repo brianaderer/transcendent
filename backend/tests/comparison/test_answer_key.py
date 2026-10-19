@@ -59,12 +59,25 @@ def test_a_topic_quiet_in_the_range_is_not_active():
     assert [t.topic_id for t in active_topics(data, DAYS)] == [2]
 
 
-def test_directions_are_measured_against_the_period_before():
-    data = data_with([20, 5, 10, 3], before={1: 10, 2: 10, 3: 10}, first_seen={4: DAYS.start})
+def test_directions_are_the_momentum_within_the_range():
+    first, last = DAYS.start, DAYS.end
+    rows = [
+        topic_day(1, last, 9),  # building toward the end
+        topic_day(2, first, 9),  # a burst at the start that died away
+        topic_day(3, first, 5),
+        topic_day(3, last, 5),  # holding
+        topic_day(4, last, 9),
+    ]
+    infos = [topic_info(1), topic_info(2), topic_info(3), topic_info(4, first_seen=first)]
 
-    directions = {t.topic_id: t.direction for t in answer_key(data, DAYS)}
+    key = answer_key(RecordingTopicData(rows, infos), DAYS)
 
-    assert directions == {1: "rising", 2: "fading", 3: "steady", 4: "new"}
+    assert {t.topic_id: t.direction for t in key} == {
+        1: "rising",
+        2: "fading",
+        3: "steady",
+        4: "new",
+    }
 
 
 def test_the_key_says_what_the_explore_page_says():

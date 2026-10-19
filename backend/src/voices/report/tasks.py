@@ -25,7 +25,8 @@ class Report(BaseModel):
     )
     topics: list[NamedTopic] = Field(
         description="The topics your document covers, rank 1 the biggest, each with whether it "
-        "was rising, steady, fading or new compared with the period just before."
+        "was rising, steady, fading or new: its momentum within the period, the second half "
+        "against the first."
     )
 
 
@@ -59,10 +60,10 @@ def write_task(days: DayRange) -> Task:
 about sailing, for {_spoken(days.start)} to {_spoken(days.end)}.
 
 Say what the community talked about in those days: name the {TOPICS_TO_NAME} main topics in
-order of how much they were discussed, and for each, whether it was rising, steady, fading or
-new compared with the same number of days just before. For each topic, also say
-where it looks to be heading next, and why. Be specific to this community and these days.
-Write the document from {FROM_WHAT_YOU_CAN_SEE}.
+order of how much they were discussed, and for each, whether it was rising, steady or fading
+within those days (growing toward their end, holding, or dying away), or new. For each
+topic, also say where it looks to be heading next, and why. Be specific to this community
+and these days. Write the document from {FROM_WHAT_YOU_CAN_SEE}.
 
 Answer by calling Report once, with the document and its list of topics."""
     return Task("write", instructions, Report)
@@ -73,7 +74,8 @@ def predict_task(days: DayRange) -> Task:
     instructions = f"""Today is {_spoken(today)}. Predict what {COMMUNITY}, the Reddit community
 about sailing, will discuss most in the next {days.length} days ({_spoken(days.start)} to
 {_spoken(days.end)}): name the {TOPICS_TO_NAME} topics you expect to lead, and for each, whether it
-will be rising, steady, fading or new compared with the {days.length} days before. Brand-new
+will be rising, steady or fading through those days (growing toward their end, holding, or
+dying away), or new. Brand-new
 conversations can't be foreseen; forecast the ones already in motion. Your tools show the
 community only up to today. Make the prediction from {FROM_WHAT_YOU_CAN_SEE}.
 

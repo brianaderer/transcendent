@@ -37,3 +37,10 @@ def test_neither_task_suggests_the_model_might_have_no_tools():
 
 def test_the_report_asks_where_each_topic_is_heading_next_and_why():
     assert "where it looks to be heading next, and why" in write_task(DAYS).instructions
+
+
+def test_both_tasks_define_direction_as_momentum_within_the_period():
+    for task in (write_task(DAYS), predict_task(DAYS)):
+        words = " ".join(task.instructions.split())
+        assert "growing toward their end, holding, or dying away" in words
+        assert "days before" not in words

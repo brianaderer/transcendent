@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import date, timedelta
 
 from voices.explore.day_range import DayRange
 from voices.explore.explore import Explore
@@ -108,13 +108,38 @@ def test_topics_come_busiest_first_and_quiet_ones_are_left_out():
     assert [t.id for t in explore(data).topics(DAYS)] == [2, 1]
 
 
-def test_each_topic_is_badged_against_the_period_before():
-    days = [day(1, date(2026, 10, 10), 10), day(1, START, 20), day(2, START, 3)]
-    data = FakeData(days, [topic(1), topic(2, first_seen=END)])
+WEEK = DayRange(date(2026, 10, 12), date(2026, 10, 18))
 
-    badges = {t.id: t.direction for t in explore(data).topics(DAYS)}
 
-    assert badges == {1: "rising", 2: "new"}
+def badge_of(engagement_by_day, days=WEEK, first_seen=date(2026, 9, 1)):
+    rows = [day(1, on, n) for on, n in zip(days.days(), engagement_by_day, strict=True)]
+    [only] = explore(FakeData(rows, [topic(1, first_seen=first_seen)])).topics(days)
+    return only.direction
+
+
+def test_a_burst_that_dies_away_within_the_range_is_fading_whatever_came_before():
+    assert badge_of([20, 9, 3, 1, 0, 0, 0]) == "fading"
+
+
+def test_a_topic_building_toward_the_end_of_the_range_is_rising():
+    assert badge_of([0, 1, 1, 2, 6, 9, 12]) == "rising"
+
+
+def test_a_topic_holding_through_the_range_is_steady():
+    assert badge_of([5, 5, 4, 6, 5, 5, 5]) == "steady"
+
+
+def test_a_topic_first_seen_in_the_range_is_new_whatever_its_shape():
+    assert badge_of([0, 0, 0, 1, 9, 9, 9], first_seen=date(2026, 10, 15)) == "new"
+
+
+def test_a_one_day_range_has_no_halves_so_it_is_compared_with_the_day_before():
+    one_day = DayRange(START, START)
+    rows = [day(1, START - timedelta(days=1), 10), day(1, START, 20)]
+
+    [only] = explore(FakeData(rows, [topic(1)])).topics(one_day)
+
+    assert only.direction == "rising"
 
 
 def test_the_map_places_every_post_with_its_topic():

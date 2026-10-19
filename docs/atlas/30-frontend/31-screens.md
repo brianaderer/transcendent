@@ -174,11 +174,13 @@ made the button work; the toggle is not built.)*
     for the hover card. Posts of threads with no topic yet are shown grey.
 - **A day's engagement** for the sparkline is its posts plus comments plus upvotes
   (agreeing replies), from `topic_daily_engagement` ([21](../20-data-model/21-topics.md)).
-- **The badge** compares the range with the period of the same length just before it:
-  **New** if the topic was first seen inside the range; otherwise **Rising** if
-  engagement is up by more than a quarter, **Fading** if down by more than a quarter,
-  **Steady** in between. This is the measured direction only; the forecast's own labels
-  come with prediction (plate [50](../50-prediction.md), step 5).
+- **The badge** is the topic's **momentum within the range** (Brian, 2026-10-19, OPEN-40):
+  **New** if the topic was first seen inside the range; otherwise the range's second half
+  against its first half (the middle day of an odd range left out), **Rising** if up by
+  more than a quarter, **Fading** if down by more than a quarter, **Steady** in between. A
+  one-day range is compared with the day before. The sparkline also draws the days before
+  the range, faint, for context. This is the measured direction only; the forecast's own
+  labels come with prediction (plate [50](../50-prediction.md), step 5).
 - **The map** is t-SNE (a standard way of squashing many dimensions to two that keeps
   near neighbours near), on cosine distance, started from the principal components and
   with a fixed seed, so the same range always gives the same picture. Measured on the
