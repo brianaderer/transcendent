@@ -127,8 +127,8 @@ Screens and parts:
   "A · without retrieval" and "B · with retrieval", each listing its steps ("Writing the report…",
   "Predicting the range: done (41s)") and each tool call with how many posts it returned
   (version A's `read_posts`, version B's searches and lookups), from the run's live events (`runStream(runId)`, `run-<id>`). While the run is going it also rereads
-  the run's state (`GET /api/runs/{run_id}`) every three seconds, in case an event was
-  missed; it shows "Scoring both versions…" or the reason a run stopped, and when the run has finished
+  the run's state (`GET /api/runs/{run_id}`) every three seconds (`STATE_CHECK_MS`, exported so
+  the panel's tests time their waits against it), in case an event was missed; it shows "Scoring both versions…" or the reason a run stopped, and when the run has finished
   it links to **Read the report** and **See the comparison**.
 - `runs/ReportPage` — the Document screen, `/runs/<id>/report`: the masthead (the range,
   which version, the model, a link to the comparison), the document's Markdown, and beside
