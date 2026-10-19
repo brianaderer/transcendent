@@ -62,7 +62,8 @@ the version or day, and the body; there is no running number.)*
   LangChain callbacks, wrapped by our own code (`CLAUDE.md` §8), so the agents don't
   know about SSE. *(As built, the jobs call `emit` directly: the tagging step announces each decision, and
   the comparison run hands each version an `emit` already bound to its stream and version.
-  Neither agent uses LangGraph's event stream or LangChain callbacks.)*
+  Both agents run as LangGraph fan-outs, but they announce through `emit`, not through
+  LangGraph's event stream or LangChain callbacks.)*
 - **Live only.** `emit` publishes on Redis and the SSE route passes it on. Events are
   not stored: runs aren't referred back to (OPEN-24). *(As built, a run's result, not its
   events, is kept in Redis for a day so the Document and Comparison screens can show it.)*

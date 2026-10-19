@@ -1,6 +1,6 @@
 # report
 
-**Source:** `backend/src/voices/report/` (`tasks.py`, `writer.py`, `tools.py`, `comparison_run.py`, `runs.py`, `launcher.py`), `backend/src/voices/worker/report_task.py`, `frontend/src/runs/`   ·   **Tests:** `backend/tests/report/`, `backend/tests/test_run_routes.py`, `frontend/src/runs/*.test.ts*`
+**Source:** `backend/src/voices/report/` (`tasks.py`, `writer.py`, `tools.py`, `versions.py`, `graph.py`, `comparison_run.py`, `runs.py`, `launcher.py`), `backend/src/voices/worker/report_task.py`, `frontend/src/runs/`   ·   **Tests:** `backend/tests/report/`, `backend/tests/test_run_routes.py`, `frontend/src/runs/*.test.ts*`
 
 ## Purpose
 Writes the Community Voices Document for a date range, with and without retrieval, and
@@ -27,8 +27,17 @@ only difference is whether the model gets tools that read our store.
   run hands in), `upcoming_events()` (posts in the window that read like dated plans). Every
   post returned is counted in `retrieval_events` as the report agent's, under the run's name.
   `run(name, arguments)` returns a `ToolResult` (the text the model reads, and the post ids).
-- `comparison_run.ComparisonRun(parts, emit, parallel=map).run(run_id, days)` — one
-  comparison: for each version, the report for the range (B's tools see the range, and
+- `versions` — `Version` (`"A"` or `"B"`) and `VERSIONS`, the order they are shown in.
+- `graph.every_version_at_once(work)` — runs `work(version)` for every version at once, as a
+  LangGraph fan-out (atlas plate 60): `START` sends one branch per version to a `version`
+  node, whose results are gathered by an `operator.add` reducer, with `max_concurrency =
+  MAX_PARALLEL_VERSIONS` (2, one per version). Answers in the order of `VERSIONS`. Each
+  branch runs in a copy of the caller's context variables (LangGraph does this itself; a
+  test proves it), so its log lines carry the run's trace id. A version's error is carried
+  out of the graph and raised unchanged, because LangGraph appends the task's name and id to
+  an error raised inside a node, and the message is the failure reason the page shows.
+- `comparison_run.ComparisonRun(parts, emit).run(run_id, days)` — one
+  comparison, both versions at once through `every_version_at_once`: for each version, the report for the range (B's tools see the range, and
   `topic_trends` gives the range's measured topics) and the prediction for the range made as
   of the day before (B's tools see only the 28 days before, and `topic_trends` gives the
   projected trends, plate 50). Each phase's tools are built by their own method
@@ -56,12 +65,12 @@ only difference is whether the model gets tools that read our store.
   invented topics marked, and both documents side by side).
 
 ## How it works
-The worker's `voices.compare` task (`compare_now`; `in_parallel` runs the two versions in
-threads, one per version, each in a copy of the run's logging context so its lines carry the
-run's trace id) builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
+The worker's `voices.compare` task (`compare_now`) builds the model (`REPORT_MODEL_NAME`, Claude Sonnet 5.5
 through OpenRouter), the stores and the embedder, and hands the comparison to
 `run_and_keep_result(comparison, record, job)`, which keeps the result or, on any failure,
-the reason ([worker](worker.md)).
+the reason ([worker](worker.md)). The run is a LangGraph graph with one branch per
+version; inside each branch the writer's tool loop (`ReportWriter`) stays a plain loop over
+LangChain, the same design as the tagging agent's decision loop inside its own fan-out.
 Events go out on the run's stream: `run.started`, per version `step.started` /
 `step.finished` / `usage` / `tool.called` / `tool.returned`, then a `measurement.done` per
 score and `run.finished` (or `run.failed` with the reason). The result is kept in Redis for a
@@ -74,7 +83,7 @@ topics, `ExploreStore`), [tagging](tagging.md) (`TaggingStore`'s search, lookup 
 counting; `connect_model`), [database](database.md) (`connect_store`, and `PostNotFound` for a
 lookup of an unknown post), [ingestion](ingestion.md) (the embedder and its
 `ComparisonEmbedder` interface), [events](events.md),
-[logging](logging.md), Redis, Celery, LangChain, OpenRouter.
+[logging](logging.md), Redis, Celery, LangGraph, LangChain, OpenRouter.
 
 ## Used by
 [api](api.md) (the run routes), [worker](worker.md) (`voices.compare`),

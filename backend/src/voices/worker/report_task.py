@@ -2,9 +2,6 @@
 run's own stream and keeping its result for the page."""
 
 import logging
-from collections.abc import Callable, Iterable, Iterator
-from concurrent.futures import ThreadPoolExecutor
-from contextvars import copy_context
 from dataclasses import dataclass
 from datetime import date
 from functools import lru_cache, partial
@@ -21,13 +18,7 @@ from voices.events import RedisEvents
 from voices.explore.day_range import DayRange
 from voices.ingestion.embedder import NomicEmbedder, load_embedder
 from voices.log import log_event, tracing
-from voices.report.comparison_run import (
-    ComparisonRun,
-    RunParts,
-    RunResult,
-    Version,
-    VersionResult,
-)
+from voices.report.comparison_run import ComparisonRun, RunParts, RunResult
 from voices.report.runs import RunStore, stream_of
 from voices.report.writer import Emit
 from voices.tagging.model import connect_model
@@ -66,7 +57,7 @@ def compare_now(run_id: str, start: date, end: date) -> None:
     emit = partial(RedisEvents(client).emit, stream_of(run_id))
     with tracing(f"run-{run_id}"):
         run_and_keep_result(
-            ComparisonRun(_parts(), emit, in_parallel),
+            ComparisonRun(_parts(), emit),
             RunRecord(RunStore(client), emit),
             RunJob(run_id, DayRange(start, end)),
         )
@@ -87,16 +78,6 @@ def _record_failure(record: RunRecord, run_id: str, reason: str) -> None:
     log_event(logger, "run.failed", run_id=run_id, reason=reason)
     record.emit("run.failed", reason=reason)
     record.runs.mark_failed(run_id, reason)
-
-
-def in_parallel(
-    work: Callable[[Version], VersionResult], versions: Iterable[Version]
-) -> Iterator[VersionResult]:
-    """Both versions at once: each spends most of its time waiting for the model. Each runs in
-    a copy of the caller's context, so its log lines carry the run's trace id."""
-    contexts = {version: copy_context() for version in versions}
-    with ThreadPoolExecutor(max_workers=len(contexts)) as pool:
-        return iter(list(pool.map(lambda v: contexts[v].run(work, v), contexts)))
 
 
 def _parts() -> RunParts:

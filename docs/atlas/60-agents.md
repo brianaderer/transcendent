@@ -81,9 +81,12 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
 
 *As built (build step 5):*
 
-- **Not a LangGraph graph.** One plain loop of our own, `ReportWriter`, writes both
-  versions. Version A is offered only the answer; version B is offered the four tools and
-  the answer. The model is Claude Sonnet 5.5 through OpenRouter (`REPORT_MODEL_NAME`).
+- **A LangGraph graph.** The run is a LangGraph fan-out: one branch per version, both at
+  once, each running that version's two steps, and the results are collected in the order
+  A, B. Inside each branch a plain loop of our own over LangChain, `ReportWriter`, takes the
+  step's model turns and tool calls; this is the tagging agent's design too, whose decision
+  loop runs inside its own LangGraph fan-out. Version A is offered only the answer; version
+  B is offered the four tools and the answer. The model is Claude Sonnet 5.5 through OpenRouter (`REPORT_MODEL_NAME`).
 - **Two steps per version:** first it writes the report for the range, then, as of the day
   before the range began, it predicts the range (plate [50](50-prediction.md), OPEN-22).
   Each step answers through its own answer tool, `Report` (the document in Markdown and its

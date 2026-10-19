@@ -3,10 +3,9 @@ each write the report for a range and predict it from the day before; both are t
 against the same answer key. Everything is streamed live; nothing is kept but the result,
 briefly, so the page can show it (atlas OPEN-24)."""
 
-from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import Literal, Protocol
+from typing import Protocol
 
 from pydantic import BaseModel
 
@@ -17,12 +16,12 @@ from voices.explore.day_range import DayRange
 from voices.explore.range_topics import TopicData, topics_in_range
 from voices.ingestion.embedder import ComparisonEmbedder
 from voices.prediction.trends import topic_trends
+from voices.report.graph import every_version_at_once
 from voices.report.tasks import Prediction, Report, Task, predict_task, write_task
 from voices.report.tools import QueryEmbedder, ReportStore, ReportTools
+from voices.report.versions import Version
 from voices.report.writer import ChatModel, Emit, ReportWriter, Written
 
-Version = Literal["A", "B"]
-VERSIONS: tuple[Version, ...] = ("A", "B")
 DAYS_SEEN_BEFORE_A_PREDICTION = 28  # what version B may search when predicting a range
 NO_TOOLS = (None, None)  # version A: the model on its own, no way to reach our store
 
@@ -69,21 +68,15 @@ class RunParts:
     embedder: Embedder
 
 
-Parallel = Callable[
-    [Callable[[Version], VersionResult], Iterable[Version]], Iterator[VersionResult]
-]
-
-
 class ComparisonRun:
-    def __init__(self, parts: RunParts, emit: Emit, parallel: Parallel = map):
+    def __init__(self, parts: RunParts, emit: Emit):
         self.parts = parts
         self.emit = emit
-        self.parallel = parallel
 
     def run(self, run_id: str, days: DayRange) -> RunResult:
         self.emit("run.started", start=days.start, end=days.end, model=self.parts.model_name)
         one_run = _OneRun(self.parts, run_id, days)
-        versions = list(self.parallel(lambda v: one_run.version(v, self.emit), VERSIONS))
+        versions = every_version_at_once(lambda v: one_run.version(v, self.emit))
         self._announce_measurements(versions)
         self.emit("run.finished")
         return RunResult(
