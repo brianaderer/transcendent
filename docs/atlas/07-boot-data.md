@@ -17,6 +17,7 @@ that comes with the repo.
 - **The migration is written as the last build step**, on whatever schema the app has then
   (OPEN-35): a **point-in-time snapshot**. If the schema changes later, a migration changes
   it, seeded rows included.
+- **Loading progress is first class in the app** (Brian, 2026-10-19): the top bar shows the backfill counting up live ("Preparing the history: 4,120 of 12,682 posts"), then the catch-up's days, as one progress line for the whole first boot. The backfill reports on the same live `ingestion` stream as the catch-up (`backfill.progress` events, plate 41), and the API's loading status includes it, so a page opened mid-way shows where it is.
 - **The app stays live after the seed** (OPEN-36): the catch-up fetches and tags the days
   since the seed's last day. A few days of that on the reviewer's machine is fine, even good;
   the seed only spares a cold boot from processing the whole history.
@@ -88,8 +89,8 @@ precision.
   model to 4 threads ran faster than its default (60 against 30 posts a second), so the
   backfill sets its thread count.
 - **While it runs**, the topics, the slider and the badges work at once (they need no
-  vectors). The map and search wait: the page says the map is being prepared, the API
-  reports the backfill's progress, and no map drawn before it finishes is kept.
+  vectors). The map and search wait, and no map drawn before the backfill finishes is kept;
+  the progress line (specified, above) says how far it has got.
 
 ## The seed migration *(details proposed)*
 

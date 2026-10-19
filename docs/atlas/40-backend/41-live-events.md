@@ -50,6 +50,7 @@ Every event has: a number (in order within its stream), a time, a type, which ve
 | `measurement.done` | A comparison measurement is computed | name and both scores |
 | `catch_up.started` / `catch_up.finished` | A catch-up begins or ends | how many days it covers |
 | `day.started` / `day.finished` / `day.failed` | Catch-up progress | day, progress ("4 of 56"), the day's counts or the error *(`day.step` events within a day: not built)* |
+| `backfill.progress` | The first boot rebuilds the seed's vectors ([07](../07-boot-data.md)) | what is being prepared (posts, threads, topics), how many done of how many |
 | `map.ready` | The dot plot's squashing for a newly selected range is done | the range, each post's position |
 | `usage` | After each model call | tokens in and out, running cost |
 
