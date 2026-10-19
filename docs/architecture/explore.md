@@ -36,7 +36,9 @@ dot plot, recomputed for each range (atlas OPEN-20).
   [prediction](prediction.md)). `ExploreData` extends `TopicData` with the page's other reads.
 - `projection.flatten(vectors)` — one point per vector, near in meaning near on the map.
 - `cache.RedisMapCache(redis)` — `get(key)`, `put(key, value)`; each map is kept two days
-  (`KEPT_SECONDS`).
+  (`KEPT_SECONDS`). `forget_all()` drops every kept map (every key starting `MAP_KEY_PREFIX`,
+  `map:`); the [seed](seed.md) backfill calls it when it finishes, so no map drawn while the
+  vectors were still coming back is shown again.
 - `shapes` — the response shapes (`Days`, `DayCount`, `TopicInRange`, `Map`, `MapPoint`) and the rows
   the store hands the service (`TopicDay`, `TopicInfo`, `MapPost`); `MapPost` and `MapPoint`
   share `PostSummary`, the fields the hover card shows, as Pydantic models, so the
@@ -72,6 +74,8 @@ dot plot, recomputed for each range (atlas OPEN-20).
 [retrievals](retrievals.md)) for the day a post was written, the range test and the excerpt.
 
 ## Used by
+[worker](worker.md) (the [seed](seed.md) backfill forgets the kept maps through
+`RedisMapCache.forget_all` when it finishes);
 [api](api.md) (`GET /api/days`, `GET /api/topics`, `GET /api/map`), which the
 [frontend](frontend.md)'s Explore page calls; [comparison](comparison.md) (the answer key
 calls `topics_in_range`); [report](report.md) (`DayRange` for every run and every tool

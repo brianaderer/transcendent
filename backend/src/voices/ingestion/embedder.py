@@ -16,6 +16,9 @@ COMPARISON = "classification: "
 # 1 GB over many days, while short comments still go 32 at a time, which is faster too.
 BATCH_TEXT_BUDGET = 4000
 MAX_BATCH = 32
+# The model's own default thread count ran about half as fast on a 14-core Mac under Docker
+# (30 against 60 posts a second, atlas plate 07), so the count is fixed.
+EMBEDDING_THREADS = 4
 
 
 class TextModel(Protocol):
@@ -76,4 +79,4 @@ def load_embedder(cache_dir: str) -> NomicEmbedder:
     """Loads the model, downloading it into the cache volume the first time."""
     from fastembed import TextEmbedding  # imported here: loading it is slow and tests don't need it
 
-    return NomicEmbedder(TextEmbedding(MODEL_NAME, cache_dir=cache_dir))
+    return NomicEmbedder(TextEmbedding(MODEL_NAME, cache_dir=cache_dir, threads=EMBEDDING_THREADS))

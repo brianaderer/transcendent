@@ -159,6 +159,7 @@ def stand_in_services(**chosen):
     services = {
         "health_checks": {},
         "ingestion_status": dict,
+        "backfill_progress": lambda: None,
         "event_stream": no_events,
         "explore": FakeExplore(),
         "topics": FakeTopics(),

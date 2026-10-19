@@ -179,6 +179,31 @@ def test_a_thread_without_its_post_is_due_on_the_day_first_seen_written_from_its
     assert [reply.body for reply in due["test-6"].replies] == ["Grease the bearing."]
 
 
+def test_threads_read_as_of_a_day_have_only_the_replies_they_had_by_its_end(store):
+    """What the backfill rebuilds a seeded thread's embedding from (atlas plate 07)."""
+    with store.engine.begin() as connection:
+        late = post("test-5", "test-1", "comment", "Late tip.", at=AT + timedelta(days=2), score=50)
+        connection.execute(insert(Post), [late])
+
+    on_the_day = {t.source_id: t for t in store.threads_as_of(DAY, ["test-1", "test-4"])}
+    two_days_on = store.threads_as_of(THIRD_DAY, ["test-1"])
+
+    assert sorted(on_the_day) == ["test-1", "test-4"]
+    assert [r.body for r in on_the_day["test-1"].replies] == [
+        "Run it dry and it dies.",
+        "Carry a spare.",
+    ]
+    assert [r.body for r in two_days_on[0].replies][0] == "Late tip."
+
+
+def test_a_thread_read_as_of_a_day_without_its_post_is_written_from_its_title(store):
+    add_thread_without_its_post(store, AT)
+
+    (thread_read,) = store.threads_as_of(DAY, ["test-6"])
+
+    assert thread_read.post == "Rudder squeak"
+
+
 def test_an_old_thread_first_seen_today_is_due_again_two_days_later(store):
     add_thread_without_its_post(store, datetime(2010, 7, 5, tzinfo=UTC))
     store.apply_decisions(DAY, [decided("mint", ["test-6"])], {})

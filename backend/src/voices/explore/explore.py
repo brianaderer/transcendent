@@ -5,6 +5,7 @@ from collections.abc import Callable, Sequence
 from datetime import date
 from typing import Protocol
 
+from voices.explore.cache import MAP_KEY_PREFIX
 from voices.explore.day_range import DayRange
 from voices.explore.projection import Point
 from voices.explore.range_topics import TopicData, topics_in_range
@@ -62,7 +63,7 @@ class Explore:
 def _map_key(days: DayRange, latest_day: date | None) -> str:
     """The latest loaded day is part of the key, so a new day starts a new map and the old
     ones simply age out of the cache."""
-    return f"map:{days.start}:{days.end}:{latest_day or 'nothing-loaded'}"
+    return f"{MAP_KEY_PREFIX}{days.start}:{days.end}:{latest_day or 'nothing-loaded'}"
 
 
 def _point(post: MapPost, place: Point) -> MapPoint:

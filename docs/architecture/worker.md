@@ -16,8 +16,8 @@ It also runs each comparison run the page starts ([report](report.md)).
   it ran (it does nothing while another catch-up is running); on failure, retries itself
   ten minutes later.
 - Task `voices.ping` — answers `"pong"`, to prove the worker is consuming jobs.
-- `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` in
-  `catch_up_task.py`.
+- `catch_up_once(lock, run)`, `forget_stale_catch_up(redis_client)`, `catch_up_now()` and
+  `backfill_then_catch_up(backfill, catch_up, now)` in `catch_up_task.py`.
 - `compare_now(run_id, start, end)` and `run_and_keep_result(comparison, record, job)` in
   `report_task.py`. `RunJob` is the run's id and range;
   `RunRecord` is where its outcome goes (the `RunStore` and the run's stream); `Comparison`
@@ -31,6 +31,13 @@ It also runs each comparison run the page starts ([report](report.md)).
   catch-up is running. A worker that is starting clears any leftover lock first: none can be
   running yet, so a held lock belongs to a run that died with its worker. That holds while there is exactly one worker
   container; with several, a starting worker could clear another's lock.
+- **The backfill comes first:** every catch-up starts by running the [seed](seed.md)
+  backfill under the same lock, under the trace id `backfill`: on a first boot from the
+  seed it rebuilds every vector the seed left behind (posts, then threads, then topic
+  centres) before any day is fetched or tagged, so tagging never meets a store without
+  them; on every other run nothing is missing and it does nothing. If it fails, the
+  catch-up doesn't run, and the task tries again ten minutes later like any failed
+  catch-up, carrying on from the last saved batch.
 - **One job, days in order:** the catch-up is one job that walks the missing days oldest
   first, under one trace id per day (`day-YYYY-MM-DD`). Each day is loaded
   ([ingestion](ingestion.md)) and then tagged ([tagging](tagging.md)); it is marked done only
@@ -65,7 +72,7 @@ JSON logging, named after the container (`SERVICE_NAME`): the worker's lines go 
 startup (`broker_connection_retry_on_startup`), which also silences its startup warning.
 
 ## Uses
-[ingestion](ingestion.md), [tagging](tagging.md), [report](report.md) (`ComparisonRun`, `RunParts`, `RunStore`), [database](database.md) (`voices.db.store`, `voices.db.tagging_store`, `voices.db.explore_store`), [explore](explore.md) (`DayRange`), [events](events.md),
+[seed](seed.md) (`Backfill`, `BackfillStore`, `RedisBackfillProgress`), [ingestion](ingestion.md), [tagging](tagging.md), [report](report.md) (`ComparisonRun`, `RunParts`, `RunStore`), [database](database.md) (`voices.db.store`, `voices.db.tagging_store`, `voices.db.explore_store`), [explore](explore.md) (`DayRange`; `RedisMapCache.forget_all` for the backfill), [events](events.md),
 [logging](logging.md), [environment](environment.md) (settings), Redis.
 
 ## Used by

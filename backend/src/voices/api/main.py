@@ -17,6 +17,7 @@ from fastapi.routing import APIRoute
 from pydantic import BaseModel
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from voices.backfill.progress import RedisBackfillProgress
 from voices.config import HISTORY_DAYS, load_settings
 from voices.db.explore_store import ExploreStore
 from voices.db.retrieval_store import RetrievalStore
@@ -73,6 +74,7 @@ class ApiServices:
 
     health_checks: HealthChecks
     ingestion_status: Callable[[], dict]
+    backfill_progress: Callable[[], dict | None]
     event_stream: Callable[[str], AsyncIterator[str]]
     explore: ExploreReads
     runs: Runs
@@ -107,8 +109,13 @@ def create_app(services: ApiServices) -> FastAPI:
 
     @app.get("/api/ingestion")
     def report_ingestion() -> dict:
-        """How far the catch-up has got through the history."""
-        return {**services.ingestion_status(), "days_wanted": HISTORY_DAYS}
+        """How far the catch-up has got through the history, and, while the first boot
+        rebuilds the seed's vectors, how far that has got (atlas plate 07)."""
+        return {
+            **services.ingestion_status(),
+            "days_wanted": HISTORY_DAYS,
+            "backfill": services.backfill_progress(),
+        }
 
     @app.get(LIVE_EVENTS_PATH + "{stream}/events")
     def stream_events(stream: str) -> StreamingResponse:
@@ -234,6 +241,7 @@ def create_production_app() -> FastAPI:
                 "queue": lambda: queue_is_reachable(settings.redis_url),
             },
             ingestion_status=store.ingestion_status,
+            backfill_progress=RedisBackfillProgress(redis_client).read,
             event_stream=lambda stream: server_sent_events(settings.redis_url, stream),
             explore=Explore(ExploreStore(store.engine), map_cache, flatten),
             runs=RunLauncher(RunStore(redis_client), queue_on(settings.redis_url)),

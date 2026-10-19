@@ -56,7 +56,8 @@ class Topic(Base):
     label: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
     keywords: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
-    centroid: Mapped[list[float]] = mapped_column(HALFVEC(EMBEDDING_DIMENSIONS))
+    # Missing only between loading the seed and the backfill that rebuilds it (atlas plate 07).
+    centroid: Mapped[list[float] | None] = mapped_column(HALFVEC(EMBEDDING_DIMENSIONS))
     first_seen: Mapped[date] = mapped_column(Date)
     last_seen: Mapped[date] = mapped_column(Date)
 

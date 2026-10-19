@@ -85,10 +85,15 @@ Screens and parts:
   or "Not answering:" with each service that isn't, or "Backend unreachable" when the API
   itself doesn't answer; rechecked every five seconds. `fetchHealth()` and
   `describeHealth(health)` in `src/health.ts`.
-- `IngestionStatus` — how far the history has loaded ("Loading r/sailing history: 23 of 56
+- `IngestionStatus` — how far the history has loaded, as one line for the whole first boot:
+  on a first boot from the seed, "Preparing the history: 4,120 of 12,682 posts" (then
+  threads, then topics) while the worker rebuilds the seed's vectors ([seed](seed.md),
+  the status's `backfill`); then "Loading r/sailing history: 23 of 56
   days · 9,412 posts", then "History up to date through 17 Oct"; "Waiting to start loading
   r/sailing history" before the first day; "Loading stopped at 26 Aug: " and the reason when
-  a day failed), fetched again whenever a live `ingestion` event arrives.
+  a day failed. It is fetched again whenever a live `ingestion` event arrives
+  (`backfill.progress` after every saved batch, then the days' events), so a page opened
+  mid-way shows where the first boot has got.
   `describeIngestion(status)` in `src/ingestion.ts` writes the sentence.
 - `useLiveEvents(stream, onEvent)` — listens to a server-sent event stream ([events](events.md)).
 - `runs/RunProgress` — below Explore's plot once a run is started: one lane per version, each
