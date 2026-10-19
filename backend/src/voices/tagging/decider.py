@@ -19,6 +19,7 @@ from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 MAX_LOOK_UPS_BEFORE_DECIDING = 3
 DECIDE = "Decision"
 NO_LOOK_UPS_LEFT = f"No look-ups left; decide now by calling {DECIDE}."
+REMINDER_TO_DECIDE = f"Decide now by calling {DECIDE}."
 # Once look-ups run out, a reply without a valid decision is answered (why it was malformed,
 # or a reminder) this many times before giving up: a dropped field shouldn't fail the day.
 CORRECTIONS_ON_LAST_TURN = 1
@@ -122,12 +123,12 @@ class ToolLoopDecider:
         return conversation.decided(self._insist_on_a_decision(conversation), self.model_name)
 
     def _insist_on_a_decision(self, conversation: "_Conversation") -> Decision:
-        for corrections_left in reversed(range(CORRECTIONS_ON_LAST_TURN + 1)):
+        for attempt in range(1 + CORRECTIONS_ON_LAST_TURN):
             reply = conversation.take_turn(DECISION_ONLY)
             decision = _decision_in(reply)
             if decision:
                 return decision
-            if corrections_left:
+            if attempt < CORRECTIONS_ON_LAST_TURN:
                 conversation.answer(reply)
         raise NoDecision(f"cluster {conversation.name}: no decision when made to decide")
 
@@ -143,15 +144,15 @@ class _Conversation:
         self.prompt = render_brief(brief)
         self.messages: list[BaseMessage] = [SystemMessage(INSTRUCTIONS), HumanMessage(self.prompt)]
 
+    @property
+    def name(self) -> str:
+        return self.brief.name
+
     def take_turn(self, tools: list) -> AIMessage:
         reply = self.model.bind_tools(tools).invoke(self.messages)
         self._log("tagging.turn", reply=reply.content, tool_calls=reply.tool_calls)
         self.messages.append(reply)
         return reply
-
-    @property
-    def name(self) -> str:
-        return self.brief.name
 
     def tell(self, text: str) -> None:
         self._say(HumanMessage(text))
@@ -164,7 +165,7 @@ class _Conversation:
         results while look-ups are left, a malformed decision gets the reason; a reply with no
         calls gets a reminder. A turn that looks nothing up still spends one, so the loop ends."""
         if not reply.tool_calls:
-            self._say(HumanMessage(f"Decide now by calling {DECIDE}."))
+            self._say(HumanMessage(REMINDER_TO_DECIDE))
         for call in reply.tool_calls:
             self._say(
                 ToolMessage(self._answer_to(call), tool_call_id=call["id"]), tool=call["name"]
@@ -194,7 +195,7 @@ class _Conversation:
         self.messages.append(message)
 
     def _log(self, event: str, **fields: object) -> None:
-        log_event(logger, event, group=self.brief.name, **fields)
+        log_event(logger, event, group=self.name, **fields)
 
 
 class NoDecision(Exception):

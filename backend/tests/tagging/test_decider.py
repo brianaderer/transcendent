@@ -1,7 +1,7 @@
 import pytest
 from langchain_core.messages import AIMessage
 
-from voices.tagging.decider import NoDecision, ToolLoopDecider
+from voices.tagging.decider import REMINDER_TO_DECIDE, NoDecision, ToolLoopDecider
 from voices.tagging.decisions import ClusterBrief, Decision, TypicalPost
 
 
@@ -166,7 +166,7 @@ def test_a_reply_without_a_decision_on_the_last_turn_is_reminded_and_offered_onc
     decided = ToolLoopDecider(model, "scripted", FakeTools(), max_look_ups=1).decide(BRIEF)
 
     assert decided.decision.topic_id == 3
-    assert "Decide now" in str(model.seen[-1][-1].content)
+    assert model.seen[-1][-1].content == REMINDER_TO_DECIDE
     assert model.offered == [Decision]
 
 
