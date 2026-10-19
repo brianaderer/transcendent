@@ -18,6 +18,7 @@ from voices.tagging.decisions import ClusterBrief, DecidedCluster, Decision
 # Look-ups allowed before it must decide (a turn with none still spends one); capped for cost.
 MAX_LOOK_UPS_BEFORE_DECIDING = 3
 DECIDE = "Decision"
+NO_LOOK_UPS_LEFT = f"No look-ups left; decide now by calling {DECIDE}."
 
 INSTRUCTIONS = """You sort conversations from r/sailing into topics.
 
@@ -103,7 +104,8 @@ class ToolLoopDecider:
         self.max_look_ups = max_look_ups
 
     def decide(self, brief: ClusterBrief) -> DecidedCluster:
-        """Lets the agent make up to max_look_ups tool calls, then makes it decide."""
+        """Lets the agent make up to max_look_ups tool calls, then offers it only the Decision
+        tool and asks it to decide."""
         conversation = _Conversation(self.model, self.tools, brief, self.max_look_ups)
         while conversation.has_look_ups_left():
             reply = conversation.take_turn(TOOLS)
@@ -111,7 +113,7 @@ class ToolLoopDecider:
             if decision:
                 return conversation.decided(decision, self.model_name)
             conversation.answer(reply)
-        conversation.tell(f"No look-ups left; decide now by calling {DECIDE}.")
+        conversation.tell(NO_LOOK_UPS_LEFT)
         decision = _decision_in(conversation.take_turn(DECISION_ONLY))
         if not decision:
             raise NoDecision(f"cluster {brief.name}: no decision when made to decide")
@@ -162,7 +164,7 @@ class _Conversation:
 
     def _look_up_if_any_left(self, call: dict) -> str:
         if not self.has_look_ups_left():
-            return f"No look-ups left; decide now by calling {DECIDE}."
+            return NO_LOOK_UPS_LEFT
         self.look_ups_left -= 1
         return self.tools.run(call["name"], call["args"])
 

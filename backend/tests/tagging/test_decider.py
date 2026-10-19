@@ -121,7 +121,8 @@ def test_several_look_ups_in_one_turn_count_toward_the_limit():
     ToolLoopDecider(model, "scripted", tools).decide(BRIEF)
 
     assert len(tools.calls) == 3
-    assert "No look-ups left" in str(model.seen[-1][-1].content)
+    refusal = next(m for m in model.seen[-1] if getattr(m, "tool_call_id", None) == "3")
+    assert "No look-ups left" in str(refusal.content)
     assert model.offered == [Decision]
 
 
