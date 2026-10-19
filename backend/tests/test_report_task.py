@@ -43,7 +43,20 @@ def test_a_finished_run_keeps_its_result():
     kept = record.runs.state(JOB.run_id)
     assert kept.state == "finished"
     assert kept.result.run_id == JOB.run_id
-    assert announced == []
+    assert announced == [("run.finished", {})]
+
+
+def test_finished_is_announced_only_once_the_result_can_be_read():
+    seen_when_announced = []
+    runs = RunStore(FakeRedis())
+    record = RunRecord(
+        runs, lambda kind, **body: seen_when_announced.append(runs.state(JOB.run_id).state)
+    )
+    runs.mark_running(JOB.run_id)
+
+    run_and_keep_result(FinishingComparison(), record, JOB)
+
+    assert seen_when_announced == ["finished"]
 
 
 def test_a_failed_run_is_marked_failed_announced_and_raised():

@@ -198,7 +198,7 @@ at the right of the top bar switches between dark and light colours.
 
 **The report, with and without retrieval.** Click **Generate report for …** below the plot.
 The same model writes the Community Voices Document for the range twice: version A without
-retrieval, reading up to 10 stored posts per step in a fixed shuffle but never searching
+retrieval, reading up to 35 stored posts per step, spread evenly over the days, in a fixed shuffle but never searching
 them, and version B with tools that search the stored posts by meaning. Each also predicts
 the range from what was known the day before it began. A panel below the plot shows both
 versions working live: each step, and every read or search with how many posts it gave. It takes a

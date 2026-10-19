@@ -16,7 +16,7 @@ from voices.explore.day_range import DayRange
 from voices.report.tools import ToolResult, said
 
 READ_BATCH = 5  # posts handed back by one read
-READ_BUDGET = 10  # posts one phase may read in all
+READ_BUDGET = 35  # posts one phase may read in all (Brian, 2026-10-19)
 READ_POSTS = "read_posts"
 NOTHING_LEFT_TO_READ = "No posts left to read; answer now with what you have."
 
@@ -82,7 +82,8 @@ READING_SCHEMAS = [
             "the period you can see, in full, with their authors, dates and thread titles. "
             "They come in no particular order, and each read gives ones you haven't seen; "
             f"you may read {READ_BUDGET} in all. Give a day (YYYY-MM-DD) to read only that "
-            "day's.",
+            "day's. Spread your reads evenly over the period: read about the same number "
+            "from each day, one day at a time, rather than spending them all on a few days.",
             "parameters": {
                 "type": "object",
                 "properties": {"day": {"type": "string", "description": "YYYY-MM-DD"}},

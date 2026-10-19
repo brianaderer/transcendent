@@ -67,9 +67,9 @@ OpenRouter, and gets **at most three look-ups** before it must decide. Both are 
 ## Report agent *(proposed details)*
 
 **Specified by Brian (2026-10-19, [OPEN-39](90-open-questions.md)):** version A reads
-posts (a fixed shuffle, no retrieval by meaning), at most 10 per step; version B searches by
+posts (a fixed shuffle, no retrieval by meaning), at most 35 per step, spread evenly over the days (raised from 10 the same day); version B searches by
 meaning. Version A must have read access to posts, but no retrieval by meaning, and a budget
-of 10 posts so it can't go round in a loop of turns. Also specified the same day: both
+of 35 posts per step (first 10), spread evenly over the time, so it can't go round in a loop of turns. Also specified the same day: both
 versions' report instructions are nudged a little toward prediction, asking, for each topic,
 where it looks to be heading next and why; the rest of the instructions and the document's
 structure stay as they were.

@@ -6,6 +6,7 @@ from voices.report.reading_tools import (
     NOTHING_LEFT_TO_READ,
     READ_BATCH,
     READ_BUDGET,
+    READING_SCHEMAS,
     ReadingTools,
 )
 
@@ -13,10 +14,10 @@ WINDOW = DayRange(date(2026, 10, 12), date(2026, 10, 18))
 
 
 class FakeReader:
-    """`in_store` posts written in the window (thirty unless told otherwise), handed out in
+    """`in_store` posts written in the window (sixty unless told otherwise), handed out in
     order, never one already given."""
 
-    def __init__(self, in_store=30):
+    def __init__(self, in_store=60):
         self.posts = [{"post_id": f"p{n}", "text": f"Post {n}"} for n in range(in_store)]
         self.asked = []
 
@@ -77,11 +78,13 @@ def test_the_last_read_asks_only_for_what_is_left_of_the_budget():
     reader = ShortFirstReader()
     tools = reading(reader)
 
-    for _ in range(3):
+    for _ in range(READ_BUDGET):  # more reads than the budget can pay for
         tools.run("read_posts", {})
 
-    expected = READ_BUDGET - FIRST_READ_FOUND - READ_BATCH
-    assert [asked[1] for asked in reader.asked] == [READ_BATCH, READ_BATCH, expected]
+    limits = [asked[1] for asked in reader.asked]
+    left_for_the_last = (READ_BUDGET - FIRST_READ_FOUND) % READ_BATCH
+    assert limits[:-1] == [READ_BATCH] * (len(limits) - 1)
+    assert limits[-1] == left_for_the_last
 
 
 def test_a_day_inside_the_window_narrows_the_read_to_that_day():
@@ -118,3 +121,19 @@ def test_only_read_posts_is_offered_and_retrieval_tools_are_refused():
 
     assert [s["function"]["name"] for s in tools.schemas] == ["read_posts"]
     assert "no tool named search" in refused.text and reader.asked == []
+
+
+def test_a_phase_reads_thirty_five_posts_and_no_more():
+    tools = reading(FakeReader())
+
+    given = [tools.run("read_posts", {}) for _ in range(10)]
+
+    assert sum(len(result.post_ids) for result in given) == 35
+    assert "No posts left" in given[-1].text
+
+
+def test_the_tool_asks_for_reads_spread_evenly_over_the_days():
+    [schema] = READING_SCHEMAS
+    description = schema["function"]["description"]
+
+    assert "spread your reads evenly" in description.lower() and "each day" in description

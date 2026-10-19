@@ -64,7 +64,8 @@ def compare_now(run_id: str, start: date, end: date) -> None:
 
 
 def run_and_keep_result(comparison: Comparison, record: RunRecord, job: RunJob) -> None:
-    """Marks the run finished with its result; on any failure marks it failed with the reason,
+    """Marks the run finished with its result, then announces `run.finished`, so the page,
+    once told, can read the result at once. On any failure marks it failed with the reason,
     which the page shows, announces and logs `run.failed`, and raises for the worker's log."""
     try:
         result = comparison.run(job.run_id, job.days)
@@ -72,6 +73,7 @@ def run_and_keep_result(comparison: Comparison, record: RunRecord, job: RunJob) 
         _record_failure(record, job.run_id, str(error))
         raise
     record.runs.mark_finished(job.run_id, result)
+    record.emit("run.finished")
 
 
 def _record_failure(record: RunRecord, run_id: str, reason: str) -> None:
