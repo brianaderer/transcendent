@@ -77,12 +77,15 @@ def fill(engine):
                     "source_id": source_id,
                     "thread_source_id": "test-b",
                     "kind": kind,
-                    "author": "salty",
+                    "author": author,
                     "created_at": AT,
-                    "body": "text",
+                    "body": body,
                     "embedding": VECTOR,
                 }
-                for source_id, kind in [("test-b", "post"), ("test-a", "comment")]
+                for source_id, kind, author, body in [
+                    ("test-b", "post", "salty", "Which anchor?"),
+                    ("test-a", "comment", "skipper", "Ask u/salty, they know."),
+                ]
             ],
         )
         connection.execute(
@@ -150,6 +153,13 @@ def test_tables_come_in_the_order_they_load_in(engine):
     ]
 
 
+def test_usernames_are_replaced_by_stand_ins_wherever_they_appear(engine):
+    posts = seeded(engine)["posts"]
+
+    assert column_values(posts, "author") == ["sailor-0001", "sailor-0002"]
+    assert column_values(posts, "body") == ["Ask u/sailor-0002, they know.", "Which anchor?"]
+
+
 def test_an_exported_seed_loads_into_an_empty_database_as_it_was(engine, tmp_path):
     path = tmp_path / "seed.json.gz"
     export_seed(engine, path)
@@ -160,5 +170,5 @@ def test_an_exported_seed_loads_into_an_empty_database_as_it_was(engine, tmp_pat
         with empty.connect() as connection:
             posts = connection.execute(select(Post.source_id, Post.author, Post.created_at)).all()
             day = connection.execute(select(IngestedDay.day, IngestedDay.counts)).one()
-    assert sorted(posts) == [("test-a", "salty", AT), ("test-b", "salty", AT)]
+    assert sorted(posts) == [("test-a", "sailor-0001", AT), ("test-b", "sailor-0002", AT)]
     assert tuple(day) == (DAY, {"n": 1})

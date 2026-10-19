@@ -6,7 +6,8 @@ Every table is read with its columns written out here, not taken from the table 
 the file is a fixed snapshot of the schema it was taken on. Embeddings and topic centres are
 left out (the worker's backfill rebuilds them), and so is each tagging decision's prompt,
 which is the bulk of the data and only there for tracing. Topics with no threads are left
-out too: their centre can't be rebuilt.
+out too: their centre can't be rebuilt. Usernames are replaced by stand-ins, in the author
+column and wherever a post or title mentions a user (atlas OPEN-37).
 """
 
 import sys
@@ -19,27 +20,25 @@ from sqlalchemy import Connection, Engine, create_engine, text
 from voices.config import load_settings
 from voices.db.address import sqlalchemy_url
 from voices.db.seed_snapshot import SeedTable, Snapshot, write_snapshot
+from voices.db.stand_in_names import StandInNames
 
 PROMPT_LEFT_OUT = "(left out of the seed)"  # the column can't be empty, and this says why
 TOPICS_WITH_THREADS = "SELECT topic_id FROM threads WHERE topic_id IS NOT NULL"
 
 
-def published_author(author: str) -> str:
-    """Every author name passes through here on its way into the seed. Names are kept as
-    they are until Brian decides about usernames in a public repo (atlas OPEN-37); hiding
-    them is a change to this one line."""
-    return author
+Publish = Callable[[StandInNames, str], str]
 
 
 @dataclass(frozen=True)
 class TableExport:
     """How one table is read for the seed: each column with the SQL that gives its value,
-    the rows to take and their order, and any value to pass through a function first."""
+    the rows to take and their order, and any value to pass through the export's stand-in
+    names first."""
 
     name: str
     columns: dict[str, str]
     rows: str
-    published: dict[str, Callable[[str], str]] = field(default_factory=dict)
+    published: dict[str, Publish] = field(default_factory=dict)
 
 
 def _as_stored(*names: str) -> dict[str, str]:
@@ -75,6 +74,7 @@ SEED_TABLES = (
             "stage",
         ),
         "FROM threads ORDER BY source_id",
+        published={"title": StandInNames.in_text},
     ),
     TableExport(
         "posts",
@@ -90,7 +90,7 @@ SEED_TABLES = (
             "parent_source_id",
         ),
         "FROM posts ORDER BY source_id",
-        published={"author": published_author},
+        published={"author": StandInNames.name_for, "body": StandInNames.in_text},
     ),
     TableExport(
         "post_upvotes_daily",
@@ -132,8 +132,9 @@ SEED_TABLES = (
 
 
 def snapshot_of(connection: Connection) -> Snapshot:
-    """Every seeded table, in the order they load in."""
-    return Snapshot([_table_snapshot(connection, table) for table in SEED_TABLES])
+    """Every seeded table, in the order they load in, with one set of stand-in names."""
+    names = StandInNames()
+    return Snapshot([_table_snapshot(connection, table, names) for table in SEED_TABLES])
 
 
 def export_seed(engine: Engine, path: Path) -> None:
@@ -141,18 +142,18 @@ def export_seed(engine: Engine, path: Path) -> None:
         write_snapshot(snapshot_of(connection), path)
 
 
-def _table_snapshot(connection: Connection, table: TableExport) -> SeedTable:
+def _table_snapshot(connection: Connection, table: TableExport, names: StandInNames) -> SeedTable:
     selected = ", ".join(f"{sql} AS {name}" for name, sql in table.columns.items())
     rows = connection.execute(text(f"SELECT {selected} {table.rows}")).mappings()
     columns = list(table.columns)
-    return SeedTable(table.name, columns, [_published_row(table, row) for row in rows])
+    return SeedTable(table.name, columns, [_published_row(table, row, names) for row in rows])
 
 
-def _published_row(table: TableExport, row) -> list:
-    return [table.published.get(column, _unchanged)(row[column]) for column in table.columns]
+def _published_row(table: TableExport, row, names: StandInNames) -> list:
+    return [table.published.get(column, _unchanged)(names, row[column]) for column in table.columns]
 
 
-def _unchanged(value):
+def _unchanged(names: StandInNames, value):
     return value
 
 

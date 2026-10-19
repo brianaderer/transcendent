@@ -1,6 +1,6 @@
 # seed
 
-**Source:** `backend/src/voices/db/seed_snapshot.py`, `backend/src/voices/db/seed_export.py`, `backend/src/voices/db/seed_load.py`, `backend/src/voices/backfill/` (`backfill.py`, `progress.py`), `backend/src/voices/db/backfill_store.py`   ·   **Tests:** `backend/tests/seed/` (`test_snapshot_file.py` and `test_published_author.py` run offline; `test_seed_export.py` and `test_seed_load.py` need a database and work in a scratch schema, `backend/tests/scratch_schema.py`), fixture `backend/tests/fixtures/seed_snapshot.json`; `backend/tests/backfill/` (`test_backfill.py` and `test_progress.py` offline with stand-ins; `test_backfill_store.py` needs a database, in a scratch schema)
+**Source:** `backend/src/voices/db/seed_snapshot.py`, `backend/src/voices/db/seed_export.py`, `backend/src/voices/db/stand_in_names.py`, `backend/src/voices/db/seed_load.py`, `backend/src/voices/backfill/` (`backfill.py`, `progress.py`), `backend/src/voices/db/backfill_store.py`   ·   **Tests:** `backend/tests/seed/` (`test_snapshot_file.py` and `test_stand_in_names.py` run offline; `test_seed_export.py` and `test_seed_load.py` need a database and work in a scratch schema, `backend/tests/scratch_schema.py`), fixture `backend/tests/fixtures/seed_snapshot.json`; `backend/tests/backfill/` (`test_backfill.py` and `test_progress.py` offline with stand-ins; `test_backfill_store.py` needs a database, in a scratch schema)
 
 ## Purpose
 The boot seed ([atlas plate 07](../atlas/07-boot-data.md)): the history the app has already
@@ -13,9 +13,12 @@ page as it goes.
 - `python -m voices.db.seed_export <path>` — writes the database's seed data file to `<path>`
   (gzipped JSON when the name ends in `.gz`). `export_seed(engine, path)` and
   `snapshot_of(connection)` are the same thing for code.
-- `voices.db.seed_export.published_author(author)` — every author name passes through it on
-  its way into the seed. It keeps names as they are: whether usernames go into a public
-  repo is atlas OPEN-37, still open, and a decision is a change to this one function.
+- `voices.db.stand_in_names.StandInNames` — one export's stand-in usernames (atlas OPEN-37:
+  no real Reddit username goes into the public repo's data file). `name_for(username)` gives
+  `sailor-0001`, `sailor-0002`, … in the order users first appear, ignoring case, and
+  `in_text(text)` replaces every mention of a user (`u/name` or `/u/name`) with the same
+  stand-in. The export passes each post's `author` and `body`, and each thread's `title`,
+  through it; `snapshot_of` makes one per export, so a user has one stand-in throughout.
 - `voices.db.seed_export.SEED_TABLES` — what is seeded: each table with its columns written
   out, the SQL that gives each value, which rows and in what order (topics, and their daily
   engagement, only for topics some thread belongs to: `TOPICS_WITH_THREADS`). `PROMPT_LEFT_OUT` is the
