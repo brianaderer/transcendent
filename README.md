@@ -114,7 +114,8 @@ happens, add the key to `.env`, press `Ctrl+C` in the terminal running the app, 
 it again with `docker compose up --build` (step 4). Docker notices that `.env` changed and
 starts the app with the key; `docker compose restart` would not, because it keeps the
 settings the app first started with. Sorting the eight weeks of history on first start
-costs roughly $5 of model use on that key (an estimate; not yet measured).
+uses Claude Haiku 5.5, a low-cost model, and costs under $5 of model use on that key (an
+estimate; not yet measured).
 
 The `.env` file stays on your machine. Git is set to ignore it, so the key can't be
 committed by accident.
