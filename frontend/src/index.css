@@ -2,3 +2,15 @@
 
 /* Dark mode follows the class the theme toggle sets on <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind 4 gives buttons the default arrow; everything you can click shows the hand. */
+@layer base {
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+}
