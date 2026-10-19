@@ -38,7 +38,7 @@ flowchart LR
     RET["retrieval<br/>search + lookup tools, count each hit"]
     REP["report<br/>report agent, retrieval on or off, see 60"]
     CMP["comparison<br/>runs both versions · scores against the answer key, see 70"]
-    MAP["projection<br/>squash the selected range to 2D"]
+    MAP["explore<br/>posts per day · topics with badges ·<br/>the range's map, squashed to 2D, see 31"]
 
     WEB --> CMP
     WEB --> MAP
@@ -56,7 +56,8 @@ flowchart LR
   never receives the retrieval tools, so it cannot reach the store.
 - **ingestion** fetches posts **daily** from the **Arctic Shift** archive of Reddit (specified, OPEN-8), as a Celery task scheduled by Celery Beat (specified), behind a small *post source* interface so the source can be swapped for Reddit's official API by replacing one module *(interface proposed)*. It runs in the Celery worker, not inside the web server; first start and the daily
   pull are the same catch-up over a range of days (see *Background jobs*, OPEN-13).
-- **projection** (specified, OPEN-20): a post is embedded once, at intake. The squashing
+- **explore** holds the Explore page's reads: posts per day, the range's topics with their
+  badges, and the map ([31](30-frontend/31-screens.md)). Its projection (specified, OPEN-20): a post is embedded once, at intake. The squashing
   to two dimensions is **recomputed from the posts in the selected date range** whenever
   the range changes, so the dot plot always shows the clearest map of that range.
   *(Proposed details: computed in the API when the slider is released, not while it's
