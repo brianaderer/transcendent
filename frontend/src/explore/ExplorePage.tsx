@@ -14,7 +14,7 @@ import { TopicsPanel } from "./TopicsPanel";
 
 /** The main page (atlas plate 31, screen 1): one date range governs everything on it. */
 export function ExplorePage() {
-  useRefreshWhenADayIsLoaded();
+  useRefreshWhenTheHistoryChanges();
   return <HistoryGate>{(history) => <ExploreRange history={history} />}</HistoryGate>;
 }
 
@@ -88,12 +88,15 @@ function GenerateReport({
   );
 }
 
-/** During a first start, each finished day widens the history and changes its topics. */
-function useRefreshWhenADayIsLoaded() {
+/** During a first start, each finished day widens the history and changes its topics, and
+ * the end of the backfill makes the seeded posts searchable, so the map can be drawn. */
+const CHANGES_THE_HISTORY = new Set(["day.finished", "backfill.finished"]);
+
+function useRefreshWhenTheHistoryChanges() {
   const queryClient = useQueryClient();
   const refresh = useCallback(
     (event: LiveEvent) => {
-      if (event.type === "day.finished") queryClient.invalidateQueries();
+      if (CHANGES_THE_HISTORY.has(event.type)) queryClient.invalidateQueries();
     },
     [queryClient],
   );
