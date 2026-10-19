@@ -14,7 +14,8 @@ flowchart LR
     S4["4 Explore<br/>date slider, dot plot,<br/>topics panel"]
     S5["5 Report + A/B test<br/>report agent A and B,<br/>live events, scoring"]
     S6["6 Remaining screens<br/>topic detail, retrieval stats"]
-    S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    S7["7 Boot data migration<br/>the seed snapshot, see 07"]
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
 ```
 
 | Step | Built | Runs at the end of it | Plates |
@@ -25,6 +26,7 @@ flowchart LR
 | 4 Explore | The frontend: date slider, dot plot recomputed per range, topics panel | A reviewer can explore the community visually | [30](30-frontend.md), [31](30-frontend/31-screens.md) |
 | 5 Report + A/B test | The report agent with and without retrieval, trend extrapolation, the answer key and scoring, live events to the progress panel, the report and comparison screens | The brief is fully met: Generate report produces both versions, scored | [50](50-prediction.md), [60](60-agents.md), [70](70-comparison.md) |
 | 6 Remaining screens | Topic detail with its engagement chart; retrieval statistics | Everything on the screens plate exists | [31](30-frontend/31-screens.md) |
+| 7 Boot data migration | The seed: one data migration, the last, holding a point-in-time snapshot of the posts and everything worked out about them, without vectors; the boot's backfill of the vectors (Brian, 2026-10-19) | A fresh clone boots in minutes instead of 1h40m, then catches up the days since the seed | [07](07-boot-data.md) |
 
 Every step is test-first (`/tdd`), and every commit goes through the commit chain
 (`CLAUDE.md` §6). `/test-boot` runs at the end of each step.

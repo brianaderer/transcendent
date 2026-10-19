@@ -14,14 +14,20 @@ that comes with the repo.
   **backfills every vector that didn't come over**.
 - The purpose: a quick and easy seed that doesn't hit the reviewer with 80 MB, or even
   10 MB, of data, zipped databases and the like.
+- **The migration is written as the last build step**, on whatever schema the app has then
+  (OPEN-35): a **point-in-time snapshot**. If the schema changes later, a migration changes
+  it, seeded rows included.
+- **The app stays live after the seed** (OPEN-36): the catch-up fetches and tags the days
+  since the seed's last day. A few days of that on the reviewer's machine is fine, even good;
+  the seed only spares a cold boot from processing the whole history.
 
 Everything else on this plate is *proposed*, from a red-team of the plan against the code.
 
 ```mermaid
 flowchart LR
-    SEEDFILE[("seed file in the repo<br/>posts, threads, topics, decisions,<br/>engagement, day ledger · about 2 MB gzipped<br/>no vectors")]
+    SEEDFILE[("seed data in the repo<br/>posts, threads, topics, decisions,<br/>engagement, day ledger · about 2 MB gzipped<br/>no vectors")]
     MIG["setup: run all migrations"]
-    LOAD["setup: load the seed<br/>only into an empty database"]
+    LOAD["the seed migration, the last one<br/>a point-in-time snapshot"]
     PG[("postgres + pgvector<br/>see 21")]
     FILL["worker: backfill the vectors<br/>posts, then threads, then topic centres<br/>under the catch-up lock"]
     CU["catch-up<br/>days after the seed's last day, see 40"]
@@ -34,11 +40,11 @@ flowchart LR
     FILL --> CU
     PG --> PAGE
     classDef open stroke-dasharray: 5 5
-    class SEEDFILE,LOAD,FILL,CU open
+    class FILL open
 ```
 
-The seed file holds the rows; setup loads them after the migrations, and the worker
-rebuilds the vectors before it does anything else. The database is plate
+The seed migration holds the rows and runs with the others; the worker then rebuilds the
+vectors before it does anything else, and catches up the days since the seed. The database is plate
 [21](20-data-model/21-topics.md); the catch-up is plate [40](40-backend.md).
 
 ## What comes over, and how big it is
@@ -85,16 +91,17 @@ precision.
   vectors). The map and search wait: the page says the map is being prepared, the API
   reports the backfill's progress, and no map drawn before it finishes is kept.
 
-## Loading the seed *(proposed)*
+## The seed migration *(details proposed)*
 
-- Only into an **empty** database (no day in the ledger), so a restart never loads it twice.
+- **One migration, written last** (specified, OPEN-35). It reads a gzipped data file kept
+  beside it, with the table and column names written out in the migration itself rather
+  than taken from the table models, so it stays exactly the snapshot it was when the
+  models change later. Alembic runs it once, in order, like every migration.
 - Rows keep their ids, and every id counter is moved past them, so the next new topic or
   decision doesn't collide with a seeded one.
-- The seed file has fixed column names and is read by its own small loader, not through
-  the table models, so later changes to the tables don't break old seeds.
+- **After it, the app is live** (specified, OPEN-36): the catch-up takes the days from the
+  seed's last day to yesterday, fetching and tagging each, once the backfill is done.
 
 ## Open in this draft
 
-- `?` A migration or a seed step (OPEN-35).
-- `?` Whether the app catches up after the seed, or stays at the seed's last day (OPEN-36).
-- `?` Reddit content and usernames in a public repo (OPEN-37).
+- `?` Reddit content and usernames in a public repo (OPEN-37), Brian thinking it over.
