@@ -1,6 +1,11 @@
 import pytest
 
-from voices.worker.catch_up_task import CATCH_UP_LOCK, catch_up_once, forget_stale_catch_up
+from voices.worker.catch_up_task import (
+    CATCH_UP_LOCK,
+    backfill_then_catch_up,
+    catch_up_once,
+    forget_stale_catch_up,
+)
 
 
 class FakeLock:
@@ -55,3 +60,35 @@ def test_a_lock_left_by_a_crashed_worker_is_cleared_when_a_worker_starts():
     forget_stale_catch_up(redis_client)
 
     assert redis_client.deleted == [CATCH_UP_LOCK]
+
+
+def test_the_seed_s_vectors_are_backfilled_before_any_day_is_caught_up():
+    order = []
+
+    class Step:
+        def __init__(self, name):
+            self.name = name
+
+        def run(self, *args):
+            order.append((self.name, args))
+
+    backfill_then_catch_up(Step("backfill"), Step("catch-up"), "now")
+
+    assert order == [("backfill", ()), ("catch-up", ("now",))]
+
+
+def test_a_failed_backfill_stops_the_catch_up_from_running():
+    ran = []
+
+    class FailingBackfill:
+        def run(self):
+            raise RuntimeError("model download failed")
+
+    class CatchUp:
+        def run(self, now):
+            ran.append(now)
+
+    with pytest.raises(RuntimeError):
+        backfill_then_catch_up(FailingBackfill(), CatchUp(), "now")
+
+    assert ran == []

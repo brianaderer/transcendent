@@ -48,7 +48,16 @@ class TaggingStore:
         """Threads on their first day not yet decided, and threads on their third day not yet
         settled, each with its post (or its title, when the post isn't stored) and the replies
         it has by the end of the day."""
-        query = _thread_with_its_post(Thread.source_id, _post_text_or_title()).where(_due_on(day))
+        return self._threads_with_replies(_due_on(day), day)
+
+    def threads_as_of(self, day: date, ids: Sequence[str]) -> list[DueThread]:
+        """These threads as they stood at the end of the day: each with its post (or its
+        title) and the replies it had by then. The backfill rebuilds a seeded thread's
+        embedding from this, as of the day it was last decided (atlas plate 07)."""
+        return self._threads_with_replies(Thread.source_id.in_(ids), day)
+
+    def _threads_with_replies(self, which: ColumnElement[bool], day: date) -> list[DueThread]:
+        query = _thread_with_its_post(Thread.source_id, _post_text_or_title()).where(which)
         with self.engine.connect() as connection:
             threads = connection.execute(query).all()
             replies = self._replies(connection, [t.source_id for t in threads], day)

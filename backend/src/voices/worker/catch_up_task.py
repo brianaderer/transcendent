@@ -13,10 +13,14 @@ from typing import Protocol
 
 import redis
 
+from voices.backfill.backfill import Backfill
+from voices.backfill.progress import RedisBackfillProgress
 from voices.config import load_settings
+from voices.db.backfill_store import BackfillStore
 from voices.db.store import connect_store
 from voices.db.tagging_store import TaggingStore
 from voices.events import RedisEvents
+from voices.explore.cache import RedisMapCache
 from voices.ingestion.agreement import AgreementDetector
 from voices.ingestion.arctic_shift import connect_to_archive
 from voices.ingestion.catch_up import CatchUp
@@ -72,15 +76,29 @@ def catch_up_now() -> bool:
     return catch_up_once(lock, lambda: run(datetime.now(UTC)))
 
 
+class Runs(Protocol):
+    def run(self, *args: object) -> None: ...
+
+
+def backfill_then_catch_up(backfill: Runs, catch_up: Runs, now: datetime) -> None:
+    """The vectors the boot seed left behind come back before any day is tagged, so tagging
+    never meets a store without them (atlas plate 07). Both run under the catch-up's lock."""
+    with tracing("backfill"):
+        backfill.run()
+    catch_up.run(now)
+
+
 @lru_cache(maxsize=1)
 def _catch_up_runner() -> Callable[[datetime], None]:
-    """Built once per worker process: loading the embedding model takes a while. Each day is
-    loaded, then tagged; a day is done only when both have happened."""
+    """Built once per worker process: loading the embedding model takes a while. Any missing
+    vectors are backfilled first; then each day is loaded, then tagged, and a day is done
+    only when both have happened."""
     settings = load_settings()
     store = connect_store(settings.database_url)
     embedder = load_embedder(settings.model_dir)
     ingestion = DayIngestion(connect_to_archive(), embedder, AgreementDetector(embedder), store)
-    emit = partial(RedisEvents(redis.Redis.from_url(settings.redis_url)).emit, INGESTION_STREAM)
+    redis_client = redis.Redis.from_url(settings.redis_url)
+    emit = partial(RedisEvents(redis_client).emit, INGESTION_STREAM)
     tagging_store = TaggingStore(store.engine)
     agent = TaggingAgent(
         tagging_store,
@@ -89,7 +107,15 @@ def _catch_up_runner() -> Callable[[datetime], None]:
         model_name=settings.tagging_model_name,
     )
     tagging = DayTagging(tagging_store, embedder, agent.decide, emit)
-    return CatchUp(store, partial(_load_and_tag, ingestion, tagging), emit).run
+    backfill = Backfill(
+        BackfillStore(store.engine),
+        embedder,
+        RedisBackfillProgress(redis_client),
+        emit,
+        RedisMapCache(redis_client).forget_all,
+    )
+    catch_up = CatchUp(store, partial(_load_and_tag, ingestion, tagging), emit)
+    return partial(backfill_then_catch_up, backfill, catch_up)
 
 
 def _load_and_tag(ingestion: DayIngestion, tagging: DayTagging, day: date) -> dict[str, int]:

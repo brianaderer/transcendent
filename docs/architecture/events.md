@@ -21,15 +21,19 @@ Streams and event types so far: `ingestion` carries `catch_up.started`,
 `catch_up.finished`, `day.started` (with `progress`, e.g. "4 of 56"), `day.finished`
 (with the day's counts, from loading and tagging together), `day.failed` (with the error,
 as the error's message), and `decision.made` (one per group of threads the tagging agent decides:
-`group`, `threads`, `action`, `topic_id`, `label`, `merged_into`, `reason`).
+`group`, `threads`, `action`, `topic_id`, `label`, `merged_into`, `reason`), and, on a first
+boot from the seed, `backfill.progress` (`what`: `posts`, `threads` or `topics`, `done`,
+`total`; one as each step starts and one after each saved batch) and `backfill.finished`
+([seed](seed.md)).
 
 ## Uses
 Redis, [logging](logging.md).
 
 ## Used by
 [worker](worker.md) (`catch_up_task.py` builds `RedisEvents` and hands its `emit` to the
-[ingestion](ingestion.md) catch-up and to [tagging](tagging.md), which sends
-`decision.made` through it); [api](api.md) (the stream route uses
+[ingestion](ingestion.md) catch-up, to [tagging](tagging.md), which sends
+`decision.made` through it, and to the [seed](seed.md) backfill, which sends
+`backfill.progress` and `backfill.finished`); [api](api.md) (the stream route uses
 `server_sent_events`); [frontend](frontend.md) (two parts listen to the `ingestion` stream through
 `useLiveEvents`: `IngestionStatus`, which refetches the loading line on every event, and
 `ExplorePage`, which refetches everything it shows on each `day.finished`); each comparison

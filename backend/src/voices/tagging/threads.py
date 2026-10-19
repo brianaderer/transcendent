@@ -22,7 +22,8 @@ class Reply:
 
 @dataclass(frozen=True)
 class DueThread:
-    """A thread on its first or third day, with the replies it has so far."""
+    """A thread as it stands on a day (its first or third, when it is due a decision), with
+    the replies it has by then."""
 
     source_id: str
     post: str  # the post's title and text

@@ -11,7 +11,10 @@ The web API the frontend calls. Every route lives under `/api`.
 - `GET /api/ingestion` — how far the catch-up has got: `days_done`, `days_wanted` (56, added
   by the route), `posts`,
   `latest_day`, `running_day`, `failed_day`, `failed_reason` (the error recorded for the
-  latest failed day, as the error's message; `null` when no day has failed).
+  latest failed day, as the error's message; `null` when no day has failed), and `backfill`:
+  while the first boot rebuilds the seed's vectors, what it is preparing and how far it has
+  got (`{"what": "posts", "done": 4120, "total": 12682}`; `what` is `posts`, `threads` or
+  `topics`), read from the [seed](seed.md) backfill's record in Redis; `null` otherwise.
 - `GET /api/streams/{stream}/events` — live events as server-sent events ([events](events.md));
   the streams are `ingestion` and one per comparison run, `run-<id>` (twelve hex digits, checked by
   `is_run_stream` in [report](report.md)'s `runs`); 404 for any other name.
@@ -37,7 +40,7 @@ The web API the frontend calls. Every route lives under `/api`.
   (`name_operation_after_its_function`), so the generated calls read `reportTopics`,
   `useReportMap`, `useReportTopic`, `useReportRetrievals` and so on.
 - `create_app(services)` — builds the app around `ApiServices` (the health checks, the
-  ingestion status, the event stream, the Explore reads, `ExploreReads`, which take a `DayRange`, the
+  ingestion status, the backfill's progress, the event stream, the Explore reads, `ExploreReads`, which take a `DayRange`, the
   comparison runs, `Runs`, the topic
   read, `TopicReads`, and the retrieval read, `RetrievalReads`, which takes a
   `RetrievalFilter`), so tests pass stand-ins. Responses over 1,000 bytes are gzip-compressed when the browser accepts it
@@ -63,7 +66,7 @@ the full error, then re-raised.
 [logging](logging.md), [environment](environment.md) (settings and `HISTORY_DAYS`), [database](database.md)
 (`voices.db.store` for the ingestion status, `voices.db.explore_store` for the Explore reads,
 `voices.db.topic_store` and `voices.db.retrieval_store` for the topic and retrieval reads),
-[events](events.md), [explore](explore.md), [topics](topics.md), [retrievals](retrievals.md),
+[events](events.md), [explore](explore.md), [seed](seed.md) (`RedisBackfillProgress` for the backfill's progress), [topics](topics.md), [retrievals](retrievals.md),
 [report](report.md) (`RunLauncher`, `RunStarted`, `RunStore`, `RunState`, `RunNotFound`), Postgres,
 Redis, Celery (only to send `voices.compare` to the [worker](worker.md)).
 `HISTORY_DAYS` (the days wanted) comes from `voices.config`.

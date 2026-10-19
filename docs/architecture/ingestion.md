@@ -39,7 +39,9 @@ their threads; [tagging](tagging.md) sorts the threads into topics right after e
   is always retried, whatever status it comes with (it often arrives as 422); any other 4xx error
   except 429 is a bad request and is not retried.
 - `embedder.NomicEmbedder` — `embed_documents`, `embed_query`, `embed_for_comparison`;
-  `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text).
+  `load_embedder(cache_dir)` loads nomic-embed-text-v1.5-Q (768 numbers per text), running
+  on `EMBEDDING_THREADS` (4) threads: the library's own default ran about half as fast on a
+  14-core Mac under Docker (30 against 60 posts a second).
 - `embedder.ComparisonEmbedder` — the one interface for anything with
   `embed_for_comparison(texts)`; `NomicEmbedder` satisfies it. Used by `AgreementDetector`
   here and by [comparison](comparison.md)'s name matching and [report](report.md)'s run.
@@ -105,6 +107,8 @@ the store and the `emit` function, which match the small interfaces above.
 [tagging](tagging.md) (`day_tagging` uses the `Emit` interface and encodes each thread with
 `NomicEmbedder.embed_documents`; its search tools embed terms with
 `NomicEmbedder.embed_query`); [bakeoff](bakeoff.md) (`load_embedder`);
+[seed](seed.md) (the backfill embeds the seed's posts and threads with
+`NomicEmbedder.embed_documents` and uses the `Emit` interface);
 [comparison](comparison.md) and [report](report.md) (the `ComparisonEmbedder` interface;
 `worker/report_task.py` also loads a `NomicEmbedder` with `load_embedder`, once per worker
 process, for version B's searches and for matching topic names).
@@ -112,4 +116,4 @@ process, for version B's searches and for matching topic names).
 ## Configuration and data
 `MODEL_DIR` (default `/home/voices/.cache/models`, on the `model-cache` volume). `HISTORY_DAYS = 56`
 comes from `voices.config`, shared with the API. Fixed in code: `ARCHIVE_CATCH_UP_HOURS = 6`, `PAGE_SIZE = 100`, `ERROR_TEXT_CHARACTERS = 200`,
-`ATTEMPTS = 7`, `MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `BATCH_TEXT_BUDGET = 4000`, `MAX_BATCH = 32`.
+`ATTEMPTS = 7`, `MAX_AGREEMENT_WORDS = 8`, `AGREEMENT_SIMILARITY = 0.80`, `BATCH_TEXT_BUDGET = 4000`, `MAX_BATCH = 32`, `EMBEDDING_THREADS = 4`.

@@ -16,6 +16,8 @@ Describes the tables and keeps the database in step with them. The tables follow
   [topics](topics.md).
 - `voices.db.retrieval_store.RetrievalStore` — the Retrieval stats page's reads; described
   in [retrievals](retrievals.md).
+- `voices.db.backfill_store.BackfillStore` — the backfill's reads and writes (which rows
+  still lack their vector, and saving rebuilt ones); described in [seed](seed.md).
 - `voices.db.post_columns` — column expressions the reading stores share: `written_on(column)`
   (the UTC day of a timestamp column: `Post.created_at` or `Thread.created_at`), `written_between(first, last)` (both days included) and
   `excerpt(characters)` (a post's opening words, or its thread's title for a post with no
@@ -123,12 +125,12 @@ that already has days (yours) records the migration as run and loads nothing; an
 `python -m voices.db.setup` on an empty scratch database on 19 October 2026 and loaded every
 row.
 
-`docker compose run --rm api pytest -m database` runs the eighty-one tests that need a running
+`docker compose run --rm api pytest -m database` runs the eighty-nine tests that need a running
 database: one checks that the models and the applied migrations agree; eleven check that
 the store saves a day (twice without duplicates), records a thread as first seen on the day it is saved rather than the day it was started and keeps that day when saved again, never double-counts a re-saved day's
 upvotes, takes a day's upvotes away when the redone day no longer has them, adds up upvotes
-from different days, keeps the day ledger, finds threads deleted as noise by their marker, and stores each of the three embedding columns as `halfvec(768)`; and thirty-five check the tagging store: which
-threads are due on their first and third days (with their replies, best first), a thread
+from different days, keeps the day ledger, finds threads deleted as noise by their marker, and stores each of the three embedding columns as `halfvec(768)`; and thirty-seven check the tagging store: which
+threads are due on their first and third days (with their replies, best first), threads read as of a day having only the replies they had by its end (and one without its post written from its title), a thread
 without its post is due on the day first seen (whether it was started that day or years before), written from its title, is due again two days later, and can be a typical thread (shown by its title, with its author given as unknown), and that a
 settled thread is never due again, minting, attaching, noise on a first day waiting and on a
 third day deleting the thread with its comments and moving the centre of the topic it
@@ -137,7 +139,7 @@ first day's topic, and one that had none is expired, its thread gone), threads w
 merged mints, last-seen days, a topic's centre following its threads, a thread moved on its
 third day, candidate topics' recent posts, typical threads, daily engagement (including a
 late comment counting on its own day, revived threads only after seven days, and upvotes on a day with no new
-posts), search with recorded retrievals, and looking up an unknown post; and seven check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post's embedding coming back as the list of floats it was saved as, a post with no text shown by its title and long text cut, and topics read by id; and twelve check the [seed](seed.md) in scratch schemas of their own (so they never touch the real rows): the export leaves out embeddings, centres, prompts and topics with no threads (with their engagement), keeps rows in a fixed order and tables in load order, and loads back as it was; the loader keeps ids and types, moves every id counter past the loaded rows, leaves a database with days alone (so a second load adds nothing), and refuses a name that isn't plain. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
+posts), search with recorded retrievals, and looking up an unknown post; and seven check the Explore store: the latest day counting only finished days, posts counted by the day they were written in UTC, a topic's engagement as its posts, comments and upvotes, a range's posts with their thread and topic ending with its last day, a post's embedding coming back as the list of floats it was saved as, a post with no text shown by its title and long text cut, and topics read by id; and eighteen check the [seed](seed.md) in scratch schemas of their own (so they never touch the real rows): the export leaves out embeddings, centres, prompts and topics with no threads (with their engagement), keeps rows in a fixed order and tables in load order, and loads back as it was; the loader keeps ids and types, moves every id counter past the loaded rows, leaves a database with days alone (so a second load adds nothing), and refuses a name that isn't plain; the backfill store tallies each kind as filled of all, hands out posts and threads still without a vector in id order a batch at a time, saves rebuilt ones, and gives a topic with no centre the average of its threads while leaving the others alone. They are left out of the default test run. Running the `alembic` command directly reads the address from `DATABASE_URL`.
 
 ## Uses
 [logging](logging.md), [environment](environment.md) (settings, through
@@ -153,7 +155,7 @@ Postgres with pgvector,
 SQLAlchemy, Alembic.
 
 ## Used by
-[seed](seed.md) reads every table for the export and fills them in the seed migration.
+[seed](seed.md) reads every table for the export and fills them in the seed migration; its backfill builds `BackfillStore` on the worker's connection.
 [environment](environment.md): the `setup` service in `compose.yaml` runs setup.
 [worker](worker.md) builds the store and hands it to the [ingestion](ingestion.md)
 catch-up, which saves each day and keeps the day ledger through it; the worker also builds

@@ -1,4 +1,14 @@
-from voices.ingestion.embedder import BATCH_TEXT_BUDGET, MAX_BATCH, NomicEmbedder
+import sys
+import types
+
+from voices.ingestion.embedder import (
+    BATCH_TEXT_BUDGET,
+    EMBEDDING_THREADS,
+    MAX_BATCH,
+    MODEL_NAME,
+    NomicEmbedder,
+    load_embedder,
+)
 
 
 class EchoModel:
@@ -85,3 +95,21 @@ def test_no_texts_returns_no_vectors_without_calling_the_model():
 
     assert NomicEmbedder(model).embed_documents([]) == []
     assert model.batches == []
+
+
+def test_the_model_is_loaded_with_a_fixed_thread_count(monkeypatch):
+    """Four threads ran about twice as fast as the library's default on a 14-core Mac."""
+    loaded = {}
+
+    class FakeTextEmbedding:
+        def __init__(self, name, **options):
+            loaded.update(options, name=name)
+
+    monkeypatch.setitem(
+        sys.modules, "fastembed", types.SimpleNamespace(TextEmbedding=FakeTextEmbedding)
+    )
+
+    load_embedder("/models")
+
+    assert loaded == {"name": MODEL_NAME, "cache_dir": "/models", "threads": EMBEDDING_THREADS}
+    assert EMBEDDING_THREADS == 4

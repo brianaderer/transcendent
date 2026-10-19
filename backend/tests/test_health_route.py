@@ -1,19 +1,11 @@
 from fastapi.testclient import TestClient
 
-from tests.stand_ins import FakeExplore, FakeRetrievals, FakeRuns, FakeTopics, no_events
-from voices.api.main import ApiServices, create_app
+from tests.stand_ins import stand_in_services
+from voices.api.main import create_app
 
 
 def services_with(checks):
-    return ApiServices(
-        health_checks=checks,
-        ingestion_status=dict,
-        event_stream=no_events,
-        explore=FakeExplore(),
-        runs=FakeRuns(),
-        topics=FakeTopics(),
-        retrievals=FakeRetrievals(),
-    )
+    return stand_in_services(health_checks=checks)
 
 
 def client_with(database_up, queue_up):

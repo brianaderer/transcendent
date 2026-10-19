@@ -22,15 +22,17 @@ both have happened.
   function from a day and its briefs to their decisions; the worker passes
   `agent.TaggingAgent(...).decide`, which connects the model and decides the day's groups.
 - `threads.thread_text(post, replies)` — a thread as one text: its post, then its five
-  best-scored replies, cut at 3,000 characters. `threads.DueThread` is a thread due a
-  decision with its replies so far; `threads.Reply` one reply's text and score.
+  best-scored replies, cut at 3,000 characters. `threads.DueThread` is a thread as it stands
+  on a day (its first or third, when it is due a decision) with its replies by then;
+  `threads.Reply` one reply's text and score.
 - `grouping.group_by_meaning(threads)` — groups `EncodedThread`s whose embeddings are on
   average closer than `GROUPING_DISTANCE` (agglomerative clustering, cosine distance,
   average linkage) into `Group`s with a centre. Every thread lands in a group, alone if
   nothing is like it.
 - `window.window_start(day)` — the first of the three days ending on `day`: the day the
   threads decided a second time today were first seen, and the start of the agents' search
-  window.
+  window. `window.third_day(first_seen_on)` is the other way round: the day a thread is
+  decided the second and last time.
 - `decider.ToolLoopDecider(model, model_name, tools, max_look_ups=3).decide(brief)` — the agent's
   decision for one group, as a `DecidedCluster` with the exact prompt it saw and the model's name.
   `max_look_ups` is how many tool calls it may make, counted across turns, before it is made to
@@ -51,7 +53,8 @@ both have happened.
 - `model.connect_model(api_key, model_name)` — the chat model through OpenRouter; raises
   `MissingModelKey` (naming `OPENROUTER_API_KEY` and README step 3) when there's no key.
 - `voices.db.tagging_store.TaggingStore(engine)` — the reads and writes below:
-  `threads_due`, `save_thread_embeddings`, `typical_threads`, `nearest_topics`, the tools'
+  `threads_due`, `threads_as_of(day, ids)` (the same read for the given threads as they
+  stood at the end of a day, which the [seed](seed.md) backfill encodes them from), `save_thread_embeddings`, `typical_threads`, `nearest_topics`, the tools'
   searches and lookups (`search_posts`, `lookup_post`, `search_topics`), `record_retrievals`,
   `apply_decisions`, `expire_noise`, `rebuild_engagement`. `DayTagging` and `TaggingTools` each
   depend only on a small interface (`DayTaggingStore`, `ToolStore`) so tests pass stand-ins.
@@ -144,6 +147,9 @@ read by the worker and passed in), OpenRouter (through `langchain-openai`), Lang
 LangChain, scikit-learn (agglomerative clustering), numpy, Postgres with pgvector.
 
 ## Used by
+[seed](seed.md) (the backfill rebuilds a seeded thread's embedding with `thread_text`,
+`third_day`, and `TaggingStore`'s `threads_as_of` and `save_thread_embeddings`, so it is
+encoded exactly as tagging encodes it);
 [worker](worker.md) (`catch_up_task.py` builds `TaggingStore`, `TaggingAgent` and `DayTagging`, and tags each day of the catch-up right after
 loading it); [bakeoff](bakeoff.md) (writes its sample threads out with `thread_text`, runs `ToolLoopDecider` with `TaggingTools` on sample cases, connects
 models through `connect_model`, takes its list of right actions from `Action`, and builds briefs with `ClusterBrief`, `TypicalPost`,
