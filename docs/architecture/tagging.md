@@ -78,7 +78,7 @@ For day D (atlas OPEN-29):
    told to decide and offered only `Decision` (not forced: Claude Sonnet 5.5 refuses a
    forced tool choice). If that answer isn't a valid decision, it is told what was wrong (a
    required field left out, say) or, if it answered in plain text without calling `Decision`,
-   reminded to decide, and offered `Decision` once more (`CORRECTIONS_ON_LAST_TURN`);
+   reminded to decide ("Decide now by calling Decision.", `REMINDER_TO_DECIDE`), and offered `Decision` once more (`CORRECTIONS_ON_LAST_TURN`);
    if the second answer isn't valid either, the day fails.
    If one reply calls `Decision` more than once, the first valid call is used and a malformed
    one is skipped; when a reply has no valid decision, each `Decision` call in it is answered
